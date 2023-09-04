@@ -25,9 +25,4 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Custom\" />
-    <Folder Include="Services\" />
-  </ItemGroup>
-
 </Project>

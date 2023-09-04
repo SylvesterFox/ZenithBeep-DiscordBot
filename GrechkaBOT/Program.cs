@@ -1,6 +1,7 @@
 ﻿using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
+using GrechkaBOT.Custom;
 using GrechkaBOT.Handlers;
 using Lavalink4NET;
 using Lavalink4NET.DiscordNet;
@@ -17,6 +18,8 @@ namespace Csharp_GrechkaBot
     {
         public static Task Main(string[] args) => new Program().MainAsync();
 
+        private readonly CancellationTokenSource tokenSource = new CancellationTokenSource();
+
         public async Task MainAsync()
         {
             var config = new ConfigurationBuilder()
@@ -31,6 +34,10 @@ namespace Csharp_GrechkaBot
                 {
                     GatewayIntents = Discord.GatewayIntents.All,
                     AlwaysDownloadUsers = true,
+                    LogLevel = Discord.LogSeverity.Debug,
+                    HandlerTimeout = 5000,
+                    MessageCacheSize = 1000,
+                    DefaultRetryMode = Discord.RetryMode.RetryRatelimit,
                 }))
                 .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
                 .AddSingleton<HanderInteraction>()
@@ -51,6 +58,17 @@ namespace Csharp_GrechkaBot
                 ).Build();
 
             await RunAsync(host);
+        }
+
+        private void OnCancel(object? sender, ConsoleCancelEventArgs args)
+        {
+            args.Cancel = true;
+
+            using (tokenSource)
+            {
+                tokenSource.Cancel();
+                Thread.Sleep(1000);
+            }
         }
 
         public async Task RunAsync(IHost host)
@@ -80,7 +98,7 @@ namespace Csharp_GrechkaBot
 
             await audioService.InitializeAsync();
 
-            await Task.Delay(-1);
+            await Task.Delay(-1, tokenSource.Token);
         }
     }
 }

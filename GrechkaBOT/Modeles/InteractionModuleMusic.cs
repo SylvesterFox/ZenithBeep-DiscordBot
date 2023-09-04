@@ -1,17 +1,19 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
+using GrechkaBOT.Custom;
 using Lavalink4NET;
 using Lavalink4NET.Player;
 using Lavalink4NET.Rest;
+using static GrechkaBOT.Custom.DragonPlayer;
 
 namespace GrechkaBOT.Modeles
 {
     public class InteractionModuleMusic : InteractionModuleBase<SocketInteractionContext>
     {
-        private readonly IAudioService _audioService;
+        public IAudioService LavaNode { private get; set; }
 
-        public InteractionModuleMusic(IAudioService audioService) 
-            => _audioService = audioService ?? throw new ArgumentNullException(nameof(audioService));
+
 
         [SlashCommand("join", "Play music", runMode: RunMode.Async)]
         public async Task JoinAsync()
@@ -27,7 +29,7 @@ namespace GrechkaBOT.Modeles
             
             try
             {
-                var player = await GetPlayerAsync();
+                var player = await GetPlayer();
                 await ReplyAsync($"Joined {voiceChannel.VoiceChannel.Name}!");
 
             } catch (Exception ex)
@@ -38,76 +40,103 @@ namespace GrechkaBOT.Modeles
         }
 
         [SlashCommand("play", "Playing music", runMode: RunMode.Async)]
-        public async Task PlayAsync(string query)
+        public async Task<RuntimeResult> PlayAsync(string query)
         {
-            var player = await GetPlayerAsync();
+            (DragonPlayer player, GrechkaResult result) = await GetPlayer(true);
 
-            if (player == null)
+            if (result is not null)
             {
-                return;
+                return result;
             }
 
-            var track = await _audioService.GetTrackAsync(query, SearchMode.YouTube);
+            await DeferAsync();
 
-            if (track == null)
+            LavalinkTrack track = null;
+
+            if (query.Contains("youtube.com") || query.Contains("youtu.be"))
             {
-                await RespondAsync("😖 No results");
-                return;
+                track = await LavaNode.GetTrackAsync(query);
             }
 
-            var position = await player.PlayAsync(track, enqueue: true);
+           
 
-            if (position == 0)
+            if (track is null)
             {
+                track = await LavaNode.GetTrackAsync(query, SearchMode.YouTube);
+
+                if (track is null)
+                {
+                    return GrechkaResult.FromError("NoResult", "No media was found with that search query.");
+                }
                 
-                await RespondAsync("Loading..");
-                await DeleteOriginalResponseAsync();
-                await ReplyAsync($"🔈 Playing: {track.Title}");
+            }
+
+            QueueInfo info = new QueueInfo(Context.User, Context.Channel);
+            track.Context = info;
+
+            
+
+            if (await player.PlayAsync(track, enqueue: true) > 0)
+            {
+
+                info.QueueMessage = await FollowupAsync(embed: await track.GetEmbedAsync("Queued"));
                 
             } 
             else
             {
-                await RespondAsync("Loading..");
-                await DeleteOriginalResponseAsync();
-                await ReplyAsync($"🔈 Added to queue: {track.Title}");
-                return;
+                info.Interaction = Context.Interaction;
             }
+
+            return GrechkaResult.FromSuccess();
         }
 
         [SlashCommand("skip", "Skip track", runMode: RunMode.Async)]
-        public async Task AsyncSkip()
+        public async Task<RuntimeResult> Skip()
         {
-            var player = _audioService.GetPlayer<VoteLavalinkPlayer>(Context.Guild.Id);
+            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
 
-            if (player == null)
+            if (result is not null)
             {
-                return;
+                return result;
             }
 
-            if (player.CurrentTrack == null)
+            var embedSkip = new EmbedBuilder();
+
+            if (IsAdmin() || IsRequester(player.CurrentTrack))
             {
-                await RespondAsync("Nothing playing!");
-                return;
+                
+                await RespondAsync($"{player.CurrentTrack.Title} skip!");
+                await player.SkipAsync();
+
+            } else
+            {
+                UserVoteSkipInfo info = await player.VoteAsync(Context.User.Id);
+
+                if (info.WasAdded)
+                {
+                    await RespondAsync($"{Context.User.Mention} has voted to skip the current track. ({info.Percentage:P})");
+                }
             }
 
-            await RespondAsync($"{player.CurrentTrack.Title} skip!");
-            await player.SkipAsync();
+            return GrechkaResult.FromSuccess();
+            
             
         }
 
         [SlashCommand("disconnect", "Disconnects from the current voice channel connect to", runMode: RunMode.Async)]
-        public async Task Disconnect()
+        public async Task<RuntimeResult> Leave()
         {
-            var player = await GetPlayerAsync();
+            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
 
-            if (player == null)
+
+            if (result is not null)
             {
-                return;
+                return result;
             }
 
-       
             await player.StopAsync(true);
             await RespondAsync("Disconnected.");
+            return GrechkaResult.FromSuccess();
         }
 
         /// <summary>
@@ -118,7 +147,7 @@ namespace GrechkaBOT.Modeles
         [SlashCommand("stop", "Stops the current track", runMode: RunMode.Async)]
         public async Task StopAsync()
         {
-            var player = await GetPlayerAsync(connectToVoiceChannel: false);
+            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
 
             if (player == null)
             {
@@ -144,46 +173,59 @@ namespace GrechkaBOT.Modeles
                 return;
             }
 
-            var player = await GetPlayerAsync();
+            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
 
-            if (player == null)
-            {
-                return;
-
-            }
-
+   
             await player.SetVolumeAsync(volume / 100f);
             await RespondAsync($"Volume update: {volume}");
         }
 
-        private async ValueTask<VoteLavalinkPlayer> GetPlayerAsync(bool connectToVoiceChannel = true)
+        private async ValueTask<(DragonPlayer, GrechkaResult)> GetPlayer(bool autoConnect = true)
         {
-            var player = _audioService.GetPlayer<VoteLavalinkPlayer>(Context.Guild.Id);
+            DragonPlayer player = LavaNode.GetPlayer<DragonPlayer>(Context.Guild.Id);
 
-            if (player != null && player.State != PlayerState.NotConnected && player.State != PlayerState.Destroyed)
+            if (Context.User is not IGuildUser user || user.VoiceChannel is null)
             {
-                return player;
+                return (null, GrechkaResult.FromError("NoVoiceChannel", "User is not in a voice channel"));
             }
 
-            var user = Context.Guild.GetUser(Context.User.Id);
-
-            if (!user.VoiceState.HasValue)
+            if (player?.VoiceChannelId.HasValue == false)
             {
-                await ReplyAsync("You must be in a voice channel!");
-                return null;
+                await player.DisposeAsync();
+                player = null;
             }
 
-            if (!connectToVoiceChannel)
+            if (player == null)
             {
-                await ReplyAsync("The bot is not a voice channel!");
-                return null;
+                if (autoConnect)
+                {
+                    player = await LavaNode.JoinAsync<DragonPlayer>(Context.Guild.Id, user.VoiceChannel.Id, true);
+                } else
+                {
+                    return (null, GrechkaResult.FromError("NotConnected", "No active bot session"));
+                }
             }
 
-            return await _audioService.JoinAsync<VoteLavalinkPlayer>(user.Guild.Id, user.VoiceChannel.Id);
+            if (user.VoiceChannel.Id != player.VoiceChannelId)
+            {
+                return (null, GrechkaResult.FromError("ChannelMismatch", "You are not in the same voice channel"));
+            }
+
+            return (player, null);
         }
 
-      
-     
+        private bool IsRequester(LavalinkTrack track)
+        {
+            return track?.Context is QueueInfo info && info.User.Id == Context.User.Id;
+        }
+
+        private bool IsAdmin()
+        {
+            return Context.User is SocketGuildUser { GuildPermissions: { Administrator: true } or { ManageGuild: true } };
+        }
+
+
+
     }
       
 }

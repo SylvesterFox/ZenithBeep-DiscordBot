@@ -56,19 +56,32 @@ namespace GrechkaBOT.Custom
 
         public override async Task OnTrackEndAsync(TrackEndEventArgs eventArgs)
         {
-            if (eventArgs.Reason == TrackEndReason.Replaced)
+
+            if (CurrentTrack?.Context is QueueInfo { Message: { } } info)
             {
-               
-
-                if (CurrentTrack?.Context is QueueInfo { Message: { } } info)
-                {
-                    await info.Message.DeleteAsync();
-                }
-
-
+                await info.Message.DeleteAsync();
             }
 
+            _ = Task.Delay(1000).ContinueWith(async _ =>
+            {
+                if (State != PlayerState.Playing && Queue.IsEmpty)
+                {
+                    await DisconnectAsync();
+                    Console.WriteLine("Disconnect");
+                }
+            });
+
             await base.OnTrackEndAsync(eventArgs);
+        }
+
+        public override async Task SkipAsync(int count = 1)
+        {
+            if (CurrentTrack?.Context is QueueInfo { Message: { } } info)
+            {
+                Console.WriteLine("Test");
+            }
+
+            await base.SkipAsync(count);
         }
 
 

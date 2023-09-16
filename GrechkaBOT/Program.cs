@@ -3,6 +3,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using GrechkaBOT.Custom;
 using GrechkaBOT.Handlers;
+using GrechkaBOT.Services;
 using Lavalink4NET;
 using Lavalink4NET.DiscordNet;
 using Lavalink4NET.Logging.Microsoft;
@@ -46,6 +47,7 @@ namespace Csharp_GrechkaBot
                 .AddSingleton<HandlerStatus>()
                 .AddSingleton<IAudioService, LavalinkNode>()
                 .AddSingleton<IDiscordClientWrapper, DiscordClientWrapper>()
+                .AddSingleton<PaginationService>()
                 .AddMicrosoftExtensionsLavalinkLogging()
                 .AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Debug))
                 .AddSingleton(new LavalinkNodeOptions {

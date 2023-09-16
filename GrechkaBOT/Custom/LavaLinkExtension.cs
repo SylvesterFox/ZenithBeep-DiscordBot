@@ -54,6 +54,31 @@ namespace GrechkaBOT.Custom
             return builder.Build();
 
         }
+
+        public static IEnumerable<string> GetQueuePaged(this VoteLavalinkPlayer player, int items)
+        {
+            List<string> pages = new List<string>();
+            List<string> lines = new List<string>();
+            int count = 0;
+
+            foreach (LavalinkTrack track in player.Queue)
+            {
+                string line = $"{++count}. {track.Title}";
+
+                if (count % (items + 1) == 0)
+                {
+                    lines.Reverse();
+                    pages.Add(string.Join("\n", lines));
+                    lines.Clear();
+                }
+
+                lines.Add(line);
+            }
+
+            lines.Reverse();
+            pages.Add(string.Join("\n", lines));
+            return pages;
+        }
     }
 
 

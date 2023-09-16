@@ -2,6 +2,7 @@
 using Discord.Interactions;
 using Discord.WebSocket;
 using GrechkaBOT.Custom;
+using GrechkaBOT.Services;
 using Lavalink4NET;
 using Lavalink4NET.Player;
 using Lavalink4NET.Rest;
@@ -12,6 +13,7 @@ namespace GrechkaBOT.Modeles
     public class InteractionModuleMusic : InteractionModuleBase<SocketInteractionContext>
     {
         public IAudioService LavaNode { private get; set; }
+        public PaginationService Pagination { private get; set; }
 
 
 
@@ -85,6 +87,83 @@ namespace GrechkaBOT.Modeles
             else
             {
                 info.Interaction = Context.Interaction;
+            }
+
+            return GrechkaResult.FromSuccess();
+        }
+
+        [SlashCommand("playlist", "Queue an entire playlist")]
+        public async Task<RuntimeResult> Playlist(string playlist)
+        {
+            if (Context.User is not IGuildUser user || user.VoiceChannel is null)
+            {
+                return GrechkaResult.FromError("NoVoiceChannel", "User is not ina voice channel");
+            }
+
+            List<LavalinkTrack> tracks = (await LavaNode.GetTracksAsync(playlist)).ToList();
+
+            if (!tracks.Any())
+            {
+                return GrechkaResult.FromError("EmptyPlaylist", "Playlist is empty, private, or non existent");
+            }
+
+            (DragonPlayer player, GrechkaResult result) = await GetPlayer(true);
+
+            if (result is not null)
+            {
+                return result;
+            }
+
+            await DeferAsync();
+
+            foreach (LavalinkTrack track in tracks)
+            {
+                track.Context = new QueueInfo(Context.User, Context.Channel);
+                player.Queue.Add(track);
+
+                // Test log console
+                Console.WriteLine(track.Title);
+            }
+
+            await FollowupAsync("Added all tracks in playlist to queue");
+
+            if (player.State != PlayerState.Playing)
+            {
+                LavalinkTrack track = player.Queue.Dequeue();
+                await player.PlayTopAsync(track);
+            }
+
+            return GrechkaResult.FromSuccess();
+        }
+
+        [SlashCommand("queue", "List track queue")]
+        public async Task<RuntimeResult> Queue()
+        {
+            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
+
+            if (result is not null)
+            {
+                return result;
+
+            }
+
+            if (player.Queue.IsEmpty)
+            {
+                await RespondAsync(embed: new EmbedBuilder()
+                {
+                    Title = "Queue",
+                    Description = "_... empty ..._",
+                    Color = Color.DarkPurple
+                }.Build());
+            }
+            else
+            {
+                List<EmbedBuilder> builders = player.GetQueuePaged(10).Select(str => new EmbedBuilder().WithDescription(Format.Code(str, "cs"))).ToList();
+                await Pagination.SendMeesgeAsync(Context, new PaginationMessage(builders, "Media queue", Color.DarkPurple, Context.User, new AppearanceOptions()
+                {
+                    Timeout = TimeSpan.FromMinutes(5),
+                    Style = DisplayStyle.Full
+                }), folloup: false);
             }
 
             return GrechkaResult.FromSuccess();

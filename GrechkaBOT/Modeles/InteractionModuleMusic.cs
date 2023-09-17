@@ -183,9 +183,9 @@ namespace GrechkaBOT.Modeles
 
             if (IsAdmin() || IsRequester(player.CurrentTrack))
             {
-                
-                await RespondAsync($"{player.CurrentTrack.Title} skip!");
+                 
                 await player.SkipAsync();
+                await RespondAsync($"{Context.User.Mention} has skipped the song!");
 
             } else
             {
@@ -200,6 +200,40 @@ namespace GrechkaBOT.Modeles
             return GrechkaResult.FromSuccess();
             
             
+        }
+
+        [SlashCommand("seek", "Seek in track position.", runMode: RunMode.Async)]
+        public async Task<RuntimeResult> Seek(TimeSpan time)
+        {
+            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
+
+            if (result is not null)
+            {
+                return result;
+            }
+
+            if (!IsAdmin() && !IsRequester(player.CurrentTrack))
+            {
+                return GrechkaResult.FromError("NotPermissible", "You can't seek this track");
+            }
+
+            if (player.State == PlayerState.Playing && player.CurrentTrack is { IsSeekable: true})
+            {
+                if (time > player.CurrentTrack.Duration)
+                {
+                    await player.SkipAsync();
+                    await RespondAsync("Seeking beyond track length. Skipping.");
+                }
+                else
+                {
+                    await player.SeekPositionAsync(time);
+                    await RespondAsync($"Seeking to: `{time}`");
+                }
+
+                return GrechkaResult.FromSuccess();
+            }
+
+            return GrechkaResult.FromError("NotSeekable", "This track can't be seeked.");
         }
 
         [SlashCommand("disconnect", "Disconnects from the current voice channel connect to", runMode: RunMode.Async)]
@@ -218,29 +252,51 @@ namespace GrechkaBOT.Modeles
             return GrechkaResult.FromSuccess();
         }
 
-        /// <summary>
-        ///     Stop the current track
-        /// </summary>
-        /// <returns>a task that represents the stop track</returns>
 
         [SlashCommand("stop", "Stops the current track", runMode: RunMode.Async)]
-        public async Task StopAsync()
+        public async Task<RuntimeResult> StopAsync()
         {
             (DragonPlayer player, GrechkaResult result) = await GetPlayer();
 
-            if (player == null)
+            if (result is not null)
             {
-                return;
+                return result;
             }
 
-            if (player.CurrentTrack == null)
+
+            if (IsAdmin() || IsRequester(player.CurrentTrack) && player.Queue.IsEmpty)
             {
-                await RespondAsync("Nothing playing!");
-                return;
+                await player.StopAsync(true);
+                await RespondAsync("Cya.");
+                return GrechkaResult.FromSuccess();
             }
 
-            await player.StopAsync();
-            await RespondAsync("Stopped playing.");
+            return GrechkaResult.FromError("NotPermissible", "You can't stop this player");
+        }
+
+        [SlashCommand("pause", "Pause/Unpause the track")]
+        public async Task<RuntimeResult> Pause()
+        {
+            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
+
+            if (result is not null) return result;
+
+            if (!IsAdmin() && !IsRequester(player.CurrentTrack))
+            {
+                return GrechkaResult.FromError("NotPermissible", "You can't pause this track");
+            }
+
+            if (player.State == PlayerState.Paused)
+            {
+                await player.ResumeAsync();
+                await RespondAsync("Resumed track");
+            } else
+            {
+                await player.PauseAsync();
+                await RespondAsync("Pause track.");
+            }
+
+            return GrechkaResult.FromSuccess();
         }
 
         [SlashCommand("volume", "Sets the player volume", runMode: RunMode.Async)]
@@ -257,6 +313,46 @@ namespace GrechkaBOT.Modeles
    
             await player.SetVolumeAsync(volume / 100f);
             await RespondAsync($"Volume update: {volume}");
+        }
+
+        [SlashCommand("clear", "Clear track queue.")]
+        public async Task<RuntimeResult> ClearQueue()
+        {
+            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
+
+
+            if (result is not null) return result;
+
+            player.Queue.Clear();
+            await RespondAsync("Cleared the queue");
+
+            return GrechkaResult.FromSuccess();
+        }
+
+        [SlashCommand("remove", "Remove track from queue.")]
+        public async Task<RuntimeResult> Remove(int index)
+        {
+            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
+
+
+            if (result is not null) return result;
+
+            if (--index > player.Queue.Count - 1 || 0 > index)
+            {
+                return GrechkaResult.FromUserError("InvaildIndex", "Index is out of  queue range");
+            }
+
+            LavalinkTrack track = player.Queue[index];
+
+            if (!IsAdmin() && !IsRequester(track))
+            {
+                return GrechkaResult.FromError("NotPermissible", "You can't renove that track from the queue.");
+            }
+
+            await RespondAsync(embed: await track.GetEmbedAsync("Removed"));
+            player.Queue.RemoveAt(index);
+
+            return GrechkaResult.FromSuccess();
         }
 
         private async ValueTask<(DragonPlayer, GrechkaResult)> GetPlayer(bool autoConnect = true)

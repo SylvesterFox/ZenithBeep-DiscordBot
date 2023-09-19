@@ -35,7 +35,7 @@ namespace GrechkaBOT.Custom
 
                 if (info.Interaction != null)
                 {
-                    info.Message = await info.Interaction.FollowupAsync(embed: await CurrentTrack.GetEmbedAsync("Playuing"));
+                    info.Message = await info.Interaction.FollowupAsync(embed: await CurrentTrack.GetEmbedAsync("Playing"));
                 }
                 else
                 {

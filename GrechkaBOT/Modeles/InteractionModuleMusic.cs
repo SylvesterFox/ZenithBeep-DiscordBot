@@ -18,27 +18,21 @@ namespace GrechkaBOT.Modeles
 
 
         [SlashCommand("join", "Play music", runMode: RunMode.Async)]
-        public async Task JoinAsync()
+        public async Task<RuntimeResult> JoinAsync()
         {
-            var guildId = Context.Guild.Id;
+           
             var voiceChannel = Context.User as IVoiceState;
 
-            if (voiceChannel?.VoiceChannel == null)
-            {
-                await ReplyAsync("You must be connected to a voice channel");
-                return;
-            }
-            
-            try
-            {
-                var player = await GetPlayer();
-                await ReplyAsync($"Joined {voiceChannel.VoiceChannel.Name}!");
+            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
 
-            } catch (Exception ex)
+            if (result is not null)
             {
-                await RespondAsync(ex.Message);
+                return result;
             }
 
+
+            await ReplyAsync($"Joined {voiceChannel.VoiceChannel.Name}!");
+            return GrechkaResult.FromSuccess();
         }
 
         [SlashCommand("play", "Playing music", runMode: RunMode.Async)]
@@ -236,21 +230,6 @@ namespace GrechkaBOT.Modeles
             return GrechkaResult.FromError("NotSeekable", "This track can't be seeked.");
         }
 
-        [SlashCommand("disconnect", "Disconnects from the current voice channel connect to", runMode: RunMode.Async)]
-        public async Task<RuntimeResult> Leave()
-        {
-            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
-
-
-            if (result is not null)
-            {
-                return result;
-            }
-
-            await player.StopAsync(true);
-            await RespondAsync("Disconnected.");
-            return GrechkaResult.FromSuccess();
-        }
 
 
         [SlashCommand("stop", "Stops the current track", runMode: RunMode.Async)]
@@ -354,6 +333,73 @@ namespace GrechkaBOT.Modeles
 
             return GrechkaResult.FromSuccess();
         }
+
+        [SlashCommand("track", "Currently playing track")]
+        public async Task<RuntimeResult> Track()
+        {
+            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
+
+            if (result is not null)
+            {
+                return result;
+            }
+
+            if (player.State == PlayerState.NotPlaying)
+            {
+                return GrechkaResult.FromError("NoTrack", "Noting is currenttly playing");
+            }
+
+            await RespondAsync(embed: await player.CurrentTrack.GetEmbedAsync());
+            return GrechkaResult.FromSuccess();
+        }
+
+        [SlashCommand("looptrack", "Loop current track")]
+        public async Task<RuntimeResult> LoopTrack()
+        {
+            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
+
+            if (result is not null)
+            {
+                return result;
+            }
+
+            if (player.State == PlayerState.NotPlaying)
+            {
+                return GrechkaResult.FromError("NoTrack", "Noting is currenttly playing");
+            }
+
+            var isLooping = player.LoopMode is not PlayerLoopMode.None;
+            player.LoopMode = isLooping ? PlayerLoopMode.None : PlayerLoopMode.Track;
+            isLooping = !isLooping;
+
+            if (isLooping)
+            {
+                await RespondAsync("Track is looping.");
+            } 
+            else
+            {
+                await RespondAsync("Track not is looping.");
+            }
+            return GrechkaResult.FromSuccess();
+        }
+
+        [SlashCommand("shuffle", "Shuffle track queue.")]
+        public async Task<RuntimeResult> Shuffle()
+        {
+            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
+
+            if (result is not null)
+            {
+                return result;
+            }
+
+            player.Queue.Shuffle();
+            await RespondAsync("Shuffled.");
+
+            return GrechkaResult.FromSuccess();
+        }
+
+
 
         private async ValueTask<(DragonPlayer, GrechkaResult)> GetPlayer(bool autoConnect = true)
         {

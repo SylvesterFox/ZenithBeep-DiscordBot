@@ -10,12 +10,21 @@ namespace GrechkaBOT.Modeles
     public class IntaractionModuleUtility : InteractionModuleBase<SocketInteractionContext>
     {
         [SlashCommand("rolecreate", "Create role")]
+        [DefaultMemberPermissions(GuildPermission.ManageRoles)]
         public async Task CreateRoleReaction(string emoji, string msgId, [Remainder] SocketTextChannel channel, IRole role)
         {
             var get_guilds = new ModelGuild { guildId = (long)Context.Guild.Id };
             var id = Convert.ToUInt64(msgId);
             // TODO: Тут тоже отлов нужен
             var msg = await channel.GetMessageAsync(id);
+
+            if (msg == null)
+            {
+                await RespondAsync("Message by id was not found", ephemeral: true);
+                return;
+
+            }
+
             ModelGuild db_guild = DatabasePost.GetGuild<ModelGuild>(get_guilds);
             
 
@@ -54,6 +63,7 @@ namespace GrechkaBOT.Modeles
         }
 
         [SlashCommand("roledelete", "Delete role")]
+        [DefaultMemberPermissions(GuildPermission.ManageRoles)]
         public async Task DeleteReactionsRole(String emoji, String mesaageid)
         {
             var get_guild = new ModelGuild { guildId = (long)Context.Guild.Id };
@@ -72,6 +82,14 @@ namespace GrechkaBOT.Modeles
             var channel = Context.Guild.GetTextChannel((ulong)roles.channelId);
             //TODO: Сделать тут отлов msg исключения
             var msg = await channel.GetMessageAsync((ulong)roles.messageId);
+
+            if (msg == null)
+            {
+                await RespondAsync("Message by id was not found", ephemeral: true);
+                return;
+
+            }
+
             String role_name = roles.roleName;
             if (Emote.TryParse(roles.setEmoji, out var emote))
             {

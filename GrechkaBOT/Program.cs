@@ -52,7 +52,7 @@ namespace Csharp_GrechkaBot
                 .AddSingleton<PaginationService>()
                 .AddSingleton<HanderRoles>()
                 .AddMicrosoftExtensionsLavalinkLogging()
-                .AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.None))
+                .AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Information))
                 .AddSingleton(new LavalinkNodeOptions {
                     RestUri = "http://localhost:2333/",
                     WebSocketUri = "ws://localhost:2333/",
@@ -61,6 +61,7 @@ namespace Csharp_GrechkaBot
                 })
                 .AddSingleton<ILavalinkCache, LavalinkCache>()
                 .AddSingleton<ConnectionDB>()
+                .AddSingleton<HanderJoinGuilds>()
                 ).Build();
 
             await RunAsync(host);
@@ -90,6 +91,7 @@ namespace Csharp_GrechkaBot
             var status = provider.GetService<HandlerStatus>()
                 .InitializeAsync();
             var roles = provider.GetService<HanderRoles>().InitializeAsync();
+            var JoinGuild = provider.GetService<HanderJoinGuilds>().InitializeAsync();
 
             var audioService = provider.GetRequiredService<IAudioService>();
             

@@ -1,7 +1,9 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
 using GrechkaBOT.Custom;
+using GrechkaBOT.Database;
 using GrechkaBOT.Handlers;
 using GrechkaBOT.Services;
 using Lavalink4NET;
@@ -48,8 +50,9 @@ namespace Csharp_GrechkaBot
                 .AddSingleton<IAudioService, LavalinkNode>()
                 .AddSingleton<IDiscordClientWrapper, DiscordClientWrapper>()
                 .AddSingleton<PaginationService>()
+                .AddSingleton<HanderRoles>()
                 .AddMicrosoftExtensionsLavalinkLogging()
-                .AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Debug))
+                .AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Information))
                 .AddSingleton(new LavalinkNodeOptions {
                     RestUri = "http://localhost:2333/",
                     WebSocketUri = "ws://localhost:2333/",
@@ -57,6 +60,8 @@ namespace Csharp_GrechkaBot
 
                 })
                 .AddSingleton<ILavalinkCache, LavalinkCache>()
+                .AddSingleton<ConnectionDB>()
+                .AddSingleton<HanderJoinGuilds>()
                 ).Build();
 
             await RunAsync(host);
@@ -85,6 +90,8 @@ namespace Csharp_GrechkaBot
             var log = provider.GetRequiredService<HandlerLog>();
             var status = provider.GetService<HandlerStatus>()
                 .InitializeAsync();
+            var roles = provider.GetService<HanderRoles>().InitializeAsync();
+            var JoinGuild = provider.GetService<HanderJoinGuilds>().InitializeAsync();
 
             var audioService = provider.GetRequiredService<IAudioService>();
             
@@ -93,6 +100,32 @@ namespace Csharp_GrechkaBot
             {
                 Console.WriteLine("RAWR! Bot is ready!");
                 await _sCommand.RegisterCommandsGloballyAsync();
+
+                var listGuild = new List<ModelGuild>();
+                foreach (var guild in _client.Guilds)
+                {
+
+                    var guild_db = new ModelGuild
+                    {
+                        Name = guild.Name,
+                        guildId = (long)guild.Id,
+                        Leng = "us"
+                    };
+
+                    var get = new ModelGuild { guildId = (long)guild.Id };
+
+                    ModelGuild info = DatabasePost.GetGuild<ModelGuild>(get);
+
+                    /*Console.WriteLine(info.Id);*/
+
+                    if (info == null)
+                    {
+                        listGuild.Add(guild_db);
+                    }
+                    
+                }
+
+                DatabasePost.insertGuild(listGuild);
             };
 
             await _client.LoginAsync(Discord.TokenType.Bot, _config["token"]);

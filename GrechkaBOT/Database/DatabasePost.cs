@@ -1,9 +1,4 @@
 ﻿using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GrechkaBOT.Database
 {
@@ -28,6 +23,16 @@ namespace GrechkaBOT.Database
             @{nameof(ModelRoles.roleId)}
         )";
 
+        private static readonly string _insertLobby = $@"INSERT INTO roomers_lobbys 
+        (
+            id_guilds,
+            id_lobby
+        ) values 
+        (
+            @{nameof(ModelRoomsLobby.guild_key)},
+            @{nameof(ModelRoomsLobby.lobby_id)}
+        )";
+
         private static readonly string _selectRole = $@"SELECT 
         emoji as {nameof(ModelRoles.setEmoji)},  
         id_massage as {nameof(ModelRoles.messageId)},
@@ -36,6 +41,8 @@ namespace GrechkaBOT.Database
         role_id as {nameof(ModelRoles.roleId)},
         id_guilds as {nameof(ModelRoles.guilds_id_KEY)}
         FROM roles WHERE id_massage = @{nameof(ModelRoles.messageId)} AND emoji = @{nameof(ModelRoles.setEmoji)}";
+
+        private static readonly string _selectQueryLobby = $@"SELECT id_lobby as {nameof(ModelRoomsLobby.lobby_id)} FROM roomers_lobbys WHERE id_guilds = @{nameof(ModelRoomsLobby.guild_key)}";
 
         public DatabasePost(IConfigurationRoot config) : base(config)
         {
@@ -51,6 +58,11 @@ namespace GrechkaBOT.Database
         public static int insertRoles(object roles)
         {
             return Execute(_insertRole, roles);
+        }
+
+        public static int insertLobby(object lobby) 
+        {
+            return Execute(_insertLobby, lobby);
         }
 
         public static int deleteRoles(object roles)
@@ -70,6 +82,12 @@ namespace GrechkaBOT.Database
         public static ModelGuild GetGuild<ModelGuild>(object guild)
         {
             var res = QueryFirstOrDefault<ModelGuild>(_selectQuery, guild);
+            return res;
+        }
+
+        public static ModelRoomsLobby GetIdChannelLobby<ModelRoomsLobby>(object lobby) 
+        {
+            var res = QueryFirstOrDefault<ModelRoomsLobby>(_selectQueryLobby, lobby);
             return res;
         }
 

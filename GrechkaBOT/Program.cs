@@ -1,8 +1,6 @@
-﻿using Discord;
-using Discord.Commands;
+﻿using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
-using GrechkaBOT.Custom;
 using GrechkaBOT.Database;
 using GrechkaBOT.Handlers;
 using GrechkaBOT.Services;
@@ -52,7 +50,7 @@ namespace Csharp_GrechkaBot
                 .AddSingleton<PaginationService>()
                 .AddSingleton<HanderRoles>()
                 .AddMicrosoftExtensionsLavalinkLogging()
-                .AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Information))
+                .AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.None))
                 .AddSingleton(new LavalinkNodeOptions {
                     RestUri = "http://localhost:2333/",
                     WebSocketUri = "ws://localhost:2333/",

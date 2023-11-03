@@ -79,6 +79,18 @@ namespace GrechkaBOT.Database
             return Execute(_deleteQuery, delete);
         }
 
+        public static int deleteLobby(long lobbyId) 
+        {
+            var delete = new ModelRoomsLobby 
+            {
+                lobby_id = lobbyId
+            };
+
+            string _deleteQuery = $@"DELETE FROM roomers_lobbys WHERE id_lobby = @{nameof(ModelRoomsLobby.lobby_id)}";
+
+            return Execute(_deleteQuery, delete);
+        }
+
         public static ModelGuild GetGuild<ModelGuild>(object guild)
         {
             var res = QueryFirstOrDefault<ModelGuild>(_selectQuery, guild);

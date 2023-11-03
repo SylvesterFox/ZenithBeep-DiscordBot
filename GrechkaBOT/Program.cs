@@ -60,6 +60,7 @@ namespace Csharp_GrechkaBot
                 .AddSingleton<ILavalinkCache, LavalinkCache>()
                 .AddSingleton<ConnectionDB>()
                 .AddSingleton<HanderJoinGuilds>()
+                .AddSingleton<HandlerJoinLobby>()
                 ).Build();
 
             await RunAsync(host);
@@ -90,6 +91,7 @@ namespace Csharp_GrechkaBot
                 .InitializeAsync();
             var roles = provider.GetService<HanderRoles>().InitializeAsync();
             var JoinGuild = provider.GetService<HanderJoinGuilds>().InitializeAsync();
+            var JoinLobby = provider.GetService<HandlerJoinLobby>().InitializeAsync();
 
             var audioService = provider.GetRequiredService<IAudioService>();
             

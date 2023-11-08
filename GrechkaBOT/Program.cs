@@ -26,10 +26,6 @@ namespace Csharp_GrechkaBot
        
         static void Main(string[] args = null) {
 
-            // _logLevel = "debug";
-
-            // Console.WriteLine(_logLevel);
-
            
             new Program().MainAsync().GetAwaiter().GetResult();
         }

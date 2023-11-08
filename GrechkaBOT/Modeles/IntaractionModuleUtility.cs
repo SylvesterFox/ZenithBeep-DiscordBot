@@ -3,12 +3,24 @@ using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
 using GrechkaBOT.Database;
+using GrechkaBOT.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Serilog;
+
 
 
 namespace GrechkaBOT.Modeles
 {
     public class IntaractionModuleUtility : InteractionModuleBase<SocketInteractionContext>
     {
+        // private readonly ILogger _log;
+        
+        // public IntaractionModuleUtility(IServiceProvider service) 
+        // {
+        //     _log = service.GetRequiredService<ILogger<LoggingService>>();
+        // }
+
         [SlashCommand("rolecreate", "Create role")]
         [DefaultMemberPermissions(GuildPermission.ManageRoles)]
         public async Task CreateRoleReaction(string emoji, string msgId, [Remainder] SocketTextChannel channel, IRole role)
@@ -104,6 +116,15 @@ namespace GrechkaBOT.Modeles
 
 
             await RespondAsync($"Role on reaction delete: {role_name}", ephemeral: true);
+        }
+        
+        [SlashCommand("ping", "Ping command")]
+        public async Task PingCommand() {
+           await RespondAsync("pong.. :ping_pong:");
+           var msg = await GetOriginalResponseAsync();
+           await msg.ModifyAsync(msg => msg.Content = $"pong.. :ping_pong: \n ping: {Context.Client.Latency}ms");
+        //    _log.LogInformation("Test log");
+            Log.Debug("test");
         }
     }
 }

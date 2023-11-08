@@ -3,7 +3,6 @@ using Serilog;
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
-using GrechkaBOT.Custom;
 using GrechkaBOT.Database;
 using GrechkaBOT.Handlers;
 using GrechkaBOT.Services;
@@ -13,9 +12,8 @@ using Lavalink4NET.Logging.Microsoft;
 using Lavalink4NET.MemoryCache;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using Serilog.Events;
 
 namespace Csharp_GrechkaBot
 {
@@ -23,17 +21,15 @@ namespace Csharp_GrechkaBot
     {
         private readonly IConfiguration _config;
         private DiscordSocketClient _client;
-        private static string _logLevel;
+        private static string? _logLevel;
 
        
         static void Main(string[] args = null) {
 
-            _logLevel = "debug";
+            // _logLevel = "debug";
 
-            Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console()
-                .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
-                .CreateLogger();
+            // Console.WriteLine(_logLevel);
+
            
             new Program().MainAsync().GetAwaiter().GetResult();
         }
@@ -61,12 +57,15 @@ namespace Csharp_GrechkaBot
                 await services.GetRequiredService<HanderInteraction>().InitializeAsync();
                 var audioService = services.GetRequiredService<IAudioService>();
                 await services.GetRequiredService<HandlerStatus>().InitializeAsync();
+                await services.GetRequiredService<HanderRoles>().InitializeAsync();
+                await services.GetRequiredService<HanderJoinGuilds>().InitializeAsync();
 
                 services.GetRequiredService<LoggingService>();
 
                 _client.Ready += async () =>
                 {
                     Console.WriteLine("RAWR! Bot is ready!");
+                    
                     await _sCommand.RegisterCommandsGloballyAsync();
 
                     var listGuild = new List<ModelGuild>();
@@ -84,8 +83,6 @@ namespace Csharp_GrechkaBot
 
                         ModelGuild info = DatabasePost.GetGuild<ModelGuild>(get);
 
-                        /*Console.WriteLine(info.Id);*/
-
                         if (info == null)
                         {
                             listGuild.Add(guild_db);
@@ -94,6 +91,8 @@ namespace Csharp_GrechkaBot
                     }
 
                     DatabasePost.insertGuild(listGuild);
+
+                    await audioService.InitializeAsync();
                 };
 
                 await client.LoginAsync(TokenType.Bot, _config["token"]);
@@ -151,100 +150,60 @@ namespace Csharp_GrechkaBot
                 .AddSingleton<ConnectionDB>()
                 .AddSingleton<HanderJoinGuilds>();
 
-            if (!string.IsNullOrEmpty(_logLevel))
+            if (!string.IsNullOrEmpty(_config["logs"]))
             {
-                switch (_logLevel.ToLower())
+                switch (_config["logs"].ToLower())
                 {
                     case "info": 
                     {
-                        services.Configure<LoggerFilterOptions>(options => options.MinLevel = LogLevel.Information);
+                        Log.Logger = new LoggerConfiguration()
+                            .WriteTo.Console()
+                            .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
+                            .MinimumLevel.Information()
+                            .CreateLogger();
                         break;
                     }
                     case "error": 
                     {
 
-                        services.Configure<LoggerFilterOptions>(options => options.MinLevel = LogLevel.Error);
+                        Log.Logger = new LoggerConfiguration()
+                            .WriteTo.Console()
+                            .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
+                            .MinimumLevel.Error()
+                            .CreateLogger();
                         break;
                     }
                     case "debug":
                     {
-                        services.Configure<LoggerFilterOptions>(options => options.MinLevel = LogLevel.Debug);
+                        Log.Logger = new LoggerConfiguration()
+                            .WriteTo.Console()
+                            .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
+                            .MinimumLevel.Debug()
+                            .CreateLogger();
                         break;
                     }
                     default: 
                     {
-                        services.Configure<LoggerFilterOptions>(options => options.MinLevel = LogLevel.Error);
+                        Log.Logger = new LoggerConfiguration()
+                            .WriteTo.Console()
+                            .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
+                            .MinimumLevel.Information()
+                            .CreateLogger();
                         break;
                     }
                 }
             }
             else {
-                services.Configure<LoggerFilterOptions>(options => options.MinLevel = LogLevel.Information);
+                    Log.Logger = new LoggerConfiguration()
+                        .WriteTo.Console()
+                        .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
+                        .MinimumLevel.Information()
+                        .CreateLogger();
             }
 
             var serviceProvider = services.BuildServiceProvider();
             return serviceProvider;
         }
 
-    //     public async Task RunAsync(IHost host)
-    //     {
-    //         using IServiceScope servicescope = host.Services.CreateScope();
-    //         IServiceProvider provider = servicescope.ServiceProvider;
-
-    //         var _client = provider.GetRequiredService<DiscordSocketClient>();
-    //         var _sCommand = provider.GetRequiredService<InteractionService>();
-    //         await provider.GetRequiredService<HanderInteraction>().InitializeAsync();
-    //         var _config = provider.GetRequiredService<IConfigurationRoot>();
-
-            
-
-    //         var log = provider.GetRequiredService<HandlerLog>();
-    //         var status = provider.GetService<HandlerStatus>()
-    //             .InitializeAsync();
-    //         var roles = provider.GetService<HanderRoles>().InitializeAsync();
-    //         var JoinGuild = provider.GetService<HanderJoinGuilds>().InitializeAsync();
-
-    //         var audioService = provider.GetRequiredService<IAudioService>();
-            
-
-    //         _client.Ready += async () =>
-    //         {
-    //             Console.WriteLine("RAWR! Bot is ready!");
-    //             await _sCommand.RegisterCommandsGloballyAsync();
-
-    //             var listGuild = new List<ModelGuild>();
-    //             foreach (var guild in _client.Guilds)
-    //             {
-
-    //                 var guild_db = new ModelGuild
-    //                 {
-    //                     Name = guild.Name,
-    //                     guildId = (long)guild.Id,
-    //                     Leng = "us"
-    //                 };
-
-    //                 var get = new ModelGuild { guildId = (long)guild.Id };
-
-    //                 ModelGuild info = DatabasePost.GetGuild<ModelGuild>(get);
-
-    //                 /*Console.WriteLine(info.Id);*/
-
-    //                 if (info == null)
-    //                 {
-    //                     listGuild.Add(guild_db);
-    //                 }
-                    
-    //             }
-
-    //             DatabasePost.insertGuild(listGuild);
-    //         };
-
-    //         await _client.LoginAsync(Discord.TokenType.Bot, _config["token"]);
-    //         await _client.StartAsync();
-
-    //         await audioService.InitializeAsync();
-
-    //         await Task.Delay(-1, tokenSource.Token);
-    //     }
     }
 }

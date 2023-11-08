@@ -14,13 +14,6 @@ namespace GrechkaBOT.Modeles
 {
     public class IntaractionModuleUtility : InteractionModuleBase<SocketInteractionContext>
     {
-        // private readonly ILogger _log;
-        
-        // public IntaractionModuleUtility(IServiceProvider service) 
-        // {
-        //     _log = service.GetRequiredService<ILogger<LoggingService>>();
-        // }
-
         [SlashCommand("rolecreate", "Create role")]
         [DefaultMemberPermissions(GuildPermission.ManageRoles)]
         public async Task CreateRoleReaction(string emoji, string msgId, [Remainder] SocketTextChannel channel, IRole role)

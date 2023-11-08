@@ -37,9 +37,13 @@ namespace GrechkaBOT.Database
         id_guilds as {nameof(ModelRoles.guilds_id_KEY)}
         FROM roles WHERE id_massage = @{nameof(ModelRoles.messageId)} AND emoji = @{nameof(ModelRoles.setEmoji)}";
 
-        public DatabasePost(IConfigurationRoot config) : base(config)
+        public DatabasePost(IServiceProvider service) : base(service)
         {
         }
+
+        // public DatabasePost(IConfigurationRoot config) : base(config)
+        // {
+        // }
 
         public static int insertGuild(object guilds)
         {

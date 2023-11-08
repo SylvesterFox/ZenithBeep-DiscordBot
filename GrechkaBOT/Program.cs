@@ -57,6 +57,7 @@ namespace Csharp_GrechkaBot
                 await services.GetRequiredService<HanderJoinGuilds>().InitializeAsync();
 
                 services.GetRequiredService<LoggingService>();
+                services.GetRequiredService<ConnectionDB>();
 
                 _client.Ready += async () =>
                 {

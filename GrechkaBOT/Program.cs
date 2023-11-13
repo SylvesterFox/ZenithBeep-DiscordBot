@@ -12,8 +12,7 @@ using Lavalink4NET.Logging.Microsoft;
 using Lavalink4NET.MemoryCache;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Serilog.Events;
+
 
 namespace Csharp_GrechkaBot
 {
@@ -21,8 +20,8 @@ namespace Csharp_GrechkaBot
     {
         private readonly IConfiguration _config;
         private DiscordSocketClient _client;
-        private static string? _logLevel;
 
+        private readonly CancellationTokenSource cancellation = new CancellationTokenSource();
        
         static void Main(string[] args = null) {
 
@@ -92,10 +91,20 @@ namespace Csharp_GrechkaBot
                     await audioService.InitializeAsync();
                 };
 
+                Console.CancelKeyPress += OnCancel;
+
                 await client.LoginAsync(TokenType.Bot, _config["token"]);
                 await client.StartAsync();
 
-                await Task.Delay(-1);
+                try {
+                    await Task.Delay(-1, cancellation.Token);
+                }
+                catch (TaskCanceledException) {
+                    await client.StopAsync();
+                    await client.LogoutAsync();
+                }
+
+                
            }
 
         }
@@ -110,7 +119,6 @@ namespace Csharp_GrechkaBot
                 Thread.Sleep(1000);
             }
         }
-
 
 
         private ServiceProvider ConfigureServices() 

@@ -1,8 +1,8 @@
 ﻿using Discord;
+using Serilog;
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
-using GrechkaBOT.Custom;
 using GrechkaBOT.Database;
 using GrechkaBOT.Handlers;
 using GrechkaBOT.Services;
@@ -12,59 +12,101 @@ using Lavalink4NET.Logging.Microsoft;
 using Lavalink4NET.MemoryCache;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+
 
 namespace Csharp_GrechkaBot
 {
     public class Program
     {
-        public static Task Main(string[] args) => new Program().MainAsync();
+        private readonly IConfiguration _config;
+        private DiscordSocketClient _client;
+
+        private readonly CancellationTokenSource cancellation = new CancellationTokenSource();
+       
+        static void Main(string[] args = null) {
+
+           
+            new Program().MainAsync().GetAwaiter().GetResult();
+        }
+
+         public Program() {
+            var config = new ConfigurationBuilder()
+                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                .AddYamlFile("appsettings.yml");
+
+            _config = config.Build();
+        }
 
         private readonly CancellationTokenSource tokenSource = new CancellationTokenSource();
 
+
         public async Task MainAsync()
         {
-            var config = new ConfigurationBuilder()
-                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                .AddYamlFile("appsettings.yml").Build();
+           
+           using (var services = ConfigureServices()) 
+           {
+                var client = services.GetRequiredService<DiscordSocketClient>();
+                _client = client;
 
-            using IHost host = Host.CreateDefaultBuilder()
-                .ConfigureServices((_, services) =>
-                services
-                .AddSingleton(config)
-                .AddSingleton(x => new DiscordSocketClient(new DiscordSocketConfig
+                var _sCommand = services.GetRequiredService<InteractionService>();
+                await services.GetRequiredService<HanderInteraction>().InitializeAsync();
+                var audioService = services.GetRequiredService<IAudioService>();
+                await services.GetRequiredService<HandlerStatus>().InitializeAsync();
+                await services.GetRequiredService<HanderRoles>().InitializeAsync();
+                await services.GetRequiredService<HanderJoinGuilds>().InitializeAsync();
+
+                services.GetRequiredService<LoggingService>();
+                services.GetRequiredService<ConnectionDB>();
+
+                _client.Ready += async () =>
                 {
-                    GatewayIntents = Discord.GatewayIntents.All,
-                    AlwaysDownloadUsers = true,
-                    LogLevel = Discord.LogSeverity.Debug,
-                    HandlerTimeout = 5000,
-                    MessageCacheSize = 1000,
-                    DefaultRetryMode = Discord.RetryMode.RetryRatelimit,
-                }))
-                .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
-                .AddSingleton<HanderInteraction>()
-                .AddSingleton(x => new CommandService())
-                .AddSingleton<HandlerLog>()
-                .AddSingleton<HandlerStatus>()
-                .AddSingleton<IAudioService, LavalinkNode>()
-                .AddSingleton<IDiscordClientWrapper, DiscordClientWrapper>()
-                .AddSingleton<PaginationService>()
-                .AddSingleton<HanderRoles>()
-                .AddMicrosoftExtensionsLavalinkLogging()
-                .AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Information))
-                .AddSingleton(new LavalinkNodeOptions {
-                    RestUri = "http://localhost:2333/",
-                    WebSocketUri = "ws://localhost:2333/",
-                    Password = "youshallnotpass"
+                    Console.WriteLine("RAWR! Bot is ready!");
+                    
+                    await _sCommand.RegisterCommandsGloballyAsync();
 
-                })
-                .AddSingleton<ILavalinkCache, LavalinkCache>()
-                .AddSingleton<ConnectionDB>()
-                .AddSingleton<HanderJoinGuilds>()
-                ).Build();
+                    var listGuild = new List<ModelGuild>();
+                    foreach (var guild in _client.Guilds)
+                    {
 
-            await RunAsync(host);
+                        var guild_db = new ModelGuild
+                        {
+                            Name = guild.Name,
+                            guildId = (long)guild.Id,
+                            Leng = "us"
+                        };
+
+                        var get = new ModelGuild { guildId = (long)guild.Id };
+
+                        ModelGuild info = DatabasePost.GetGuild<ModelGuild>(get);
+
+                        if (info == null)
+                        {
+                            listGuild.Add(guild_db);
+                        }
+                        
+                    }
+
+                    DatabasePost.insertGuild(listGuild);
+
+                    await audioService.InitializeAsync();
+                };
+
+                Console.CancelKeyPress += OnCancel;
+
+                await client.LoginAsync(TokenType.Bot, _config["token"]);
+                await client.StartAsync();
+
+                try {
+                    await Task.Delay(-1, cancellation.Token);
+                }
+                catch (TaskCanceledException) {
+                    await client.StopAsync();
+                    await client.LogoutAsync();
+                }
+
+                
+           }
+
         }
 
         private void OnCancel(object? sender, ConsoleCancelEventArgs args)
@@ -78,62 +120,95 @@ namespace Csharp_GrechkaBot
             }
         }
 
-        public async Task RunAsync(IHost host)
+
+        private ServiceProvider ConfigureServices() 
         {
-            using IServiceScope servicescope = host.Services.CreateScope();
-            IServiceProvider provider = servicescope.ServiceProvider;
-
-            var _client = provider.GetRequiredService<DiscordSocketClient>();
-            var _sCommand = provider.GetRequiredService<InteractionService>();
-            await provider.GetRequiredService<HanderInteraction>().InitializeAsync();
-            var _config = provider.GetRequiredService<IConfigurationRoot>();
-            var log = provider.GetRequiredService<HandlerLog>();
-            var status = provider.GetService<HandlerStatus>()
-                .InitializeAsync();
-            var roles = provider.GetService<HanderRoles>().InitializeAsync();
-            var JoinGuild = provider.GetService<HanderJoinGuilds>().InitializeAsync();
-
-            var audioService = provider.GetRequiredService<IAudioService>();
-            
-
-            _client.Ready += async () =>
-            {
-                Console.WriteLine("RAWR! Bot is ready!");
-                await _sCommand.RegisterCommandsGloballyAsync();
-
-                var listGuild = new List<ModelGuild>();
-                foreach (var guild in _client.Guilds)
+            var services = new ServiceCollection()
+                .AddSingleton(_config)
+                .AddSingleton(x => new DiscordSocketClient(new DiscordSocketConfig
                 {
+                    GatewayIntents = Discord.GatewayIntents.All,
+                    AlwaysDownloadUsers = true,
+                    LogLevel = Discord.LogSeverity.Debug,
+                    HandlerTimeout = 5000,
+                    MessageCacheSize = 1000,
+                    DefaultRetryMode = Discord.RetryMode.RetryRatelimit,
+                }))
+                .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
+                .AddSingleton<HanderInteraction>()
+                .AddSingleton(x => new CommandService())
+                .AddSingleton<LoggingService>()
+                .AddSingleton<HandlerStatus>()
+                .AddSingleton<IAudioService, LavalinkNode>()
+                .AddSingleton<IDiscordClientWrapper, DiscordClientWrapper>()
+                .AddSingleton<PaginationService>()
+                .AddSingleton<HanderRoles>()
+                .AddMicrosoftExtensionsLavalinkLogging()
+                .AddLogging(configure => configure.AddSerilog())
+                .AddSingleton(new LavalinkNodeOptions {
+                    RestUri = "http://localhost:2333/",
+                    WebSocketUri = "ws://localhost:2333/",
+                    Password = "youshallnotpass"
 
-                    var guild_db = new ModelGuild
+                })
+                .AddSingleton<ILavalinkCache, LavalinkCache>()
+                .AddSingleton<ConnectionDB>()
+                .AddSingleton<HanderJoinGuilds>();
+
+            if (!string.IsNullOrEmpty(_config["logs"]))
+            {
+                switch (_config["logs"].ToLower())
+                {
+                    case "info": 
                     {
-                        Name = guild.Name,
-                        guildId = (long)guild.Id,
-                        Leng = "us"
-                    };
-
-                    var get = new ModelGuild { guildId = (long)guild.Id };
-
-                    ModelGuild info = DatabasePost.GetGuild<ModelGuild>(get);
-
-                    /*Console.WriteLine(info.Id);*/
-
-                    if (info == null)
-                    {
-                        listGuild.Add(guild_db);
+                        Log.Logger = new LoggerConfiguration()
+                            .WriteTo.Console()
+                            .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
+                            .MinimumLevel.Information()
+                            .CreateLogger();
+                        break;
                     }
-                    
+                    case "error": 
+                    {
+
+                        Log.Logger = new LoggerConfiguration()
+                            .WriteTo.Console()
+                            .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
+                            .MinimumLevel.Error()
+                            .CreateLogger();
+                        break;
+                    }
+                    case "debug":
+                    {
+                        Log.Logger = new LoggerConfiguration()
+                            .WriteTo.Console()
+                            .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
+                            .MinimumLevel.Debug()
+                            .CreateLogger();
+                        break;
+                    }
+                    default: 
+                    {
+                        Log.Logger = new LoggerConfiguration()
+                            .WriteTo.Console()
+                            .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
+                            .MinimumLevel.Information()
+                            .CreateLogger();
+                        break;
+                    }
                 }
+            }
+            else {
+                    Log.Logger = new LoggerConfiguration()
+                        .WriteTo.Console()
+                        .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
+                        .MinimumLevel.Information()
+                        .CreateLogger();
+            }
 
-                DatabasePost.insertGuild(listGuild);
-            };
-
-            await _client.LoginAsync(Discord.TokenType.Bot, _config["token"]);
-            await _client.StartAsync();
-
-            await audioService.InitializeAsync();
-
-            await Task.Delay(-1, tokenSource.Token);
+            var serviceProvider = services.BuildServiceProvider();
+            return serviceProvider;
         }
+
     }
 }

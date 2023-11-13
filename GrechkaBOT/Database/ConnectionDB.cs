@@ -1,22 +1,25 @@
 ﻿using Dapper;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Serilog;
 
 namespace GrechkaBOT.Database
 {
     public class ConnectionDB
     {
-        private readonly IConfigurationRoot _config;
-        private static string _con = "User ID=postgres;Password=0270;Host=localhost;Port=5432;Database=grechkadb";
+        private readonly IServiceProvider _service;
+        private static string? _con = null;
+        private readonly IConfiguration _config;
 
-        public ConnectionDB(IConfigurationRoot config)
+        public ConnectionDB(IServiceProvider service)
         {
-            _config = config;
+            _config = service.GetRequiredService<IConfiguration>();
+            if (_config["pg_user"].ToString() != null) {
+                _con = $"User ID={_config["pg_user"]};Password={_config["password"]};Host=localhost;Port=5432;Database={_config["db"]}";
+            } else {
+                Log.Error("Not found settings db config --> appsettings.yml");
+            }
         }
 
         public static T QueryFirstOrDefault<T>(string sql, object? perameters = null)

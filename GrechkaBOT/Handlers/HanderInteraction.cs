@@ -3,7 +3,10 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using GrechkaBOT.Custom;
+using GrechkaBOT.Services;
 using Lavalink4NET.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System.Reflection;
 
 namespace GrechkaBOT.Handlers
@@ -13,15 +16,18 @@ namespace GrechkaBOT.Handlers
         private readonly DiscordSocketClient _client;
         private readonly InteractionService _command;
         private readonly IServiceProvider _service;
-        private readonly ILogger _logger;
+        private readonly Lavalink4NET.Logging.ILogger _logger_lava;
+
+        private readonly Microsoft.Extensions.Logging.ILogger _log;
   
 
-        public HanderInteraction(DiscordSocketClient client, InteractionService command, IServiceProvider service, ILogger log)
+        public HanderInteraction(DiscordSocketClient client, InteractionService command, IServiceProvider service, Lavalink4NET.Logging.ILogger log)
         {
             _client = client;
             _command = command;
             _service = service;
-            _logger = log;
+            _logger_lava = log;
+            _log = service.GetRequiredService<ILogger<LoggingService>>();
         }
 
         public async Task InitializeAsync()
@@ -36,7 +42,7 @@ namespace GrechkaBOT.Handlers
             _command.ComponentCommandExecuted += ComponentCommandExecuted;
             _command.Log += OnLogAsync;
 
-            if (_logger is EventLogger log)
+            if (_logger_lava is EventLogger log)
             {
                 log.LogMessage += OnLogAsync;
             }
@@ -61,8 +67,6 @@ namespace GrechkaBOT.Handlers
                 }.Build();
 
                 await arg.RespondOrFollowup(embed: embed, ephemeral: true);
-            /*    if (arg.Type == InteractionType.ApplicationCommand)
-                    await arg.GetOriginalResponseAsync().ContinueWith(async (msg) => await msg.Result.DeleteAsync());*/
             }
         }
 
@@ -133,10 +137,44 @@ namespace GrechkaBOT.Handlers
             await context.Interaction.RespondOrFollowup(embed: embed.Build(), ephemeral: true);
         }
 
-        private static Task OnLogAsync(LogMessage msg)
+        private Task OnLogAsync(LogMessage msg)
         {
             string txt = $"{DateTime.Now,-8:hh:mm:ss} {$"[{msg.Severity}]",-9} {msg.Source,-8} | {msg.Exception?.ToString() ?? msg.Message}";
-            return Console.Out.WriteLineAsync(txt);
+             switch (msg.Severity.ToString())
+                {
+                    case "Critical":
+                    {
+                        _log.LogCritical(txt);
+                        break;
+                    }
+                    case "Warning":
+                    {
+                        _log.LogWarning(txt);
+                        break;
+                    }
+                    case "Info":
+                    {
+                        _log.LogInformation(txt);
+                        break;
+                    }
+                    case "Verbose":
+                    {
+                        _log.LogInformation(txt);
+                        break;
+                    } 
+                    case "Debug":
+                    {
+                        _log.LogDebug(txt);
+                        break;
+                    } 
+                    case "Error":
+                    {
+                        _log.LogError(txt);
+                        break;
+                    } 
+                }
+
+            return Task.CompletedTask;
         }
 
         private static void OnLogAsync(object? obj, LogMessageEventArgs args)

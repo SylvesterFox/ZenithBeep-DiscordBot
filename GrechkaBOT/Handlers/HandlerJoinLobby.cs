@@ -1,4 +1,4 @@
-
+using Discord.Rest;
 using Discord.WebSocket;
 using GrechkaBOT.Database;
 
@@ -8,6 +8,9 @@ namespace GrechkaBOT.Handlers
     {
         private readonly DiscordSocketClient _client;
         private readonly IServiceProvider _service;
+
+        private Dictionary<ulong, ulong> _collectionsChannel = new Dictionary<ulong, ulong>();
+
 
         public HandlerJoinLobby(DiscordSocketClient client, IServiceProvider serviceProvider) 
         {
@@ -21,15 +24,20 @@ namespace GrechkaBOT.Handlers
             _client.UserVoiceStateUpdated += OnCreatePrivateRoom;
         }
 
-        private async Task<bool> GetIDLobby(long ChannelId) 
-        {
-            var _dblobbyId = new ModelRoomsLobby { lobby_id = ChannelId };
-            ModelRoomsLobby _get = DatabasePost.GetIdChannelLobby<ModelRoomsLobby>(_dblobbyId);
-            if (_get != null) {
-                return true;
-            }
 
-            return false;
+        private async Task<ModelGuild> GetGuildKey(ulong guildId) {
+             var _get_guild_key = new ModelGuild {
+                guildId = (long)guildId
+            };
+            ModelGuild _key = DatabasePost.GetGuild<ModelGuild>(_get_guild_key);
+            return _key;
+        }
+
+
+        private async Task<ModelRoomsLobby> GetIDLobby(int guildKey) {
+            var _dblobbyId = new ModelRoomsLobby { guild_key = guildKey };
+            ModelRoomsLobby _get = DatabasePost.GetIdChannelLobby<ModelRoomsLobby>(_dblobbyId);
+            return _get;
         }
 
         private async Task OnCreatePrivateRoom(SocketUser user, SocketVoiceState state1, SocketVoiceState state2)
@@ -38,30 +46,69 @@ namespace GrechkaBOT.Handlers
                 return;
 
             if (state2.VoiceChannel != null) {
-                bool _checkLobby = await GetIDLobby((long)state2.VoiceChannel.Id);
-                Console.WriteLine(state2.VoiceChannel.ConnectedUsers.Count);
-                if (_checkLobby)
-                    await CreateRoom(user);
-                    
+                SocketGuild _guild = state2.VoiceChannel.Guild;
+                ModelGuild key_guild = await GetGuildKey(_guild.Id);
+                var _lobby = await GetIDLobby(key_guild.Id);
+
+                if ((ulong)_lobby.lobby_id == state2.VoiceChannel.Id) {
+                    var _user = state2.VoiceChannel.GetUser(user.Id);
+                    var _category = state2.VoiceChannel.CategoryId ?? 0;
+                    await CreateRoom(_user, _guild, _category);                    
+                }
             }
 
+          
             if (state1.VoiceChannel != null) {
                 int _countVoiceUser = state1.VoiceChannel.ConnectedUsers.Count;
-                if (_countVoiceUser == 0) {
-                    await DestroyerRoom();
+                ulong _id_channel = state1.VoiceChannel.Id;
+                ulong _user = 0;
+                if (_countVoiceUser == 0 && _collectionsChannel.TryGetValue(_id_channel, out _user)) {
+                    await DestroyerRoom(state1.VoiceChannel);
                     return;
                 }
                 return;
             }
         }
 
-        private async Task CreateRoom(SocketUser UserOwner) 
-        {
+        private async Task<RestVoiceChannel> CreateRoom(SocketGuildUser userOwner, SocketGuild guild, ulong category) 
+        { 
+            var _req = new ModelRooms {
+                channel_owmer = (long)userOwner.Id
+            };
+            ModelRooms _get = DatabasePost.GetRoom<ModelRooms>(_req);
+            string name = $"Voice-{userOwner.Username}";
+
+            if (_get != null)
+            {
+                name = _get.name;
+            } else {
+
+                var _add = new ModelRooms{
+                    channel_owmer = (long)userOwner.Id,
+                    name = name
+                };
+
+                DatabasePost.insertRoom(_add);
+            }
+            
+            var room = await guild.CreateVoiceChannelAsync($"{name}");
+
+            if (category != 0) {
+                await room.ModifyAsync(x => x.CategoryId = category);
+            }
+
+            await userOwner.ModifyAsync(x => {
+                x.ChannelId = room.Id;
+            });
+
+            _collectionsChannel.Add(room.Id, userOwner.Id);
             Console.WriteLine("Create room OK");
+            return room;
         }
 
-        private async Task DestroyerRoom() {
-            Console.WriteLine("null");
+        private async Task DestroyerRoom(SocketVoiceChannel channel) {
+            _collectionsChannel.Remove(channel.Id);
+            await channel.DeleteAsync();
         }
     }
 }

@@ -4,11 +4,7 @@ CREATE TABLE guilds ( id serial primary key, lang varchar(6) DEFAULT ('us_US'), 
 CREATE TABLE roles (id_guilds int references guilds (id), emoji varchar(150) not null, id_massage bigint not null, id_channel bigint not null,role_name varchar(70) not null, role_id bigint not null );
 CREATE TABLE roomers_lobbys (id serial primary key, id_guilds int references guilds (id), id_lobby bigint);
 CREATE TABLE rooms (channelOwner bigint not null, 
-                    rooms_id bigint references roomers_lobbys (id),
-                    guild_key int references guilds (id),
                     name varchar not null, 
-                    limit_vc int not null,
-                    channelVoice bigint DEFAULT (null),
-                    channelVoiceBool boolean DEFAULT ('on')
+                    limit_vc int DEFAULT (0)
                     );
 EOF

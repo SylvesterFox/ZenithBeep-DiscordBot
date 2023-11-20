@@ -5,6 +5,12 @@ namespace GrechkaBOT.Database
     public class DatabasePost : ConnectionDB
     {
         private static readonly string _selectQuery = $@"SELECT id_guild as {nameof(ModelGuild.guildId)}, name_guild as {nameof(ModelGuild.Name)}, lang as {nameof(ModelGuild.Leng)}, id as {nameof(ModelGuild.Id)} FROM guilds WHERE id_guild = @{nameof(ModelGuild.guildId)}";
+        private static readonly string _selectRoom = @$"SELECT 
+                channelowner as {nameof(ModelRooms.channel_owmer)},
+                name as {nameof(ModelRooms.name)},
+                limit_vc as {nameof(ModelRooms.limit)}
+                FROM rooms WHERE channelowner = @{nameof(ModelRooms.channel_owmer)}";
+
         private static readonly string _insertRole = $@"INSERT INTO roles 
         (
             id_guilds, 
@@ -33,6 +39,16 @@ namespace GrechkaBOT.Database
             @{nameof(ModelRoomsLobby.lobby_id)}
         )";
 
+        private static readonly string _insertroom = $@"INSERT INTO rooms 
+        (
+            channelowner, 
+            name 
+        ) values 
+        (
+            @{nameof(ModelRooms.channel_owmer)},
+            @{nameof(ModelRooms.name)}
+        )";
+
         private static readonly string _selectRole = $@"SELECT 
         emoji as {nameof(ModelRoles.setEmoji)},  
         id_massage as {nameof(ModelRoles.messageId)},
@@ -42,7 +58,7 @@ namespace GrechkaBOT.Database
         id_guilds as {nameof(ModelRoles.guilds_id_KEY)}
         FROM roles WHERE id_massage = @{nameof(ModelRoles.messageId)} AND emoji = @{nameof(ModelRoles.setEmoji)}";
 
-        private static readonly string _selectQueryLobby = $@"SELECT id_lobby as {nameof(ModelRoomsLobby.lobby_id)} FROM roomers_lobbys WHERE id_lobby = @{nameof(ModelRoomsLobby.lobby_id)}";
+        private static readonly string _selectQueryLobby = $@"SELECT id_lobby as {nameof(ModelRoomsLobby.lobby_id)} FROM roomers_lobbys WHERE id_guilds = @{nameof(ModelRoomsLobby.guild_key)}";
 
         public DatabasePost(IConfigurationRoot config) : base(config)
         {
@@ -65,6 +81,11 @@ namespace GrechkaBOT.Database
             return Execute(_insertLobby, lobby);
         }
 
+        public static int insertRoom(object room) {  
+            return Execute(_insertroom, room);
+        }
+
+       
         public static int deleteRoles(object roles)
         {
             ModelRoles res = GetRole<ModelRoles>(roles);
@@ -106,6 +127,11 @@ namespace GrechkaBOT.Database
         public static ModelRoles GetRole<ModelRoles>(object role)
         {
             var res = QueryFirstOrDefault<ModelRoles>(_selectRole, role);
+            return res;
+        }
+
+        public static ModelRooms GetRoom<ModelRooms>(object room) {
+            var res = QueryFirstOrDefault<ModelRooms>(_selectRoom, room);
             return res;
         }
     }

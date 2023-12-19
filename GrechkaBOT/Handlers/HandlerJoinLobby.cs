@@ -45,6 +45,7 @@ namespace GrechkaBOT.Handlers
             if (user.IsBot)
                 return;
 
+            // Выполняется при заходи в лоби по созданию приватного войса
             if (state2.VoiceChannel != null) {
                 SocketGuild _guild = state2.VoiceChannel.Guild;
                 ModelGuild key_guild = await GetGuildKey(_guild.Id);
@@ -57,12 +58,16 @@ namespace GrechkaBOT.Handlers
                 }
             }
 
-          
+            // Выполеяется при выходи из приватного войса
             if (state1.VoiceChannel != null) {
                 int _countVoiceUser = state1.VoiceChannel.ConnectedUsers.Count;
                 ulong _id_channel = state1.VoiceChannel.Id;
-                ulong _user = 0;
-                if (_countVoiceUser == 0 && _collectionsChannel.TryGetValue(_id_channel, out _user)) {
+                var _temp = new ModelTempRoom {
+                    channel_room = (long)_id_channel
+                };
+                ModelTempRoom temproom = DatabasePost.GetTempRoom<ModelTempRoom>(_temp);
+                // ulong _user = 0;
+                if (_countVoiceUser == 0 && temproom != null) {
                     await DestroyerRoom(state1.VoiceChannel);
                     return;
                 }
@@ -83,15 +88,21 @@ namespace GrechkaBOT.Handlers
                 name = _get.name;
             } else {
 
-                var _add = new ModelRooms{
+                var _addSettings = new ModelRooms{
                     channel_owmer = (long)userOwner.Id,
                     name = name
                 };
 
-                DatabasePost.insertRoom(_add);
+              
+                DatabasePost.insertSettingRoom(_addSettings);
+               
             }
             
             var room = await guild.CreateVoiceChannelAsync($"{name}");
+
+            var _temp = new ModelTempRoom {
+                channel_room = (long)room.Id
+            };
 
             if (category != 0) {
                 await room.ModifyAsync(x => x.CategoryId = category);
@@ -101,14 +112,16 @@ namespace GrechkaBOT.Handlers
                 x.ChannelId = room.Id;
             });
 
-            _collectionsChannel.Add(room.Id, userOwner.Id);
+            // _collectionsChannel.Add(room.Id, userOwner.Id);
+            DatabasePost.insertTempRoom(_temp);
             Console.WriteLine("Create room OK");
             return room;
         }
 
-        private async Task DestroyerRoom(SocketVoiceChannel channel) {
-            _collectionsChannel.Remove(channel.Id);
+        private async Task DestroyerRoom(SocketVoiceChannel channel) {;
+            DatabasePost.deleteTempRoom((long)channel.Id);
             await channel.DeleteAsync();
+      
         }
     }
 }

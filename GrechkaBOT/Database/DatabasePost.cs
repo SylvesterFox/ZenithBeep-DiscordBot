@@ -11,6 +11,8 @@ namespace GrechkaBOT.Database
                 limit_vc as {nameof(ModelRooms.limit)}
                 FROM rooms WHERE channelowner = @{nameof(ModelRooms.channel_owmer)}";
 
+        private static readonly string _selectTempRoom = @$"SELECT id as {nameof(ModelTempRoom.id)}, channel_room as {nameof(ModelTempRoom.channel_room)} FROM temp_rooms WHERE channel_room = @{nameof(ModelTempRoom.channel_room)}";
+
         private static readonly string _insertRole = $@"INSERT INTO roles 
         (
             id_guilds, 
@@ -81,8 +83,18 @@ namespace GrechkaBOT.Database
             return Execute(_insertLobby, lobby);
         }
 
-        public static int insertRoom(object room) {  
+        public static int insertSettingRoom(object room) {  
             return Execute(_insertroom, room);
+        }
+
+        public static int insertTempRoom(object tempRoom) {
+            string _temproominsert = $@"INSERT INTO temp_rooms (channel_room) VALUES (@{nameof(ModelTempRoom.channel_room)})";
+            return Execute(_temproominsert, tempRoom);
+        }
+
+        public static int updateRoomName(object room) {
+            string _updateroom = $@"UPDATE rooms SET name = @{nameof(ModelRooms.name)} WHERE channelowner = @{nameof(ModelRooms.channel_owmer)}";
+            return Execute(_updateroom, room);
         }
 
        
@@ -112,6 +124,16 @@ namespace GrechkaBOT.Database
             return Execute(_deleteQuery, delete);
         }
 
+        public static int deleteTempRoom(long channelId){
+            var delete = new ModelTempRoom{
+                channel_room = channelId
+            };
+
+            string _deleteQuery = $@"DELETE FROM temp_rooms WHERE channel_room = @{nameof(ModelTempRoom.channel_room)}";
+            return Execute(_deleteQuery, delete);
+        }
+
+
         public static ModelGuild GetGuild<ModelGuild>(object guild)
         {
             var res = QueryFirstOrDefault<ModelGuild>(_selectQuery, guild);
@@ -132,6 +154,11 @@ namespace GrechkaBOT.Database
 
         public static ModelRooms GetRoom<ModelRooms>(object room) {
             var res = QueryFirstOrDefault<ModelRooms>(_selectRoom, room);
+            return res;
+        }
+
+        public static ModelTempRoom GetTempRoom<ModelTempRoom>(object roomtemp) {
+            var res = QueryFirstOrDefault<ModelTempRoom>(_selectTempRoom, roomtemp);
             return res;
         }
     }

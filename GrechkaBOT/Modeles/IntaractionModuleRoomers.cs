@@ -1,3 +1,4 @@
+using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using GrechkaBOT.Database;
@@ -59,6 +60,46 @@ namespace GrechkaBOT.Modeles
 
             await channel.DeleteAsync();
             await RespondAsync("Lobby is deleted");
+        }
+
+        [SlashCommand("vcname", "Change voice channel name")]
+        public async Task<RuntimeResult> Vcname(string name) {
+
+            SocketGuildUser user = Context.User as SocketGuildUser;
+            IVoiceChannel channel = user.VoiceChannel;
+
+
+            if (channel == null) 
+            {
+                return GrechkaResult.FromError("Not found voice", "Please join a voice channel");
+            }
+
+            ModelTempRoom _get_rooms_temp = new ModelTempRoom 
+            {
+                channel_room = (long)channel.Id
+            };
+
+            ModelRooms _get_rooms_settings = new ModelRooms {
+                channel_owmer = (long)user.Id
+            };
+
+            ModelRooms rooms_settings = DatabasePost.GetRoom<ModelRooms>(_get_rooms_settings);
+            ModelTempRoom rooms = DatabasePost.GetTempRoom<ModelTempRoom>(_get_rooms_temp);
+
+            if (rooms != null) 
+            {
+                ModelRooms _name = new ModelRooms 
+                {
+                    name = name,
+                    channel_owmer = rooms_settings.channel_owmer
+                };
+                var channel_voice = Context.Guild.Channels.SingleOrDefault(x => x.Id == (ulong)rooms.channel_room);
+                await channel_voice.ModifyAsync(x => x.Name = name);
+                DatabasePost.updateRoomName(_name);
+                await RespondAsync("Channel name update");
+                return GrechkaResult.FromSuccess();
+            }
+            return GrechkaResult.FromError("ErrorPrivateVoice", "Invaid rooms");
         }
     }
 }

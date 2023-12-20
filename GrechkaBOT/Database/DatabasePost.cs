@@ -11,7 +11,7 @@ namespace GrechkaBOT.Database
                 limit_vc as {nameof(ModelRooms.limit)}
                 FROM rooms WHERE channelowner = @{nameof(ModelRooms.channel_owmer)}";
 
-        private static readonly string _selectTempRoom = @$"SELECT id as {nameof(ModelTempRoom.id)}, channel_room as {nameof(ModelTempRoom.channel_room)} FROM temp_rooms WHERE channel_room = @{nameof(ModelTempRoom.channel_room)}";
+        private static readonly string _selectTempRoom = @$"SELECT id as {nameof(ModelTempRoom.id)}, channel_room as {nameof(ModelTempRoom.channel_room)}, user_id as {nameof(ModelTempRoom.id_user)} FROM temp_rooms WHERE channel_room = @{nameof(ModelTempRoom.channel_room)}";
 
         private static readonly string _insertRole = $@"INSERT INTO roles 
         (
@@ -88,7 +88,7 @@ namespace GrechkaBOT.Database
         }
 
         public static int insertTempRoom(object tempRoom) {
-            string _temproominsert = $@"INSERT INTO temp_rooms (channel_room) VALUES (@{nameof(ModelTempRoom.channel_room)})";
+            string _temproominsert = $@"INSERT INTO temp_rooms (channel_room, user_id) VALUES (@{nameof(ModelTempRoom.channel_room)}, @{nameof(ModelTempRoom.id_user)})";
             return Execute(_temproominsert, tempRoom);
         }
 

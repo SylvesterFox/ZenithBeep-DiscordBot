@@ -86,20 +86,86 @@ namespace GrechkaBOT.Modeles
             ModelRooms rooms_settings = DatabasePost.GetRoom<ModelRooms>(_get_rooms_settings);
             ModelTempRoom rooms = DatabasePost.GetTempRoom<ModelTempRoom>(_get_rooms_temp);
 
-            if (rooms != null) 
+        
+            if (rooms == null) 
             {
-                ModelRooms _name = new ModelRooms 
-                {
-                    name = name,
-                    channel_owmer = rooms_settings.channel_owmer
-                };
-                var channel_voice = Context.Guild.Channels.SingleOrDefault(x => x.Id == (ulong)rooms.channel_room);
-                await channel_voice.ModifyAsync(x => x.Name = name);
-                DatabasePost.updateRoomName(_name);
-                await RespondAsync("Channel name update");
-                return GrechkaResult.FromSuccess();
+               return GrechkaResult.FromError("ErrorPrivateVoice", "Room not found");
             }
-            return GrechkaResult.FromError("ErrorPrivateVoice", "Invaid rooms");
+            if ((ulong)rooms.id_user != user.Id) {
+                return GrechkaResult.FromUserError("Not your private voice", "Sorry! No control this private voice channel");
+            }
+
+             ModelRooms _name = new ModelRooms 
+            {
+                name = name,
+                channel_owmer = rooms_settings.channel_owmer
+            };
+
+            var channel_voice = Context.Guild.Channels.SingleOrDefault(x => x.Id == (ulong)rooms.channel_room);
+            await channel_voice.ModifyAsync(x => x.Name = name);
+            DatabasePost.updateRoomName(_name);
+            await RespondAsync($"Channel name update: {name}");
+            return GrechkaResult.FromSuccess();
+
         }
+
+        [SlashCommand("vclock", "lock/unlock private voice channel")]
+        public async Task<RuntimeResult> VoiceLock() 
+        {
+            SocketGuildUser user = Context.User as SocketGuildUser;
+            IVoiceChannel channel = user.VoiceChannel;
+            var EveryoneRole = Context.Guild.EveryoneRole;
+
+
+            if (channel == null) 
+            {
+                return GrechkaResult.FromError("Not found voice", "Please join a voice channel");
+            }
+
+             ModelTempRoom _get_rooms_temp = new ModelTempRoom 
+            {
+                channel_room = (long)channel.Id
+            };
+
+            ModelTempRoom rooms = DatabasePost.GetTempRoom<ModelTempRoom>(_get_rooms_temp);
+
+            if (rooms == null) {
+                return GrechkaResult.FromUserError("Not your private channel", "Sorry! No control this private voice channel");
+            }
+
+            if ((ulong)rooms.id_user != user.Id) {
+                return GrechkaResult.FromUserError("Not your private channel", "Sorry! No control this private voice channel");
+            }
+
+        
+            var perEveryone = channel.GetPermissionOverwrite(EveryoneRole);
+            // Console.WriteLine(perEveryone.Value.Connect);
+            switch (perEveryone.Value.Connect) {
+                case PermValue.Allow:
+                    Console.WriteLine("lock voice");
+                    var _perOverides_lock = new OverwritePermissions(connect: PermValue.Deny);
+                    await channel.AddPermissionOverwriteAsync(EveryoneRole, _perOverides_lock);
+                    await RespondAsync("Voice channel: lock");
+                    break;
+                case PermValue.Deny:
+                    Console.WriteLine("unlock voice");
+                    var _perOverides_unlock = new OverwritePermissions(connect: PermValue.Allow);
+                    await channel.AddPermissionOverwriteAsync(EveryoneRole, _perOverides_unlock);
+                    await RespondAsync("Voice channel: unlock");
+                    break;
+                case PermValue.Inherit:
+                    Console.WriteLine("the void");
+                    var _perOverides = new OverwritePermissions(connect: PermValue.Deny);
+                    await channel.AddPermissionOverwriteAsync(EveryoneRole, _perOverides);
+                    await RespondAsync("Voice channel: lock");
+                    break;
+
+            }
+            
+            return GrechkaResult.FromSuccess();
+        }
+                    
+
     }
 }
+

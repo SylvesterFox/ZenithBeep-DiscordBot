@@ -1,3 +1,4 @@
+using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
 using GrechkaBOT.Database;
@@ -91,17 +92,17 @@ namespace GrechkaBOT.Handlers
                 var _addSettings = new ModelRooms{
                     channel_owmer = (long)userOwner.Id,
                     name = name
-                };
-
-              
+                };     
                 DatabasePost.insertSettingRoom(_addSettings);
-               
             }
             
             var room = await guild.CreateVoiceChannelAsync($"{name}");
+            var _perOverides_unlock = new OverwritePermissions(connect: PermValue.Inherit);
+            await room.AddPermissionOverwriteAsync(guild.EveryoneRole, _perOverides_unlock);
 
             var _temp = new ModelTempRoom {
-                channel_room = (long)room.Id
+                channel_room = (long)room.Id,
+                id_user = (long)userOwner.Id
             };
 
             if (category != 0) {

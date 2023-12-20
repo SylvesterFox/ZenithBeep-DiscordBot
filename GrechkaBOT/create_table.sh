@@ -11,6 +11,7 @@ CREATE TABLE rooms (
                     );
 CREATE TABLE temp_rooms (
         id serial primary key,
-        channel_room bigint not null
+        channel_room bigint not null,
+        user_id bigint not null
     );
 EOF

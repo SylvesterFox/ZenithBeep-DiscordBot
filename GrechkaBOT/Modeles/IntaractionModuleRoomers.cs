@@ -8,9 +8,10 @@ namespace GrechkaBOT.Modeles
     public class IntaractionModuleRoomers : InteractionModuleBase<SocketInteractionContext> 
     {
         [SlashCommand("createroomers", "Create lobby for creating private vc rooms")]
-        public async Task CreateRommers() 
+        [DefaultMemberPermissions(GuildPermission.ManageChannels)]
+        public async Task<RuntimeResult> CreateRommers() 
         {
-            
+            var embed = new EmbedBuilder();
             var guildsDB = new ModelGuild { guildId = (long)Context.Guild.Id };
 
             ModelGuild get_guild = DatabasePost.GetGuild<ModelGuild>(guildsDB);
@@ -26,17 +27,22 @@ namespace GrechkaBOT.Modeles
                     guild_key = get_guild.Id,
                     lobby_id = (long)lobbyChannel.Id
                 };
+                embed.WithColor(Color.Green);
+                embed.WithTitle("Success!");
+                embed.WithDescription("The lobby has been successfully created 🐲");
                 DatabasePost.insertLobby(insert_db);
-                await RespondAsync("Create lobby 🐲");
-                return;
+                await RespondAsync("", embed: embed.Build(), ephemeral: true);
+                return GrechkaResult.FromSuccess();
             }
             
-            await RespondAsync("Lobby exists");
+            return GrechkaResult.FromUserError("ErrorExists", "Lobby exists!");
         }
 
         [SlashCommand("deletelobby", "Delete lobby")]
-        public async Task DeleteLobby() 
+        [DefaultMemberPermissions(GuildPermission.ManageChannels)]
+        public async Task<RuntimeResult> DeleteLobby() 
         {
+            var embed = new EmbedBuilder();
             var guildsDB = new ModelGuild { guildId = (long)Context.Guild.Id };
 
             ModelGuild get_guild = DatabasePost.GetGuild<ModelGuild>(guildsDB);
@@ -45,8 +51,7 @@ namespace GrechkaBOT.Modeles
 
 
             if (lobby is null) {
-                await RespondAsync("Lobby is null");
-                return;
+                return GrechkaResult.FromUserError("LobbyIsNull", "Lobby does not exist");
             }
 
             DatabasePost.deleteLobby(lobbyId: lobby.lobby_id);
@@ -54,12 +59,15 @@ namespace GrechkaBOT.Modeles
 
             if (channel is null)
             {
-                await RespondAsync("Channel is null");
-                return;
+                return GrechkaResult.FromError("LobbyChannelNotFound", "Lobby channel does not exist");
             }
 
             await channel.DeleteAsync();
-            await RespondAsync("Lobby is deleted");
+            embed.WithColor(Color.Green);
+            embed.WithTitle("Success!");
+            embed.WithDescription("Lobby successfully deleted");
+            await RespondAsync("", embed: embed.Build(), ephemeral: true);
+            return GrechkaResult.FromSuccess();
         }
 
         [SlashCommand("vcname", "Change voice channel name")]
@@ -67,7 +75,9 @@ namespace GrechkaBOT.Modeles
 
             SocketGuildUser user = Context.User as SocketGuildUser;
             IVoiceChannel channel = user.VoiceChannel;
-
+            var embed = new EmbedBuilder();
+            embed.WithColor(Color.Green);
+            embed.WithTitle("Success!");
 
             if (channel == null) 
             {
@@ -99,9 +109,9 @@ namespace GrechkaBOT.Modeles
 
             await channel.ModifyAsync(x => x.Name = name);
             DatabasePost.updateRoomName(_name);
-            await RespondAsync($"Channel name update: {name}");
+            embed.WithDescription($"The voice channel's name has been changed to: {name}");
+            await RespondAsync("", embed: embed.Build(), ephemeral: true);
             return GrechkaResult.FromSuccess();
-
         }
 
         [SlashCommand("vclock", "lock/unlock private voice channel")]
@@ -110,7 +120,10 @@ namespace GrechkaBOT.Modeles
             SocketGuildUser user = Context.User as SocketGuildUser;
             IVoiceChannel channel = user.VoiceChannel;
             var EveryoneRole = Context.Guild.EveryoneRole;
-
+            
+            var embed = new EmbedBuilder();
+            embed.WithColor(Color.Green);
+            embed.WithTitle("Success!");
 
             if (channel == null) 
             {
@@ -136,22 +149,23 @@ namespace GrechkaBOT.Modeles
             var perEveryone = channel.GetPermissionOverwrite(EveryoneRole);
             switch (perEveryone.Value.Connect) {
                 case PermValue.Allow:
-                    Console.WriteLine("lock voice");
                     var _perOverides_lock = new OverwritePermissions(connect: PermValue.Deny);
                     await channel.AddPermissionOverwriteAsync(EveryoneRole, _perOverides_lock);
-                    await RespondAsync("Voice channel: lock");
+                    embed.WithDescription("Private channel blocked");
+                    await RespondAsync("", embed: embed.Build(), ephemeral: true);
                     break;
                 case PermValue.Deny:
                     Console.WriteLine("unlock voice");
                     var _perOverides_unlock = new OverwritePermissions(connect: PermValue.Allow);
                     await channel.AddPermissionOverwriteAsync(EveryoneRole, _perOverides_unlock);
-                    await RespondAsync("Voice channel: unlock");
+                    embed.WithDescription("Private channel unlocked");
+                    await RespondAsync("", embed: embed.Build(), ephemeral: true);
                     break;
                 case PermValue.Inherit:
-                    Console.WriteLine("the void");
                     var _perOverides = new OverwritePermissions(connect: PermValue.Deny);
                     await channel.AddPermissionOverwriteAsync(EveryoneRole, _perOverides);
-                    await RespondAsync("Voice channel: lock");
+                    embed.WithDescription("Private channel blocked");
+                    await RespondAsync("", embed: embed.Build(), ephemeral: true);
                     break;
 
             }
@@ -163,6 +177,9 @@ namespace GrechkaBOT.Modeles
         public async Task<RuntimeResult> VoiceLimit(int limit) {
             SocketGuildUser user = Context.User as SocketGuildUser;
             IVoiceChannel channel = user.VoiceChannel;
+            var embed = new EmbedBuilder();
+            embed.WithColor(Color.Green);
+            embed.WithTitle("Success!");
 
             if (channel == null) 
             {
@@ -189,7 +206,8 @@ namespace GrechkaBOT.Modeles
             }
 
             await channel.ModifyAsync(x => x.UserLimit = limit);
-            await RespondAsync($"Limit change: {limit}");
+            embed.WithDescription($"Limit change: {limit}");
+            await RespondAsync("", embed: embed.Build(), ephemeral: true);
             ModelRooms _limit_update = new ModelRooms 
             {
                 limit = limit,

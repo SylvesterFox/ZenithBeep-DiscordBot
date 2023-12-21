@@ -116,7 +116,6 @@ namespace Csharp_GrechkaBot
 
                     ModelGuild info = DatabasePost.GetGuild<ModelGuild>(get);
 
-                    /*Console.WriteLine(info.Id);*/
 
                     if (info == null)
                     {

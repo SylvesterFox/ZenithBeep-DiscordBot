@@ -96,8 +96,8 @@ namespace GrechkaBOT.Handlers
             }
             
             var room = await guild.CreateVoiceChannelAsync($"{name}");
-            var _perOverides_unlock = new OverwritePermissions(connect: PermValue.Inherit);
-            await room.AddPermissionOverwriteAsync(guild.EveryoneRole, _perOverides_unlock);
+            await room.AddPermissionOverwriteAsync(guild.EveryoneRole, new OverwritePermissions(connect: PermValue.Inherit));
+            await room.AddPermissionOverwriteAsync(userOwner, new OverwritePermissions(connect: PermValue.Allow));
 
             if (limit_vc != 0) {
                 await room.ModifyAsync(x => x.UserLimit = limit_vc);

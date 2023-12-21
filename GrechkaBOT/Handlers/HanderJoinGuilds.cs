@@ -1,6 +1,5 @@
 ﻿using Discord.WebSocket;
 using GrechkaBOT.Database;
-using Microsoft.Extensions.Logging;
 
 namespace GrechkaBOT.Handlers
 {

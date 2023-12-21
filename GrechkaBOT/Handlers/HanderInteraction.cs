@@ -61,8 +61,6 @@ namespace GrechkaBOT.Handlers
                 }.Build();
 
                 await arg.RespondOrFollowup(embed: embed, ephemeral: true);
-            /*    if (arg.Type == InteractionType.ApplicationCommand)
-                    await arg.GetOriginalResponseAsync().ContinueWith(async (msg) => await msg.Result.DeleteAsync());*/
             }
         }
 

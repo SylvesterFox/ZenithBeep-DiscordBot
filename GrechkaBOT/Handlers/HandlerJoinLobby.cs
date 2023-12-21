@@ -10,8 +10,6 @@ namespace GrechkaBOT.Handlers
         private readonly DiscordSocketClient _client;
         private readonly IServiceProvider _service;
 
-        private Dictionary<ulong, ulong> _collectionsChannel = new Dictionary<ulong, ulong>();
-
 
         public HandlerJoinLobby(DiscordSocketClient client, IServiceProvider serviceProvider) 
         {
@@ -67,7 +65,6 @@ namespace GrechkaBOT.Handlers
                     channel_room = (long)_id_channel
                 };
                 ModelTempRoom temproom = DatabasePost.GetTempRoom<ModelTempRoom>(_temp);
-                // ulong _user = 0;
                 if (_countVoiceUser == 0 && temproom != null) {
                     await DestroyerRoom(state1.VoiceChannel);
                     return;
@@ -83,10 +80,12 @@ namespace GrechkaBOT.Handlers
             };
             ModelRooms _get = DatabasePost.GetRoom<ModelRooms>(_req);
             string name = $"Voice-{userOwner.Username}";
+            int limit_vc = 0;
 
             if (_get != null)
             {
                 name = _get.name;
+                limit_vc = _get.limit;
             } else {
 
                 var _addSettings = new ModelRooms{
@@ -99,6 +98,10 @@ namespace GrechkaBOT.Handlers
             var room = await guild.CreateVoiceChannelAsync($"{name}");
             var _perOverides_unlock = new OverwritePermissions(connect: PermValue.Inherit);
             await room.AddPermissionOverwriteAsync(guild.EveryoneRole, _perOverides_unlock);
+
+            if (limit_vc != 0) {
+                await room.ModifyAsync(x => x.UserLimit = limit_vc);
+            }
 
             var _temp = new ModelTempRoom {
                 channel_room = (long)room.Id,
@@ -113,7 +116,6 @@ namespace GrechkaBOT.Handlers
                 x.ChannelId = room.Id;
             });
 
-            // _collectionsChannel.Add(room.Id, userOwner.Id);
             DatabasePost.insertTempRoom(_temp);
             Console.WriteLine("Create room OK");
             return room;

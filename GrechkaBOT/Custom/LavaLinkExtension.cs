@@ -1,11 +1,6 @@
 ﻿using Discord;
 using Lavalink4NET.Artwork;
 using Lavalink4NET.Player;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static GrechkaBOT.Custom.DragonPlayer;
 
 namespace GrechkaBOT.Custom

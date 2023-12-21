@@ -9,7 +9,13 @@ namespace GrechkaBOT.Handlers
         private Timer _timer;
         private readonly DiscordSocketClient _client;
 
-        private readonly List<string> _statusList = new List<string> { "Драколис не милый", "трусиках пальчиками", "никчёмную жизнь", "being first is so simply" };
+        private readonly List<string> _statusList = new List<string> { 
+                "Драколис не милый", 
+                "трусиках пальчиками", 
+                "никчёмную жизнь", 
+                "being first is so simply" 
+            };
+
         private int _statusIndex = 0;
         public HandlerStatus(DiscordSocketClient client)
         {

@@ -79,11 +79,7 @@ namespace GrechkaBOT.Modeles
                 channel_room = (long)channel.Id
             };
 
-            ModelRooms _get_rooms_settings = new ModelRooms {
-                channel_owmer = (long)user.Id
-            };
 
-            ModelRooms rooms_settings = DatabasePost.GetRoom<ModelRooms>(_get_rooms_settings);
             ModelTempRoom rooms = DatabasePost.GetTempRoom<ModelTempRoom>(_get_rooms_temp);
 
         
@@ -95,14 +91,13 @@ namespace GrechkaBOT.Modeles
                 return GrechkaResult.FromUserError("Not your private voice", "Sorry! No control this private voice channel");
             }
 
-             ModelRooms _name = new ModelRooms 
+            ModelRooms _name = new ModelRooms 
             {
                 name = name,
-                channel_owmer = rooms_settings.channel_owmer
+                channel_owmer = (long)user.Id
             };
 
-            var channel_voice = Context.Guild.Channels.SingleOrDefault(x => x.Id == (ulong)rooms.channel_room);
-            await channel_voice.ModifyAsync(x => x.Name = name);
+            await channel.ModifyAsync(x => x.Name = name);
             DatabasePost.updateRoomName(_name);
             await RespondAsync($"Channel name update: {name}");
             return GrechkaResult.FromSuccess();
@@ -122,7 +117,7 @@ namespace GrechkaBOT.Modeles
                 return GrechkaResult.FromError("Not found voice", "Please join a voice channel");
             }
 
-             ModelTempRoom _get_rooms_temp = new ModelTempRoom 
+            ModelTempRoom _get_rooms_temp = new ModelTempRoom 
             {
                 channel_room = (long)channel.Id
             };
@@ -139,7 +134,6 @@ namespace GrechkaBOT.Modeles
 
         
             var perEveryone = channel.GetPermissionOverwrite(EveryoneRole);
-            // Console.WriteLine(perEveryone.Value.Connect);
             switch (perEveryone.Value.Connect) {
                 case PermValue.Allow:
                     Console.WriteLine("lock voice");
@@ -164,7 +158,48 @@ namespace GrechkaBOT.Modeles
             
             return GrechkaResult.FromSuccess();
         }
-                    
+
+        [SlashCommand("vclimit", "Update limit private voice channel")]
+        public async Task<RuntimeResult> VoiceLimit(int limit) {
+            SocketGuildUser user = Context.User as SocketGuildUser;
+            IVoiceChannel channel = user.VoiceChannel;
+
+            if (channel == null) 
+            {
+                return GrechkaResult.FromError("Not found voice", "Please join a voice channel");
+            }
+
+            ModelTempRoom _get_rooms_temp = new ModelTempRoom 
+            {
+                channel_room = (long)channel.Id
+            };
+
+            ModelTempRoom rooms = DatabasePost.GetTempRoom<ModelTempRoom>(_get_rooms_temp);
+
+            if (rooms == null) {
+                return GrechkaResult.FromUserError("Not your private channel", "Sorry! No control this private voice channel");
+            }
+
+            if ((ulong)rooms.id_user != user.Id) {
+                return GrechkaResult.FromUserError("Not your private channel", "Sorry! No control this private voice channel");
+            }
+
+            if (limit > 100) {
+                return GrechkaResult.FromUserError("OverMaxError", "Value exceeds available");
+            }
+
+            await channel.ModifyAsync(x => x.UserLimit = limit);
+            await RespondAsync($"Limit change: {limit}");
+            ModelRooms _limit_update = new ModelRooms 
+            {
+                limit = limit,
+                channel_owmer = (long)user.Id
+            };
+            DatabasePost.updateRoomLimit(_limit_update);
+
+            return GrechkaResult.FromSuccess();
+
+        }           
 
     }
 }

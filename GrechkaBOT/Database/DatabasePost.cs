@@ -92,9 +92,13 @@ namespace GrechkaBOT.Database
             return Execute(_temproominsert, tempRoom);
         }
 
-        public static int updateRoomName(object room) {
+        public static int updateRoomName(object updateName) {
             string _updateroom = $@"UPDATE rooms SET name = @{nameof(ModelRooms.name)} WHERE channelowner = @{nameof(ModelRooms.channel_owmer)}";
-            return Execute(_updateroom, room);
+            return Execute(_updateroom, updateName);
+        }
+        public static int updateRoomLimit(object updateLimit) {
+            string _updateroom = $@"UPDATE rooms SET limit_vc = @{nameof(ModelRooms.limit)} WHERE channelowner = @{nameof(ModelRooms.channel_owmer)}";
+            return Execute(_updateroom, updateLimit);
         }
 
        

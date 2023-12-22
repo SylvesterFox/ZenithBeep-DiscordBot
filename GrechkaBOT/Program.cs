@@ -1,4 +1,4 @@
-using Discord;
+﻿using Discord;
 using Serilog;
 using Discord.Commands;
 using Discord.Interactions;
@@ -54,7 +54,7 @@ namespace Csharp_GrechkaBot
                 await services.GetRequiredService<HandlerStatus>().InitializeAsync();
                 await services.GetRequiredService<HanderRoles>().InitializeAsync();
                 await services.GetRequiredService<HanderJoinGuilds>().InitializeAsync();
-
+                await services.GetRequiredService<HandlerJoinLobby>().InitializeAsync();
                 services.GetRequiredService<LoggingService>();
                 services.GetRequiredService<ConnectionDB>();
 

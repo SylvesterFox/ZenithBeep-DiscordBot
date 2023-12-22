@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 
 namespace GrechkaBOT.Database
 {
@@ -60,9 +60,10 @@ namespace GrechkaBOT.Database
         id_guilds as {nameof(ModelRoles.guilds_id_KEY)}
         FROM roles WHERE id_massage = @{nameof(ModelRoles.messageId)} AND emoji = @{nameof(ModelRoles.setEmoji)}";
 
+
         private static readonly string _selectQueryLobby = $@"SELECT id_lobby as {nameof(ModelRoomsLobby.lobby_id)} FROM roomers_lobbys WHERE id_guilds = @{nameof(ModelRoomsLobby.guild_key)}";
 
-        public DatabasePost(IConfigurationRoot config) : base(config)
+        public DatabasePost(IServiceProvider service) : base(service)
         {
         }
 

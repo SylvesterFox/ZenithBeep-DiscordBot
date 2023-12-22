@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using Serilog;
 using Discord.Commands;
 using Discord.Interactions;
@@ -153,10 +153,13 @@ namespace Csharp_GrechkaBot
                 })
                 .AddSingleton<ILavalinkCache, LavalinkCache>()
                 .AddSingleton<ConnectionDB>()
+                .AddSingleton<HandlerJoinLobby>()
                 .AddSingleton<HanderJoinGuilds>();
 
             if (!string.IsNullOrEmpty(_config["logs"]))
             {
+
+
                 switch (_config["logs"].ToLower())
                 {
                     case "info": 
@@ -170,6 +173,7 @@ namespace Csharp_GrechkaBot
                     }
                     case "error": 
                     {
+
 
                         Log.Logger = new LoggerConfiguration()
                             .WriteTo.Console()

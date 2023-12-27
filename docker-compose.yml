@@ -1,0 +1,16 @@
+version: '3.9'
+
+services:
+  app:
+    build: 
+      context: .
+      args:
+        ENV: ${TOKEN}
+    command: ./publish/build/GrechkaBOT
+   
+    env_file:
+      - .env
+    restart: always
+
+volumes:
+  pgdata:

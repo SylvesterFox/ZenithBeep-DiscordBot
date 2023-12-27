@@ -1,9 +1,8 @@
 [![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)](#postgres)
 [![.Net](https://img.shields.io/badge/.NET-5C2D91?style=for-the-badge&logo=.net&logoColor=white)](#.Net)
 [![C#](https://img.shields.io/badge/c%23-%23239120.svg?style=for-the-badge&logo=csharp&logoColor=white)](c#)
-[![Lavalink4NET](https://github.com/angelobreuer/Lavalink4NET)](#Lavalink4NET)
 [![Discord.net](https://img.shields.io/nuget/vpre/Discord.Net.svg?maxAge=2592000?style=plasti)](#Discord.Net)
-[![Static Badge](https://img.shields.io/badge/lavalink-net)](#lavalink)
+[![Static Badge](https://img.shields.io/badge/lavalink-net)](https://github.com/angelobreuer/Lavalink4NET)
 
 
 

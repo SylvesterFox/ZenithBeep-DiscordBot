@@ -3,11 +3,8 @@
 [![C#](https://img.shields.io/badge/c%23-%23239120.svg?style=for-the-badge&logo=csharp&logoColor=white)](c#)
 [![Lavalink4NET](https://github.com/angelobreuer/Lavalink4NET)](#Lavalink4NET)
 [![Discord.net](https://img.shields.io/nuget/vpre/Discord.Net.svg?maxAge=2592000?style=plasti)](#Discord.Net)
-<p align="center">
-  <a href="https://www.nuget.org/packages/Discord.Net/">
-      <img src="https://img.shields.io/nuget/vpre/Discord.Net.svg?maxAge=2592000?style=plastic" alt="NuGet">
-  </a>
-</p>
+[![Static Badge](https://img.shields.io/badge/lavalink-net)](#lavalink)
+
 
 
 # About

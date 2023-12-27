@@ -1,17 +1,12 @@
 <p align="center">
-  <a href="https://discordnet.dev/" title="Click to visit the documentation!">
-    <img src="https://raw.githubusercontent.com/discord-net/Discord.Net/dev/docs/marketing/logo/SVG/Combinationmark%20White%20Border.svg" alt="Logo">
+  <a href="https://www.nuget.org/packages/Discord.Net/">
+      <img src="https://img.shields.io/nuget/vpre/Discord.Net.svg?maxAge=2592000?style=plastic" alt="NuGet">
   </a>
-    <br />
-    <br />
-    ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
-    ![.Net](https://img.shields.io/badge/.NET-5C2D91?style=for-the-badge&logo=.net&logoColor=white)
-    ![C#](https://img.shields.io/badge/c%23-%23239120.svg?style=for-the-badge&logo=csharp&logoColor=white)
-    ![Lavalink4NET](https://github.com/angelobreuer/Lavalink4NET)
-<a href="https://www.nuget.org/packages/Discord.Net/">
-    <img src="https://img.shields.io/nuget/vpre/Discord.Net.svg?maxAge=2592000?style=plastic" alt="NuGet">
-</a>
 </p>
+![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
+![.Net](https://img.shields.io/badge/.NET-5C2D91?style=for-the-badge&logo=.net&logoColor=white)
+![C#](https://img.shields.io/badge/c%23-%23239120.svg?style=for-the-badge&logo=csharp&logoColor=white)
+![Lavalink4NET](https://github.com/angelobreuer/Lavalink4NET)
 
 # About
 My personal Discord bot, which was rewritten from my old work under .NET-6

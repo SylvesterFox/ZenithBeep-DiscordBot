@@ -1,16 +1,33 @@
 version: '3.9'
 
 services:
+  lavalink:
+    image: fredboat/lavalink:0206007
+    volumes:
+      - ./application.yml:/opt/Lavalink/application.yml
+  db:
+    image: postgres:latest
+    env_file:
+      - .env
+    volumes:
+      - pgdata:/var/lib/postgressql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/1-schema.sql
+    restart: on-failure
+    ports:
+      - "5432:5432"
   app:
     build: 
       context: .
       args:
         ENV: ${TOKEN}
-    command: ./publish/build/GrechkaBOT
-   
+    command: sh -c "./publish/build/GrechkaBOT"  
     env_file:
       - .env
     restart: always
+    depends_on:
+      - db
+      - lavalink
 
 volumes:
   pgdata:
+  lavalinkdata:

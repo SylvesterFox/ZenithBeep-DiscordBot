@@ -16,7 +16,7 @@ namespace GrechkaBOT.Database
         {
             _config = service.GetRequiredService<IConfiguration>();
             if (_config["pg_user"].ToString() != null) {
-                _con = $"User ID={_config["pg_user"]};Password={_config["password"]};Host=localhost;Port=5432;Database={_config["db"]}";
+                _con = $"User ID={_config["pg_user"]};Password={_config["password"]};Host={_config["host_db"]};Port={_config["port_db"]};Database={_config["db"]}";
             } else {
                 Log.Error("Not found settings db config --> appsettings.yml");
             }

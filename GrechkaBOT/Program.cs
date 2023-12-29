@@ -146,8 +146,8 @@ namespace Csharp_GrechkaBot
                 .AddMicrosoftExtensionsLavalinkLogging()
                 .AddLogging(configure => configure.AddSerilog())
                 .AddSingleton(new LavalinkNodeOptions {
-                    RestUri = "http://localhost:2333/",
-                    WebSocketUri = "ws://localhost:2333/",
+                    RestUri = "http://lavalink:2333/",
+                    WebSocketUri = "ws://lavalink:2333/",
                     Password = "youshallnotpass"
 
                 })

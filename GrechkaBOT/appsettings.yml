@@ -1,6 +1,9 @@
 token: token
 logs: debug
-pg_user: postgres
+pg_user: docker
 password: admin
 db: grechkadb
+port_db: 5432
+host_db: db
+lavalink_host: lavalink
 

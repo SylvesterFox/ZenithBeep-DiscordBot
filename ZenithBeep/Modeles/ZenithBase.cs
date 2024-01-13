@@ -67,7 +67,7 @@ namespace GrechkaBOT.Modeles
 
             await RespondAsync(embed: builder.Build(), ephemeral: ephemeral);
 
-            return GrechkaResult.FromSuccess();
+            return ZenithResult.FromSuccess();
         }
     }
 }

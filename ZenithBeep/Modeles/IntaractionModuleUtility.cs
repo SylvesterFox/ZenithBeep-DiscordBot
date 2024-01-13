@@ -21,7 +21,7 @@ namespace GrechkaBOT.Modeles
 
             if (msg == null)
             {
-                return GrechkaResult.FromUserError("MassageNotFound", "Message by id was not found");
+                return ZenithResult.FromUserError("MassageNotFound", "Message by id was not found");
             }
 
             ModelGuild db_guild = DatabasePost.GetGuild<ModelGuild>(get_guilds);
@@ -57,7 +57,7 @@ namespace GrechkaBOT.Modeles
             }
 
             await SendEmbedAsync("Success!", $"Add role on reaction {role.Mention}", ephemeral: true, color: Color.Green);
-            return GrechkaResult.FromSuccess();
+            return ZenithResult.FromSuccess();
         }
 
         [SlashCommand("roledelete", "Delete role")]
@@ -82,7 +82,7 @@ namespace GrechkaBOT.Modeles
 
             if (msg == null)
             {
-                return GrechkaResult.FromUserError("MassageNotFound", "Message by id was not found");
+                return ZenithResult.FromUserError("MassageNotFound", "Message by id was not found");
 
             }
 
@@ -100,7 +100,7 @@ namespace GrechkaBOT.Modeles
 
 
             await SendEmbedAsync("Success!", $"Role on reaction delete: {role_name}", ephemeral: true, color: Color.Green);
-            return GrechkaResult.FromSuccess();
+            return ZenithResult.FromSuccess();
         }
         
         [SlashCommand("beep", "Ping command")]
@@ -109,7 +109,7 @@ namespace GrechkaBOT.Modeles
            var msg = await GetOriginalResponseAsync();
            await msg.ModifyAsync(msg => msg.Content = $"pong.. :ping_pong: \n ping: {Context.Client.Latency}ms");
            Log.Debug("test");
-           return GrechkaResult.FromSuccess();
+           return ZenithResult.FromSuccess();
         }
 
         [SlashCommand("avatar", "Get user avatar")]
@@ -121,7 +121,7 @@ namespace GrechkaBOT.Modeles
             author_embed.WithName($"Photo profile: {_user.Username}");
             author_embed.WithIconUrl(Context.User.GetAvatarUrl());
             await SendEmbedAsync(description: $"Photo profile [link]({_user.GetAvatarUrl(size: 1024)})", imageUrl: _user.GetAvatarUrl(size: 1024), author: author_embed);
-            return GrechkaResult.FromSuccess();
+            return ZenithResult.FromSuccess();
         }
     }
 }

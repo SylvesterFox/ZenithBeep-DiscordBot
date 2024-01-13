@@ -72,7 +72,7 @@ namespace GrechkaBOT.Handlers
 
         private async Task HandleModal(ModalCommandInfo info, IInteractionContext context, IResult result)
         {
-            if (!result.IsSuccess && result is GrechkaResult mResult)
+            if (!result.IsSuccess && result is ZenithResult mResult)
             {
                 EmbedBuilder embed = new EmbedBuilder()
                 {
@@ -109,7 +109,7 @@ namespace GrechkaBOT.Handlers
   
             EmbedBuilder embed;
 
-            if (result is GrechkaResult mResult)
+            if (result is ZenithResult mResult)
             {
                 embed = new EmbedBuilder()
                 {

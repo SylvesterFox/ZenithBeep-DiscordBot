@@ -27,10 +27,10 @@ namespace GrechkaBOT.Modeles
                 };
                 DatabasePost.insertLobby(insert_db);
                 await SendEmbedAsync("Success!", "The lobby has been successfully created 🐲", color: Color.Green);
-                return GrechkaResult.FromSuccess();
+                return ZenithResult.FromSuccess();
             }
             
-            return GrechkaResult.FromUserError("ErrorExists", "Lobby exists!");
+            return ZenithResult.FromUserError("ErrorExists", "Lobby exists!");
         }
 
         [SlashCommand("deletelobby", "Delete lobby")]
@@ -45,7 +45,7 @@ namespace GrechkaBOT.Modeles
 
 
             if (lobby is null) {
-                return GrechkaResult.FromUserError("LobbyIsNull", "Lobby does not exist");
+                return ZenithResult.FromUserError("LobbyIsNull", "Lobby does not exist");
             }
 
             DatabasePost.deleteLobby(lobbyId: lobby.lobby_id);
@@ -53,13 +53,13 @@ namespace GrechkaBOT.Modeles
 
             if (channel is null)
             {
-                return GrechkaResult.FromError("LobbyChannelNotFound", "Lobby channel does not exist");
+                return ZenithResult.FromError("LobbyChannelNotFound", "Lobby channel does not exist");
             }
 
             await channel.DeleteAsync();
 
             await SendEmbedAsync("Success!", "Lobby successfully deleted!", color: Color.Green, ephemeral: true);
-            return GrechkaResult.FromSuccess();
+            return ZenithResult.FromSuccess();
         }
 
         [SlashCommand("vcname", "Change voice channel name")]
@@ -70,7 +70,7 @@ namespace GrechkaBOT.Modeles
 
             if (channel == null) 
             {
-                return GrechkaResult.FromError("Not found voice", "Please join a voice channel");
+                return ZenithResult.FromError("Not found voice", "Please join a voice channel");
             }
 
             ModelTempRoom _get_rooms_temp = new ModelTempRoom 
@@ -84,10 +84,10 @@ namespace GrechkaBOT.Modeles
         
             if (rooms == null) 
             {
-               return GrechkaResult.FromError("ErrorPrivateVoice", "Room not found");
+               return ZenithResult.FromError("ErrorPrivateVoice", "Room not found");
             }
             if ((ulong)rooms.id_user != user.Id) {
-                return GrechkaResult.FromUserError("Not your private voice", "Sorry! No control this private voice channel");
+                return ZenithResult.FromUserError("Not your private voice", "Sorry! No control this private voice channel");
             }
 
             ModelRooms _name = new ModelRooms 
@@ -99,7 +99,7 @@ namespace GrechkaBOT.Modeles
             await channel.ModifyAsync(x => x.Name = name);
             DatabasePost.updateRoomName(_name);
             await SendEmbedAsync("Success!", $"The voice channel's name has been changed to: {name}", color: Color.Green, ephemeral: true);
-            return GrechkaResult.FromSuccess();
+            return ZenithResult.FromSuccess();
         }
 
         [SlashCommand("vclock", "lock/unlock private voice channel")]
@@ -111,7 +111,7 @@ namespace GrechkaBOT.Modeles
 
             if (channel == null) 
             {
-                return GrechkaResult.FromError("Not found voice", "Please join a voice channel");
+                return ZenithResult.FromError("Not found voice", "Please join a voice channel");
             }
 
             ModelTempRoom _get_rooms_temp = new ModelTempRoom 
@@ -122,11 +122,11 @@ namespace GrechkaBOT.Modeles
             ModelTempRoom rooms = DatabasePost.GetTempRoom<ModelTempRoom>(_get_rooms_temp);
 
             if (rooms == null) {
-                return GrechkaResult.FromUserError("Not your private channel", "Sorry! No control this private voice channel");
+                return ZenithResult.FromUserError("Not your private channel", "Sorry! No control this private voice channel");
             }
 
             if ((ulong)rooms.id_user != user.Id) {
-                return GrechkaResult.FromUserError("Not your private channel", "Sorry! No control this private voice channel");
+                return ZenithResult.FromUserError("Not your private channel", "Sorry! No control this private voice channel");
             }
 
         
@@ -151,7 +151,7 @@ namespace GrechkaBOT.Modeles
 
             }
             
-            return GrechkaResult.FromSuccess();
+            return ZenithResult.FromSuccess();
         }
 
         [SlashCommand("vclimit", "Update limit private voice channel")]
@@ -162,7 +162,7 @@ namespace GrechkaBOT.Modeles
 
             if (channel == null) 
             {
-                return GrechkaResult.FromError("Not found voice", "Please join a voice channel");
+                return ZenithResult.FromError("Not found voice", "Please join a voice channel");
             }
 
             ModelTempRoom _get_rooms_temp = new ModelTempRoom 
@@ -173,15 +173,15 @@ namespace GrechkaBOT.Modeles
             ModelTempRoom rooms = DatabasePost.GetTempRoom<ModelTempRoom>(_get_rooms_temp);
 
             if (rooms == null) {
-                return GrechkaResult.FromUserError("Not your private channel", "Sorry! No control this private voice channel");
+                return ZenithResult.FromUserError("Not your private channel", "Sorry! No control this private voice channel");
             }
 
             if ((ulong)rooms.id_user != user.Id) {
-                return GrechkaResult.FromUserError("Not your private channel", "Sorry! No control this private voice channel");
+                return ZenithResult.FromUserError("Not your private channel", "Sorry! No control this private voice channel");
             }
 
             if (limit > 100) {
-                return GrechkaResult.FromUserError("OverMaxError", "Value exceeds available");
+                return ZenithResult.FromUserError("OverMaxError", "Value exceeds available");
             }
 
             await channel.ModifyAsync(x => x.UserLimit = limit);
@@ -193,7 +193,7 @@ namespace GrechkaBOT.Modeles
             };
             DatabasePost.updateRoomLimit(_limit_update);
 
-            return GrechkaResult.FromSuccess();
+            return ZenithResult.FromSuccess();
 
         }           
 

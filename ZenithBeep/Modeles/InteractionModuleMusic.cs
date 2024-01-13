@@ -20,7 +20,7 @@ namespace GrechkaBOT.Modeles
         [SlashCommand("play", "Playing music", runMode: RunMode.Async)]
         public async Task<RuntimeResult> PlayAsync(string query)
         {
-            (DragonPlayer player, GrechkaResult result) = await GetPlayer(true);
+            (DragonPlayer player, ZenithResult result) = await GetPlayer(true);
 
             if (result is not null)
             {
@@ -44,7 +44,7 @@ namespace GrechkaBOT.Modeles
 
                 if (track is null)
                 {
-                    return GrechkaResult.FromError("NoResult", "No media was found with that search query.");
+                    return ZenithResult.FromError("NoResult", "No media was found with that search query.");
                 }
                 
             }
@@ -65,7 +65,7 @@ namespace GrechkaBOT.Modeles
                 info.Interaction = Context.Interaction;
             }
 
-            return GrechkaResult.FromSuccess();
+            return ZenithResult.FromSuccess();
         }
 
         [SlashCommand("playlist", "Queue an entire playlist")]
@@ -73,17 +73,17 @@ namespace GrechkaBOT.Modeles
         {
             if (Context.User is not IGuildUser user || user.VoiceChannel is null)
             {
-                return GrechkaResult.FromError("NoVoiceChannel", "User is not ina voice channel");
+                return ZenithResult.FromError("NoVoiceChannel", "User is not ina voice channel");
             }
 
             List<LavalinkTrack> tracks = (await LavaNode.GetTracksAsync(playlist)).ToList();
 
             if (!tracks.Any())
             {
-                return GrechkaResult.FromError("EmptyPlaylist", "Playlist is empty, private, or non existent");
+                return ZenithResult.FromError("EmptyPlaylist", "Playlist is empty, private, or non existent");
             }
 
-            (DragonPlayer player, GrechkaResult result) = await GetPlayer(true);
+            (DragonPlayer player, ZenithResult result) = await GetPlayer(true);
 
             if (result is not null)
             {
@@ -107,13 +107,13 @@ namespace GrechkaBOT.Modeles
                 await player.PlayTopAsync(track);
             }
 
-            return GrechkaResult.FromSuccess();
+            return ZenithResult.FromSuccess();
         }
 
         [SlashCommand("queue", "List track queue")]
         public async Task<RuntimeResult> Queue()
         {
-            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
+            (DragonPlayer player, ZenithResult result) = await GetPlayer();
 
             if (result is not null)
             {
@@ -140,13 +140,13 @@ namespace GrechkaBOT.Modeles
                 }), folloup: false);
             }
 
-            return GrechkaResult.FromSuccess();
+            return ZenithResult.FromSuccess();
         }
 
         [SlashCommand("skip", "Skip track", runMode: RunMode.Async)]
         public async Task<RuntimeResult> Skip()
         {
-            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
+            (DragonPlayer player, ZenithResult result) = await GetPlayer();
 
             if (result is not null)
             {
@@ -179,7 +179,7 @@ namespace GrechkaBOT.Modeles
                 }
             }
 
-            return GrechkaResult.FromSuccess();
+            return ZenithResult.FromSuccess();
             
             
         }
@@ -187,7 +187,7 @@ namespace GrechkaBOT.Modeles
         [SlashCommand("seek", "Seek in track position.", runMode: RunMode.Async)]
         public async Task<RuntimeResult> Seek(TimeSpan time)
         {
-            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
+            (DragonPlayer player, ZenithResult result) = await GetPlayer();
 
             if (result is not null)
             {
@@ -196,7 +196,7 @@ namespace GrechkaBOT.Modeles
 
             if (!IsAdmin() && !IsRequester(player.CurrentTrack))
             {
-                return GrechkaResult.FromError("NotPermissible", "You can't seek this track");
+                return ZenithResult.FromError("NotPermissible", "You can't seek this track");
             }
 
             if (player.State == PlayerState.Playing && player.CurrentTrack is { IsSeekable: true})
@@ -212,10 +212,10 @@ namespace GrechkaBOT.Modeles
                     await SendEmbedAsync("Seek", $"Seeking to: `{time}`", color: Color.Green);
                 }
 
-                return GrechkaResult.FromSuccess();
+                return ZenithResult.FromSuccess();
             }
 
-            return GrechkaResult.FromError("NotSeekable", "This track can't be seeked.");
+            return ZenithResult.FromError("NotSeekable", "This track can't be seeked.");
         }
 
 
@@ -223,7 +223,7 @@ namespace GrechkaBOT.Modeles
         [SlashCommand("stop", "Stops the current track", runMode: RunMode.Async)]
         public async Task<RuntimeResult> StopAsync()
         {
-            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
+            (DragonPlayer player, ZenithResult result) = await GetPlayer();
 
             if (result is not null)
             {
@@ -235,22 +235,22 @@ namespace GrechkaBOT.Modeles
             {
                 await player.StopAsync(true);
                 await RespondAsync("Cya.");
-                return GrechkaResult.FromSuccess();
+                return ZenithResult.FromSuccess();
             }
 
-            return GrechkaResult.FromError("NotPermissible", "You can't stop this player");
+            return ZenithResult.FromError("NotPermissible", "You can't stop this player");
         }
 
         [SlashCommand("pause", "Pause/Unpause the track")]
         public async Task<RuntimeResult> Pause()
         {
-            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
+            (DragonPlayer player, ZenithResult result) = await GetPlayer();
 
             if (result is not null) return result;
 
             if (!IsAdmin() && !IsRequester(player.CurrentTrack))
             {
-                return GrechkaResult.FromError("NotPermissible", "You can't pause this track");
+                return ZenithResult.FromError("NotPermissible", "You can't pause this track");
             }
 
             if (player.State == PlayerState.Paused)
@@ -263,7 +263,7 @@ namespace GrechkaBOT.Modeles
                 await SendEmbedAsync("Pause track.", color: Color.Blue);
             }
 
-            return GrechkaResult.FromSuccess();
+            return ZenithResult.FromSuccess();
         }
 
         [SlashCommand("volume", "Sets the player volume", runMode: RunMode.Async)]
@@ -275,7 +275,7 @@ namespace GrechkaBOT.Modeles
                 return;
             }
 
-            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
+            (DragonPlayer player, ZenithResult result) = await GetPlayer();
 
    
             await player.SetVolumeAsync(volume / 100f);
@@ -285,7 +285,7 @@ namespace GrechkaBOT.Modeles
         [SlashCommand("clear", "Clear track queue.")]
         public async Task<RuntimeResult> ClearQueue()
         {
-            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
+            (DragonPlayer player, ZenithResult result) = await GetPlayer();
 
 
             if (result is not null) return result;
@@ -293,39 +293,39 @@ namespace GrechkaBOT.Modeles
             player.Queue.Clear();
             await RespondAsync("Cleared the queue");
 
-            return GrechkaResult.FromSuccess();
+            return ZenithResult.FromSuccess();
         }
 
         [SlashCommand("remove", "Remove track from queue.")]
         public async Task<RuntimeResult> Remove(int index)
         {
-            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
+            (DragonPlayer player, ZenithResult result) = await GetPlayer();
 
 
             if (result is not null) return result;
 
             if (--index > player.Queue.Count - 1 || 0 > index)
             {
-                return GrechkaResult.FromUserError("InvaildIndex", "Index is out of  queue range");
+                return ZenithResult.FromUserError("InvaildIndex", "Index is out of  queue range");
             }
 
             LavalinkTrack track = player.Queue[index];
 
             if (!IsAdmin() && !IsRequester(track))
             {
-                return GrechkaResult.FromError("NotPermissible", "You can't renove that track from the queue.");
+                return ZenithResult.FromError("NotPermissible", "You can't renove that track from the queue.");
             }
 
             await RespondAsync(embed: await track.GetEmbedAsync("Removed"));
             player.Queue.RemoveAt(index);
 
-            return GrechkaResult.FromSuccess();
+            return ZenithResult.FromSuccess();
         }
 
         [SlashCommand("track", "Currently playing track")]
         public async Task<RuntimeResult> Track()
         {
-            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
+            (DragonPlayer player, ZenithResult result) = await GetPlayer();
 
             if (result is not null)
             {
@@ -334,17 +334,17 @@ namespace GrechkaBOT.Modeles
 
             if (player.State == PlayerState.NotPlaying)
             {
-                return GrechkaResult.FromError("NoTrack", "Noting is currenttly playing");
+                return ZenithResult.FromError("NoTrack", "Noting is currenttly playing");
             }
 
             await RespondAsync(embed: await player.CurrentTrack.GetEmbedAsync());
-            return GrechkaResult.FromSuccess();
+            return ZenithResult.FromSuccess();
         }
 
         [SlashCommand("looptrack", "Loop current track")]
         public async Task<RuntimeResult> LoopTrack()
         {
-            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
+            (DragonPlayer player, ZenithResult result) = await GetPlayer();
 
             if (result is not null)
             {
@@ -353,7 +353,7 @@ namespace GrechkaBOT.Modeles
 
             if (player.State == PlayerState.NotPlaying)
             {
-                return GrechkaResult.FromError("NoTrack", "Noting is currenttly playing");
+                return ZenithResult.FromError("NoTrack", "Noting is currenttly playing");
             }
 
             var isLooping = player.LoopMode is not PlayerLoopMode.None;
@@ -368,13 +368,13 @@ namespace GrechkaBOT.Modeles
             {
                 await SendEmbedAsync("Track not is looping.", color: Color.Blue);
             }
-            return GrechkaResult.FromSuccess();
+            return ZenithResult.FromSuccess();
         }
 
         [SlashCommand("shuffle", "Shuffle track queue.")]
         public async Task<RuntimeResult> Shuffle()
         {
-            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
+            (DragonPlayer player, ZenithResult result) = await GetPlayer();
 
             if (result is not null)
             {
@@ -384,18 +384,18 @@ namespace GrechkaBOT.Modeles
             player.Queue.Shuffle();
             await SendEmbedAsync("Shuffled.", color: Color.Green);
 
-            return GrechkaResult.FromSuccess();
+            return ZenithResult.FromSuccess();
         }
 
 
 
-        private async ValueTask<(DragonPlayer, GrechkaResult)> GetPlayer(bool autoConnect = true)
+        private async ValueTask<(DragonPlayer, ZenithResult)> GetPlayer(bool autoConnect = true)
         {
             DragonPlayer player = LavaNode.GetPlayer<DragonPlayer>(Context.Guild.Id);
 
             if (Context.User is not IGuildUser user || user.VoiceChannel is null)
             {
-                return (null, GrechkaResult.FromError("NoVoiceChannel", "User is not in a voice channel"));
+                return (null, ZenithResult.FromError("NoVoiceChannel", "User is not in a voice channel"));
             }
 
             if (player?.VoiceChannelId.HasValue == false)
@@ -411,13 +411,13 @@ namespace GrechkaBOT.Modeles
                     player = await LavaNode.JoinAsync<DragonPlayer>(Context.Guild.Id, user.VoiceChannel.Id, true);
                 } else
                 {
-                    return (null, GrechkaResult.FromError("NotConnected", "No active bot session"));
+                    return (null, ZenithResult.FromError("NotConnected", "No active bot session"));
                 }
             }
 
             if (user.VoiceChannel.Id != player.VoiceChannelId)
             {
-                return (null, GrechkaResult.FromError("ChannelMismatch", "You are not in the same voice channel"));
+                return (null, ZenithResult.FromError("ChannelMismatch", "You are not in the same voice channel"));
             }
 
             return (player, null);

@@ -61,8 +61,9 @@ namespace Csharp_GrechkaBot
                 _client.Ready += async () =>
                 {
                     Console.WriteLine("RAWR! Bot is ready!");
+
                     
-                    await _sCommand.RegisterCommandsGloballyAsync();
+                    await _sCommand.RegisterCommandsGloballyAsync(false);
 
                     var listGuild = new List<ModelGuild>();
                     foreach (var guild in _client.Guilds)
@@ -72,7 +73,7 @@ namespace Csharp_GrechkaBot
                         {
                             Name = guild.Name,
                             guildId = (long)guild.Id,
-                            Leng = "us"
+                            Leng = "Us-en"
                         };
 
                         var get = new ModelGuild { guildId = (long)guild.Id };
@@ -103,8 +104,7 @@ namespace Csharp_GrechkaBot
                     await client.StopAsync();
                     await client.LogoutAsync();
                 }
-
-                
+              
            }
 
         }
@@ -146,9 +146,9 @@ namespace Csharp_GrechkaBot
                 .AddMicrosoftExtensionsLavalinkLogging()
                 .AddLogging(configure => configure.AddSerilog())
                 .AddSingleton(new LavalinkNodeOptions {
-                    RestUri = "http://lavalink:2333/",
-                    WebSocketUri = "ws://lavalink:2333/",
-                    Password = "youshallnotpass"
+                    RestUri = $"http://{_config["lavalink_host"]}:2333/",
+                    WebSocketUri = $"ws://{_config["lavalink_host"]}:2333/",
+                    Password = _config["lavalink_password"]
 
                 })
                 .AddSingleton<ILavalinkCache, LavalinkCache>()

@@ -6,4 +6,5 @@ db: grechkadb
 port_db: 5432
 host_db: db
 lavalink_host: lavalink
+lavalink_password: youshallnotpass
 

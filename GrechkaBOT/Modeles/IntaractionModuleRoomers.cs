@@ -5,19 +5,17 @@ using GrechkaBOT.Database;
 
 namespace GrechkaBOT.Modeles
 {
-    public class IntaractionModuleRoomers : InteractionModuleBase<SocketInteractionContext> 
+    public class IntaractionModuleRoomers : ZenithBase
     {
         [SlashCommand("createroomers", "Create lobby for creating private vc rooms")]
         [DefaultMemberPermissions(GuildPermission.ManageChannels)]
         public async Task<RuntimeResult> CreateRommers() 
         {
-            var embed = new EmbedBuilder();
             var guildsDB = new ModelGuild { guildId = (long)Context.Guild.Id };
 
             ModelGuild get_guild = DatabasePost.GetGuild<ModelGuild>(guildsDB);
             var lobbyDB = new ModelRoomsLobby { guild_key = get_guild.Id };
             ModelRoomsLobby lobby = DatabasePost.GetIdChannelLobby<ModelRoomsLobby>(lobbyDB);
-            
             
             if (lobby is null) 
             {
@@ -27,11 +25,8 @@ namespace GrechkaBOT.Modeles
                     guild_key = get_guild.Id,
                     lobby_id = (long)lobbyChannel.Id
                 };
-                embed.WithColor(Color.Green);
-                embed.WithTitle("Success!");
-                embed.WithDescription("The lobby has been successfully created 🐲");
                 DatabasePost.insertLobby(insert_db);
-                await RespondAsync("", embed: embed.Build(), ephemeral: true);
+                await SendEmbedAsync("Success!", "The lobby has been successfully created 🐲", color: Color.Green);
                 return GrechkaResult.FromSuccess();
             }
             
@@ -42,7 +37,6 @@ namespace GrechkaBOT.Modeles
         [DefaultMemberPermissions(GuildPermission.ManageChannels)]
         public async Task<RuntimeResult> DeleteLobby() 
         {
-            var embed = new EmbedBuilder();
             var guildsDB = new ModelGuild { guildId = (long)Context.Guild.Id };
 
             ModelGuild get_guild = DatabasePost.GetGuild<ModelGuild>(guildsDB);
@@ -63,10 +57,8 @@ namespace GrechkaBOT.Modeles
             }
 
             await channel.DeleteAsync();
-            embed.WithColor(Color.Green);
-            embed.WithTitle("Success!");
-            embed.WithDescription("Lobby successfully deleted");
-            await RespondAsync("", embed: embed.Build(), ephemeral: true);
+
+            await SendEmbedAsync("Success!", "Lobby successfully deleted!", color: Color.Green, ephemeral: true);
             return GrechkaResult.FromSuccess();
         }
 
@@ -75,9 +67,6 @@ namespace GrechkaBOT.Modeles
 
             SocketGuildUser user = Context.User as SocketGuildUser;
             IVoiceChannel channel = user.VoiceChannel;
-            var embed = new EmbedBuilder();
-            embed.WithColor(Color.Green);
-            embed.WithTitle("Success!");
 
             if (channel == null) 
             {
@@ -109,8 +98,7 @@ namespace GrechkaBOT.Modeles
 
             await channel.ModifyAsync(x => x.Name = name);
             DatabasePost.updateRoomName(_name);
-            embed.WithDescription($"The voice channel's name has been changed to: {name}");
-            await RespondAsync("", embed: embed.Build(), ephemeral: true);
+            await SendEmbedAsync("Success!", $"The voice channel's name has been changed to: {name}", color: Color.Green, ephemeral: true);
             return GrechkaResult.FromSuccess();
         }
 
@@ -120,10 +108,6 @@ namespace GrechkaBOT.Modeles
             SocketGuildUser user = Context.User as SocketGuildUser;
             IVoiceChannel channel = user.VoiceChannel;
             var EveryoneRole = Context.Guild.EveryoneRole;
-            
-            var embed = new EmbedBuilder();
-            embed.WithColor(Color.Green);
-            embed.WithTitle("Success!");
 
             if (channel == null) 
             {
@@ -151,21 +135,18 @@ namespace GrechkaBOT.Modeles
                 case PermValue.Allow:
                     var _perOverides_lock = new OverwritePermissions(connect: PermValue.Deny);
                     await channel.AddPermissionOverwriteAsync(EveryoneRole, _perOverides_lock);
-                    embed.WithDescription("Private channel blocked");
-                    await RespondAsync("", embed: embed.Build(), ephemeral: true);
+                    await SendEmbedAsync("Success!", "Private channel blocked", color: Color.Green, ephemeral: true);
                     break;
                 case PermValue.Deny:
                     Console.WriteLine("unlock voice");
                     var _perOverides_unlock = new OverwritePermissions(connect: PermValue.Allow);
                     await channel.AddPermissionOverwriteAsync(EveryoneRole, _perOverides_unlock);
-                    embed.WithDescription("Private channel unlocked");
-                    await RespondAsync("", embed: embed.Build(), ephemeral: true);
+                    await SendEmbedAsync("Success!", "Private channel unlocked", color: Color.Green, ephemeral: true);
                     break;
                 case PermValue.Inherit:
                     var _perOverides = new OverwritePermissions(connect: PermValue.Deny);
                     await channel.AddPermissionOverwriteAsync(EveryoneRole, _perOverides);
-                    embed.WithDescription("Private channel blocked");
-                    await RespondAsync("", embed: embed.Build(), ephemeral: true);
+                    await SendEmbedAsync("Success!", "Private channel blocked", color: Color.Green, ephemeral: true);
                     break;
 
             }
@@ -178,8 +159,6 @@ namespace GrechkaBOT.Modeles
             SocketGuildUser user = Context.User as SocketGuildUser;
             IVoiceChannel channel = user.VoiceChannel;
             var embed = new EmbedBuilder();
-            embed.WithColor(Color.Green);
-            embed.WithTitle("Success!");
 
             if (channel == null) 
             {
@@ -206,8 +185,7 @@ namespace GrechkaBOT.Modeles
             }
 
             await channel.ModifyAsync(x => x.UserLimit = limit);
-            embed.WithDescription($"Limit change: {limit}");
-            await RespondAsync("", embed: embed.Build(), ephemeral: true);
+            await SendEmbedAsync("Success!", $"Limit change: {limit}", ephemeral: true, color: Color.Green);
             ModelRooms _limit_update = new ModelRooms 
             {
                 limit = limit,

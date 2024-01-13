@@ -3,31 +3,25 @@ using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
 using GrechkaBOT.Database;
-using GrechkaBOT.Services;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Serilog;
-
+using RuntimeResult = Discord.Interactions.RuntimeResult;
 
 
 namespace GrechkaBOT.Modeles
 {
-    public class IntaractionModuleUtility : InteractionModuleBase<SocketInteractionContext>
+    public class IntaractionModuleUtility : ZenithBase
     {
         [SlashCommand("rolecreate", "Create role")]
         [DefaultMemberPermissions(GuildPermission.ManageRoles)]
-        public async Task CreateRoleReaction(string emoji, string msgId, [Remainder] SocketTextChannel channel, IRole role)
+        public async Task<RuntimeResult> CreateRoleReaction(string emoji, string msgId, [Remainder] SocketTextChannel channel, IRole role)
         {
             var get_guilds = new ModelGuild { guildId = (long)Context.Guild.Id };
             var id = Convert.ToUInt64(msgId);
-            // TODO: Тут тоже отлов нужен
             var msg = await channel.GetMessageAsync(id);
 
             if (msg == null)
             {
-                await RespondAsync("Message by id was not found", ephemeral: true);
-                return;
-
+                return GrechkaResult.FromUserError("MassageNotFound", "Message by id was not found");
             }
 
             ModelGuild db_guild = DatabasePost.GetGuild<ModelGuild>(get_guilds);
@@ -62,14 +56,13 @@ namespace GrechkaBOT.Modeles
                 DatabasePost.insertRoles(insert_db);
             }
 
-            await RespondAsync($"Add role on reaction {role.Mention}", ephemeral: true); 
-            
-            
+            await SendEmbedAsync("Success!", $"Add role on reaction {role.Mention}", ephemeral: true, color: Color.Green);
+            return GrechkaResult.FromSuccess();
         }
 
         [SlashCommand("roledelete", "Delete role")]
         [DefaultMemberPermissions(GuildPermission.ManageRoles)]
-        public async Task DeleteReactionsRole(String emoji, String mesaageid)
+        public async Task<RuntimeResult> DeleteReactionsRole(String emoji, String mesaageid)
         {
             var get_guild = new ModelGuild { guildId = (long)Context.Guild.Id };
             ModelGuild db_guild = DatabasePost.GetGuild<ModelGuild>(get_guild);
@@ -85,13 +78,11 @@ namespace GrechkaBOT.Modeles
 
             ModelRoles roles = DatabasePost.GetRole<ModelRoles>(delete_role_r);
             var channel = Context.Guild.GetTextChannel((ulong)roles.channelId);
-            //TODO: Сделать тут отлов msg исключения
             var msg = await channel.GetMessageAsync((ulong)roles.messageId);
 
             if (msg == null)
             {
-                await RespondAsync("Message by id was not found", ephemeral: true);
-                return;
+                return GrechkaResult.FromUserError("MassageNotFound", "Message by id was not found");
 
             }
 
@@ -108,16 +99,29 @@ namespace GrechkaBOT.Modeles
             DatabasePost.deleteRoles(delete_role_r);
 
 
-            await RespondAsync($"Role on reaction delete: {role_name}", ephemeral: true);
+            await SendEmbedAsync("Success!", $"Role on reaction delete: {role_name}", ephemeral: true, color: Color.Green);
+            return GrechkaResult.FromSuccess();
         }
         
-        [SlashCommand("ping", "Ping command")]
-        public async Task PingCommand() {
-           await RespondAsync("pong.. :ping_pong:");
+        [SlashCommand("beep", "Ping command")]
+        public async Task<RuntimeResult> PingCommand() {
+           await RespondAsync("boop!! :ping_pong:");
            var msg = await GetOriginalResponseAsync();
            await msg.ModifyAsync(msg => msg.Content = $"pong.. :ping_pong: \n ping: {Context.Client.Latency}ms");
-        //    _log.LogInformation("Test log");
-            Log.Debug("test");
+           Log.Debug("test");
+           return GrechkaResult.FromSuccess();
+        }
+
+        [SlashCommand("avatar", "Get user avatar")]
+        public async Task<RuntimeResult> UserAvatar(SocketUser? user = null)
+        {
+            var _user = user ?? Context.User;
+
+            var author_embed = new EmbedAuthorBuilder();
+            author_embed.WithName($"Photo profile: {_user.Username}");
+            author_embed.WithIconUrl(Context.User.GetAvatarUrl());
+            await SendEmbedAsync(description: $"Photo profile [link]({_user.GetAvatarUrl(size: 1024)})", imageUrl: _user.GetAvatarUrl(size: 1024), author: author_embed);
+            return GrechkaResult.FromSuccess();
         }
     }
 }

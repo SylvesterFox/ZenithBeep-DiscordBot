@@ -2,6 +2,9 @@ using Microsoft.Extensions.Configuration;
 
 namespace GrechkaBOT.Database
 {
+    /// <summary>
+    /// Это пиздец O_O
+    /// </summary>
     public class DatabasePost : ConnectionDB
     {
         private static readonly string _selectQuery = $@"SELECT id_guild as {nameof(ModelGuild.guildId)}, name_guild as {nameof(ModelGuild.Name)}, lang as {nameof(ModelGuild.Leng)}, id as {nameof(ModelGuild.Id)} FROM guilds WHERE id_guild = @{nameof(ModelGuild.guildId)}";

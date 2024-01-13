@@ -10,30 +10,12 @@ using static GrechkaBOT.Custom.DragonPlayer;
 
 namespace GrechkaBOT.Modeles
 {
-    public class InteractionModuleMusic : InteractionModuleBase<SocketInteractionContext>
+    public class InteractionModuleMusic : ZenithBase
     {
         public IAudioService LavaNode { private get; set; }
         public PaginationService Pagination { private get; set; }
 
 
-
-        [SlashCommand("join", "Play music", runMode: RunMode.Async)]
-        public async Task<RuntimeResult> JoinAsync()
-        {
-           
-            var voiceChannel = Context.User as IVoiceState;
-
-            (DragonPlayer player, GrechkaResult result) = await GetPlayer();
-
-            if (result is not null)
-            {
-                return result;
-            }
-
-
-            await ReplyAsync($"Joined {voiceChannel.VoiceChannel.Name}!");
-            return GrechkaResult.FromSuccess();
-        }
 
         [SlashCommand("play", "Playing music", runMode: RunMode.Async)]
         public async Task<RuntimeResult> PlayAsync(string query)
@@ -115,8 +97,6 @@ namespace GrechkaBOT.Modeles
                 track.Context = new QueueInfo(Context.User, Context.Channel);
                 player.Queue.Add(track);
 
-                // Test log console
-                Console.WriteLine(track.Title);
             }
 
             await FollowupAsync("Added all tracks in playlist to queue");
@@ -173,13 +153,17 @@ namespace GrechkaBOT.Modeles
                 return result;
             }
 
-            var embedSkip = new EmbedBuilder();
 
             if (IsAdmin() || IsRequester(player.CurrentTrack))
             {
                  
                 await player.SkipAsync();
-                await RespondAsync($"{Context.User.Mention} has skipped the song!");
+
+                await SendEmbedAsync(
+                        "Skip Track",
+                        $"{Context.User.Mention} has skipped the song!",
+                        color: Color.Purple
+                    );
 
             } else
             {
@@ -187,7 +171,11 @@ namespace GrechkaBOT.Modeles
 
                 if (info.WasAdded)
                 {
-                    await RespondAsync($"{Context.User.Mention} has voted to skip the current track. ({info.Percentage:P})");
+                    await SendEmbedAsync(
+                            "Vote Skip Track",
+                            $"{Context.User.Mention} has voted to skip the current track. ({info.Percentage:P})",
+                            color: Color.DarkBlue
+                        );
                 }
             }
 
@@ -216,12 +204,12 @@ namespace GrechkaBOT.Modeles
                 if (time > player.CurrentTrack.Duration)
                 {
                     await player.SkipAsync();
-                    await RespondAsync("Seeking beyond track length. Skipping.");
+                    await SendEmbedAsync("Seeking beyond track length. Skipping.", color: Color.Purple);
                 }
                 else
                 {
                     await player.SeekPositionAsync(time);
-                    await RespondAsync($"Seeking to: `{time}`");
+                    await SendEmbedAsync("Seek", $"Seeking to: `{time}`", color: Color.Green);
                 }
 
                 return GrechkaResult.FromSuccess();
@@ -268,11 +256,11 @@ namespace GrechkaBOT.Modeles
             if (player.State == PlayerState.Paused)
             {
                 await player.ResumeAsync();
-                await RespondAsync("Resumed track");
+                await SendEmbedAsync("Resumed track", color: Color.Green);
             } else
             {
                 await player.PauseAsync();
-                await RespondAsync("Pause track.");
+                await SendEmbedAsync("Pause track.", color: Color.Blue);
             }
 
             return GrechkaResult.FromSuccess();
@@ -374,11 +362,11 @@ namespace GrechkaBOT.Modeles
 
             if (isLooping)
             {
-                await RespondAsync("Track is looping.");
+                await SendEmbedAsync("Track is looping.", color: Color.Green);
             } 
             else
             {
-                await RespondAsync("Track not is looping.");
+                await SendEmbedAsync("Track not is looping.", color: Color.Blue);
             }
             return GrechkaResult.FromSuccess();
         }
@@ -394,7 +382,7 @@ namespace GrechkaBOT.Modeles
             }
 
             player.Queue.Shuffle();
-            await RespondAsync("Shuffled.");
+            await SendEmbedAsync("Shuffled.", color: Color.Green);
 
             return GrechkaResult.FromSuccess();
         }

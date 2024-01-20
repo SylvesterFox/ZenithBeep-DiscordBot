@@ -3,7 +3,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 
 
-namespace GrechkaBOT.Handlers
+namespace ZenithBeep.Handlers
 {
     /// <summary>
     /// Logs Handler

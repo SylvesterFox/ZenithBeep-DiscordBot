@@ -1,16 +1,37 @@
 using Discord;
 using Discord.Interactions;
+using ZenithBeep.Database;
+using ZenithBeepData;
 
-namespace GrechkaBOT.Modeles
+namespace ZenithBeep.Modeles
 {
     public class IntaractionModuleOthers : ZenithBase
     {
         public readonly InteractionService _service;
+       
 
-
-        public IntaractionModuleOthers(InteractionService service) {
+        public IntaractionModuleOthers(InteractionService service, DataAccessLayer accessLayer) : base(accessLayer) 
+        {
+            
             _service = service;
         }
+
+        [SlashCommand("prefix", "test")]
+        public async Task<RuntimeResult> Prefix(string prefix = null)
+        {
+            await DeferAsync();
+            if (prefix == null)
+            {
+                var currentPrefix = DataAccessLayer.GetPrefix(Context.Guild.Id);
+                await FollowupAsync($"The prefix of this guild is {currentPrefix}.");
+                return ZenithResult.FromSuccess();
+            }
+
+            await DataAccessLayer.SetPrefix(Context.Guild.Id, prefix);
+            await FollowupAsync($"The prefix has been set to {prefix}.");
+            return ZenithResult.FromSuccess();
+        }
+
 
         [SlashCommand("help", "help command")]
         public async Task HelpAsync() {
@@ -30,7 +51,8 @@ namespace GrechkaBOT.Modeles
 
                 if (!string.IsNullOrEmpty(description))
                 {
-                    var name = Resources.Help_en.ResourceManager.GetObject(module.Name);
+
+                    var name = module.Name;
                     var field = new EmbedFieldBuilder()
                     {
                         Name = name.ToString(),

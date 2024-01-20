@@ -363,5 +363,6 @@ MigrationBackup/
 FodyWeavers.xsd
 
 .vscode/
-GrechkaBOT/.config/
+ZenithBeep/.config/
+ZenithBeepData/Migrations/
 .env

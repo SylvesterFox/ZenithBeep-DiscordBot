@@ -1,9 +1,9 @@
 using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
-using GrechkaBOT.Database;
 
-namespace GrechkaBOT.Handlers
+
+namespace ZenithBeep.Handlers
 {
     public class HandlerJoinLobby
     {
@@ -23,7 +23,7 @@ namespace GrechkaBOT.Handlers
             _client.UserVoiceStateUpdated += OnCreatePrivateRoom;
         }
 
-
+/*
         private async Task<ModelGuild> GetGuildKey(ulong guildId) {
              var _get_guild_key = new ModelGuild {
                 guildId = (long)guildId
@@ -38,12 +38,12 @@ namespace GrechkaBOT.Handlers
             ModelRoomsLobby _get = DatabasePost.GetIdChannelLobby<ModelRoomsLobby>(_dblobbyId);
             return _get;
         }
-
+*/
         private async Task OnCreatePrivateRoom(SocketUser user, SocketVoiceState state1, SocketVoiceState state2)
         {
             if (user.IsBot)
                 return;
-
+/*
             // Выполняется при заходи в лоби по созданию приватного войса
             if (state2.VoiceChannel != null) {
                 SocketGuild _guild = state2.VoiceChannel.Guild;
@@ -70,10 +70,10 @@ namespace GrechkaBOT.Handlers
                     return;
                 }
                 return;
-            }
+            }*/
         }
 
-        private async Task<RestVoiceChannel> CreateRoom(SocketGuildUser userOwner, SocketGuild guild, ulong category) 
+       /* private async Task<RestVoiceChannel> CreateRoom(SocketGuildUser userOwner, SocketGuild guild, ulong category) 
         { 
             var _req = new ModelRooms {
                 channel_owmer = (long)userOwner.Id
@@ -125,6 +125,6 @@ namespace GrechkaBOT.Handlers
             DatabasePost.deleteTempRoom((long)channel.Id);
             await channel.DeleteAsync();
       
-        }
-    }
+        } */
+    } 
 }

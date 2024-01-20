@@ -2,20 +2,25 @@
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
-using GrechkaBOT.Database;
 using Serilog;
+using ZenithBeepData;
 using RuntimeResult = Discord.Interactions.RuntimeResult;
 
 
-namespace GrechkaBOT.Modeles
+namespace ZenithBeep.Modeles
 {
     public class IntaractionModuleUtility : ZenithBase
     {
+        public IntaractionModuleUtility(DataAccessLayer accessLayer) : base(accessLayer) 
+        {
+            
+        }
+
         [SlashCommand("rolecreate", "Create role")]
         [DefaultMemberPermissions(GuildPermission.ManageRoles)]
         public async Task<RuntimeResult> CreateRoleReaction(string emoji, string msgId, [Remainder] SocketTextChannel channel, IRole role)
         {
-            var get_guilds = new ModelGuild { guildId = (long)Context.Guild.Id };
+            /*var get_guilds = new ModelGuild { guildId = (long)Context.Guild.Id };*/
             var id = Convert.ToUInt64(msgId);
             var msg = await channel.GetMessageAsync(id);
 
@@ -23,11 +28,11 @@ namespace GrechkaBOT.Modeles
             {
                 return ZenithResult.FromUserError("MassageNotFound", "Message by id was not found");
             }
-
-            ModelGuild db_guild = DatabasePost.GetGuild<ModelGuild>(get_guilds);
+/*
+            ModelGuild db_guild = DatabasePost.GetGuild<ModelGuild>(get_guilds);*/
             
 
-            if (Emote.TryParse(emoji, out var emote))
+/*            if (Emote.TryParse(emoji, out var emote))
             {
                 var insert_db = new ModelRoles
                 {
@@ -54,12 +59,12 @@ namespace GrechkaBOT.Modeles
                 };
                 await msg.AddReactionAsync(emoj);
                 DatabasePost.insertRoles(insert_db);
-            }
+            }*/
 
             await SendEmbedAsync("Success!", $"Add role on reaction {role.Mention}", ephemeral: true, color: Color.Green);
             return ZenithResult.FromSuccess();
         }
-
+/*
         [SlashCommand("roledelete", "Delete role")]
         [DefaultMemberPermissions(GuildPermission.ManageRoles)]
         public async Task<RuntimeResult> DeleteReactionsRole(String emoji, String mesaageid)
@@ -101,7 +106,7 @@ namespace GrechkaBOT.Modeles
 
             await SendEmbedAsync("Success!", $"Role on reaction delete: {role_name}", ephemeral: true, color: Color.Green);
             return ZenithResult.FromSuccess();
-        }
+        }*/
         
         [SlashCommand("beep", "Ping command")]
         public async Task<RuntimeResult> PingCommand() {

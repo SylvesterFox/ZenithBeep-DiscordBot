@@ -1,7 +1,7 @@
 ﻿using Discord.WebSocket;
-using GrechkaBOT.Database;
 
-namespace GrechkaBOT.Handlers
+
+namespace ZenithBeep.Handlers
 {
     public class HanderJoinGuilds
     {
@@ -22,14 +22,14 @@ namespace GrechkaBOT.Handlers
 
         private Task OnBotJoinGuild(SocketGuild guild)
         {
-            var guildInfo = new ModelGuild
+          /*  var guildInfo = new ModelGuild
             {
                 Name = guild.Name,
                 guildId = (long)guild.Id,
                 Leng = "us"
             };
 
-            DatabasePost.insertGuild(guildInfo);
+            DatabasePost.insertGuild(guildInfo);*/
             return Task.CompletedTask;
         }
     }

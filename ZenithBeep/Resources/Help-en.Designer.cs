@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace GrechkaBOT.Resources {
+namespace ZenithBeep.Resources {
     using System;
     
     

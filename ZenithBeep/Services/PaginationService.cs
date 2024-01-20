@@ -3,7 +3,7 @@ using Discord.WebSocket;
 using Discord.Interactions;
 using Color = Discord.Color;
 
-namespace GrechkaBOT.Services
+namespace ZenithBeep.Services
 {   
     public enum StopAction
     {

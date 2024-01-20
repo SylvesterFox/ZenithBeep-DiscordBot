@@ -3,7 +3,7 @@ using Discord;
 using System.Text.Json;
 
 
-namespace GrechkaBOT.Handlers
+namespace ZenithBeep.Handlers
 {
 
     public class HandlerStatus

@@ -1,6 +1,6 @@
 ﻿using Discord.Interactions;
 
-namespace GrechkaBOT
+namespace ZenithBeep
 {
     public class ZenithResult : RuntimeResult
     {

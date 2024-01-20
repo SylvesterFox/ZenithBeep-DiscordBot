@@ -1,12 +1,7 @@
 ﻿using Discord;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace GrechkaBOT.Custom
+
+namespace ZenithBeep.Custom
 {
     public static class InteractionExtension
     {

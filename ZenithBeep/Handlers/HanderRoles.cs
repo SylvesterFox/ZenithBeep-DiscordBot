@@ -1,8 +1,8 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using GrechkaBOT.Database;
 
-namespace GrechkaBOT.Handlers
+
+namespace ZenithBeep.Handlers
 {
 
     public class HanderRoles
@@ -24,7 +24,7 @@ namespace GrechkaBOT.Handlers
 
         private async Task OnReactionAdded(Cacheable<IUserMessage, ulong> cacheable1, Cacheable<IMessageChannel, ulong> cacheable2, SocketReaction reaction)
         {
-
+/*
             if (reaction.User.Value.IsBot)
             {
                 return;
@@ -46,14 +46,14 @@ namespace GrechkaBOT.Handlers
             Console.WriteLine(roledb.roleName);
 
             var role = ((SocketGuildChannel)reaction.Channel).Guild.GetRole((ulong)roledb.roleId);
-            await ((SocketGuildUser)reaction.User.Value).AddRoleAsync(role);
+            await ((SocketGuildUser)reaction.User.Value).AddRoleAsync(role);*/
         }
 
 
 
         private async Task OnReactionRemoved(Cacheable<IUserMessage, ulong> cacheable1, Cacheable<IMessageChannel, ulong> cacheable2, SocketReaction reaction)
         {
-            if (reaction.User.Value.IsBot)
+          /*  if (reaction.User.Value.IsBot)
             {
                 return;
             }
@@ -74,7 +74,7 @@ namespace GrechkaBOT.Handlers
             }
 
             var role = ((SocketGuildChannel)reaction.Channel).Guild.GetRole((ulong)roledb.roleId);
-            await ((SocketGuildUser)reaction.User.Value).RemoveRoleAsync(role);
+            await ((SocketGuildUser)reaction.User.Value).RemoveRoleAsync(role);*/
 
         }
 

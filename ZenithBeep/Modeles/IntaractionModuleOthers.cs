@@ -1,6 +1,5 @@
 using Discord;
 using Discord.Interactions;
-using ZenithBeep.Database;
 using ZenithBeepData;
 
 namespace ZenithBeep.Modeles

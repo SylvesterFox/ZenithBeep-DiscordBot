@@ -212,8 +212,6 @@ namespace ZenithBeep
 
             var serviceProvider = services.BuildServiceProvider();
             
-
-
             return serviceProvider;
         }
 

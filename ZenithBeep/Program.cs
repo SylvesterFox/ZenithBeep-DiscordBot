@@ -126,6 +126,7 @@ namespace ZenithBeep
                     HandlerTimeout = 5000,
                     MessageCacheSize = 1000,
                     DefaultRetryMode = Discord.RetryMode.RetryRatelimit,
+                    UseInteractionSnowflakeDate = false
                 }))
                 .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
                 .AddSingleton<HanderInteraction>()
@@ -150,7 +151,7 @@ namespace ZenithBeep
                 .AddSingleton<HandlerJoinLobby>()
                 .AddSingleton<HanderJoinGuilds>()
                 .AddDbContextFactory<BeepDbContext>(
-                    options => options.UseNpgsql(@"Host=localhost;Username=postgres;Password=0270;Database=grechkadb"))
+                    options => options.UseNpgsql(_config.GetConnectionString("Default")))
                 .AddSingleton<DataAccessLayer>();
 
 

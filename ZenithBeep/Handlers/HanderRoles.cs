@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using ZenithBeepData;
 
 
 namespace ZenithBeep.Handlers
@@ -9,11 +10,13 @@ namespace ZenithBeep.Handlers
     {
         private readonly DiscordSocketClient _clinet;
         private readonly IServiceProvider _service;
+        public readonly DataAccessLayer DataAccessLayer;
 
-        public HanderRoles (DiscordSocketClient clinet, IServiceProvider service)
+        public HanderRoles (DiscordSocketClient clinet, IServiceProvider service, DataAccessLayer dataAccessLayer)
         {
             _clinet = clinet;
             _service = service;
+            DataAccessLayer = dataAccessLayer;
         }
 
         public async Task InitializeAsync()
@@ -24,57 +27,49 @@ namespace ZenithBeep.Handlers
 
         private async Task OnReactionAdded(Cacheable<IUserMessage, ulong> cacheable1, Cacheable<IMessageChannel, ulong> cacheable2, SocketReaction reaction)
         {
-/*
+
             if (reaction.User.Value.IsBot)
             {
                 return;
             }
 
-            var get_role = new ModelRoles
-            {
-                setEmoji = reaction.Emote.ToString(),
-                messageId = (long)reaction.MessageId
-            };
+            var guild = ((SocketGuildChannel)reaction.Channel).Guild;
+            var _emoji = reaction.Emote.ToString();
 
-            ModelRoles roledb = DatabasePost.GetRole<ModelRoles>(get_role);
+            Console.WriteLine(_emoji);
+            var roledb = await DataAccessLayer.GetRoleAutoMod(guild.Id, reaction.MessageId, _emoji);
 
             if (roledb is null)
             {
                 return;
             }
 
-            Console.WriteLine(roledb.roleName);
-
-            var role = ((SocketGuildChannel)reaction.Channel).Guild.GetRole((ulong)roledb.roleId);
-            await ((SocketGuildUser)reaction.User.Value).AddRoleAsync(role);*/
+            var role = guild.GetRole(roledb.roleId);
+            await ((SocketGuildUser)reaction.User.Value).AddRoleAsync(role);
         }
 
 
 
         private async Task OnReactionRemoved(Cacheable<IUserMessage, ulong> cacheable1, Cacheable<IMessageChannel, ulong> cacheable2, SocketReaction reaction)
         {
-          /*  if (reaction.User.Value.IsBot)
+            if (reaction.User.Value.IsBot)
             {
                 return;
             }
 
+            var guild = ((SocketGuildChannel)reaction.Channel).Guild;
+            var _emoji = reaction.Emote.ToString();
 
-            var get_role = new ModelRoles
-            {
-                setEmoji = reaction.Emote.ToString(),
-                messageId = (long)reaction.MessageId
-            };
-
-
-            ModelRoles roledb = DatabasePost.GetRole<ModelRoles>(get_role);
+            Console.WriteLine(_emoji);
+            var roledb = await DataAccessLayer.GetRoleAutoMod(guild.Id, reaction.MessageId, _emoji);
 
             if (roledb is null)
             {
                 return;
             }
 
-            var role = ((SocketGuildChannel)reaction.Channel).Guild.GetRole((ulong)roledb.roleId);
-            await ((SocketGuildUser)reaction.User.Value).RemoveRoleAsync(role);*/
+            var role = guild.GetRole(roledb.roleId);
+            await ((SocketGuildUser)reaction.User.Value).RemoveRoleAsync(role);
 
         }
 

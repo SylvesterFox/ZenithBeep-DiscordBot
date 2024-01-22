@@ -16,98 +16,120 @@ namespace ZenithBeep.Modeles
             
         }
 
+        public Emoji GetEmoji(string emoji)
+        {
+            if (Emoji.TryParse(emoji, out var result))
+            {
+                return result;
+            } else
+            {
+                return null;
+            }
+
+            
+        }
+
+        public Emote GetEmote(string emote) { 
+            if (Emote.TryParse(emote, out var result))
+            {
+                return result;
+            }
+            else
+            {
+                return null;
+            }
+            
+        }
+
         [SlashCommand("rolecreate", "Create role")]
         [DefaultMemberPermissions(GuildPermission.ManageRoles)]
         public async Task<RuntimeResult> CreateRoleReaction(string emoji, string msgId, [Remainder] SocketTextChannel channel, IRole role)
         {
-            /*var get_guilds = new ModelGuild { guildId = (long)Context.Guild.Id };*/
+            await DeferAsync();
             var id = Convert.ToUInt64(msgId);
             var msg = await channel.GetMessageAsync(id);
+            var guildId = Context.Guild.Id;
 
             if (msg == null)
             {
                 return ZenithResult.FromUserError("MassageNotFound", "Message by id was not found");
             }
-/*
-            ModelGuild db_guild = DatabasePost.GetGuild<ModelGuild>(get_guilds);*/
-            
 
-/*            if (Emote.TryParse(emoji, out var emote))
+            Emote _emote = GetEmote(emoji);
+            Emoji _emoji = GetEmoji(emoji);
+
+            try
             {
-                var insert_db = new ModelRoles
+                if (_emoji != null)
                 {
-                    guilds_id_KEY = db_guild.Id,
-                    channelId = (long)channel.Id,
-                    setEmoji = emoji,
-                    roleId = (long)role.Id,
-                    messageId = (long)msg.Id,
-                    roleName = role.Name
-                };
-                await msg.AddReactionAsync(emote);
-                DatabasePost.insertRoles(insert_db);
+                    await DataAccessLayer.SetRolesAutoMod(guildId, msg.Id, role.Id, channel.Id, _emoji.Name);
+                    await msg.AddReactionAsync(_emoji);
+                }
+
+                if (_emote != null)
+                {
+                    await DataAccessLayer.SetRolesAutoMod(guildId, msg.Id, role.Id, channel.Id, $"<:{_emote.Name}:{_emote.Id}>");
+                    await msg.AddReactionAsync(_emote);
+                }
+
+                await SendEmbedAsync("Success!", $"Add role on reaction {role.Mention}", ephemeral: true, color: Color.Green);
+                return ZenithResult.FromSuccess();
             } 
-            if (Emoji.TryParse(emoji, out var emoj))
+            catch (Exception ex)
             {
-                var insert_db = new ModelRoles
-                {
-                    guilds_id_KEY = db_guild.Id,
-                    channelId = (long)channel.Id,
-                    setEmoji = emoj.Name,
-                    roleId = (long)role.Id,
-                    messageId = (long)msg.Id,
-                    roleName = role.Name
-                };
-                await msg.AddReactionAsync(emoj);
-                DatabasePost.insertRoles(insert_db);
-            }*/
+                return ZenithResult.FromError($"{ex.Source}", $"{ex.Message}");
+            }
 
-            await SendEmbedAsync("Success!", $"Add role on reaction {role.Mention}", ephemeral: true, color: Color.Green);
-            return ZenithResult.FromSuccess();
         }
-/*
+
         [SlashCommand("roledelete", "Delete role")]
         [DefaultMemberPermissions(GuildPermission.ManageRoles)]
         public async Task<RuntimeResult> DeleteReactionsRole(String emoji, String mesaageid)
         {
-            var get_guild = new ModelGuild { guildId = (long)Context.Guild.Id };
-            ModelGuild db_guild = DatabasePost.GetGuild<ModelGuild>(get_guild);
-            var id = Convert.ToUInt64(mesaageid);
+            await DeferAsync();
+            Console.WriteLine(emoji);
+            var msg_id = Convert.ToUInt64(mesaageid);
+            var guildId = Context.Guild.Id;
+            var role = await DataAccessLayer.GetRoleAutoMod(guildId, msg_id, emoji);
+            Emote _emote = GetEmote(emoji);
+            Emoji _emoji = GetEmoji(emoji);
 
-            var delete_role_r = new ModelRoles
+            if (role == null)
             {
-                guilds_id_KEY = db_guild.Id,
-                setEmoji = emoji,
-                messageId = (long)id
-            };
-            
+                return ZenithResult.FromUserError("RoleNotFound", "Role by id was not found");
+            }
 
-            ModelRoles roles = DatabasePost.GetRole<ModelRoles>(delete_role_r);
-            var channel = Context.Guild.GetTextChannel((ulong)roles.channelId);
-            var msg = await channel.GetMessageAsync((ulong)roles.messageId);
+            var channel = Context.Guild.GetTextChannel(role.channelId);
+            var msg = await channel.GetMessageAsync(role.messageId);
 
             if (msg == null)
             {
                 return ZenithResult.FromUserError("MassageNotFound", "Message by id was not found");
-
             }
 
-            String role_name = roles.roleName;
-            if (Emote.TryParse(roles.setEmoji, out var emote))
+            try
             {
-                await msg.RemoveAllReactionsForEmoteAsync(emote);
-            }
+                if (_emoji != null)
+                {
+                    await msg.RemoveAllReactionsForEmoteAsync(_emoji);
+                }
 
-            if (Emoji.TryParse(roles.setEmoji, out var emo))
+                if (_emote != null)
+                {
+                    await msg.RemoveAllReactionsForEmoteAsync(_emote);
+                }
+
+                await DataAccessLayer.DeleteRolesAutoMod(guildId, role.roleId, msg_id);
+                await SendEmbedAsync("Success!", $"Role on reaction delete: <@&{role.roleId}>", ephemeral: true, color: Color.Green);
+                return ZenithResult.FromSuccess();
+            } catch (Exception ex)
             {
-                await msg.RemoveAllReactionsForEmoteAsync(emo);
-            }
-            DatabasePost.deleteRoles(delete_role_r);
+                Log.Error($"{ex.Source}:{ex.Message}");
+                return ZenithResult.FromError($"{ex.Source}", $"{ex.Message}");
+            } 
+           
+        }
 
-
-            await SendEmbedAsync("Success!", $"Role on reaction delete: {role_name}", ephemeral: true, color: Color.Green);
-            return ZenithResult.FromSuccess();
-        }*/
-        
         [SlashCommand("beep", "Ping command")]
         public async Task<RuntimeResult> PingCommand() {
            await RespondAsync("boop!! :ping_pong:");
@@ -120,6 +142,7 @@ namespace ZenithBeep.Modeles
         [SlashCommand("avatar", "Get user avatar")]
         public async Task<RuntimeResult> UserAvatar(SocketUser? user = null)
         {
+            await DeferAsync();
             var _user = user ?? Context.User;
 
             var author_embed = new EmbedAuthorBuilder();

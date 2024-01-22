@@ -74,7 +74,7 @@ namespace ZenithBeep.Modeles
                 builder.WithCurrentTimestamp();
             }
 
-            await RespondAsync(embed: builder.Build(), ephemeral: ephemeral);
+            await FollowupAsync(embed: builder.Build(), ephemeral: ephemeral);
 
             return ZenithResult.FromSuccess();
         }

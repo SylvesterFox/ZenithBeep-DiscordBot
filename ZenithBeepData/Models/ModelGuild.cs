@@ -12,6 +12,7 @@ namespace ZenithBeepData.Models
         public string Lang { get; set; } = "EN-us";
         public string Prefix { get; set; } = "!";
 
+        public ICollection<ModelRoles> Roles { get; set; } = new List<ModelRoles>();
        /* public List<ModelRoles> Roles { get; } = new();*/
     }
 }

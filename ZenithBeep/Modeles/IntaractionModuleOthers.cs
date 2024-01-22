@@ -34,6 +34,7 @@ namespace ZenithBeep.Modeles
 
         [SlashCommand("help", "help command")]
         public async Task HelpAsync() {
+            await DeferAsync();
             List<EmbedFieldBuilder> fieldBuilders = new List<EmbedFieldBuilder>();
             Color color = Color.DarkBlue;
             string title = "**List of all available commands that are available to the bot**\n[Github project](https://github.com/SylvesterFox/GrechkaBOT-Sharp)\n This is a special version only for this server";

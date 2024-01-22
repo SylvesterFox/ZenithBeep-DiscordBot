@@ -12,5 +12,6 @@ namespace ZenithBeepData.Context
 
         }
         public DbSet<ModelGuild> Guilds { get; set; }
+        public DbSet<ModelRoles> Roles { get; set; }
     }
 }

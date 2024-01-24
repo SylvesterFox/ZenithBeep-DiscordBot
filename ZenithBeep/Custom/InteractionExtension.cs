@@ -1,4 +1,5 @@
 ﻿using Discord;
+using ZenithBeepData.Models;
 
 
 namespace ZenithBeep.Custom
@@ -16,11 +17,39 @@ namespace ZenithBeep.Custom
         {
             if (interaction.HasResponded)
             {
+                
                 return interaction.FollowupAsync(text, embeds, isTTS, ephemeral, allowed, component, embed, options);
             }
 
             return interaction.RespondAsync(text, embeds, isTTS, ephemeral, allowed, component, embed, options);
         }
+
+        public static IEnumerable<string> GetPagedRoles(this List<ModelRoles> roles, int items)
+        {
+            List<string> pages = new List<string>();
+            List<string> lines = new List<string>();
+            int count = 0;
+
+            foreach (ModelRoles role in roles) 
+            {
+                string line = $"• **IdKey:** `{role.Id}` Role: <@&{role.roleId}> - **Emoji:** {role.setEmoji}";
+                count++;
+                if (count % (items + 1) == 0)
+                {
+                    lines.Reverse();
+                    pages.Add(string.Join("\n", lines));
+                    lines.Clear();
+                }
+                lines.Add(line);
+
+            }
+
+            lines.Reverse();
+            pages.Add(string.Join("\n", lines));
+            return pages;
+        }
             
     }
+
+
 }

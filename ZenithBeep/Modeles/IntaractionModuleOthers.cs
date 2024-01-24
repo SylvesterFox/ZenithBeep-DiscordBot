@@ -15,7 +15,7 @@ namespace ZenithBeep.Modeles
             _service = service;
         }
 
-        [SlashCommand("prefix", "test")]
+        [SlashCommand("prefix", "Change prefix command")]
         public async Task<RuntimeResult> Prefix(string prefix = null)
         {
             await DeferAsync();

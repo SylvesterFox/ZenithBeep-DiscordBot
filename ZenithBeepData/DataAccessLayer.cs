@@ -153,10 +153,9 @@ namespace ZenithBeepData
         /// delete role
         /// </summary>
         /// <param name="guildId"></param>
-        /// <param name="roleId"></param>
-        /// <param name="messageId"></param>
+        
         /// <returns></returns>
-        public async Task DeleteRolesAutoMod(ulong guildId, ulong roleId, ulong messageId)
+        public async Task DeleteRolesAutoMod(ulong guildId, int primirykeyId)
         {
             using var context = _contextFactory.CreateDbContext();
 
@@ -171,8 +170,7 @@ namespace ZenithBeepData
            
             var roles = await context.Roles
                 .Where(x => x.GuildId == guild.Id)
-                .Where(x => x.roleId == roleId)
-                .Where(x => x.messageId ==  messageId)
+                .Where(x => x.Id == primirykeyId)
                 .FirstOrDefaultAsync();
 
             if (roles == null)
@@ -212,6 +210,55 @@ namespace ZenithBeepData
                 return null;
 
             return await roles;
+        }
+
+        public async Task<ModelRoles> GetKeyRole(ulong guildId, int key)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var guild = await context.Guilds
+                    .Where(x => x.guildId == guildId).FirstOrDefaultAsync();
+
+
+            if (guild == null)
+                return null;
+
+            var roles = context.Roles
+                .Where(x => x.GuildId == guild.Id)
+                .Where(x => x.Id == key)
+                .FirstOrDefaultAsync();
+
+            if (roles == null)
+                return null;
+
+
+            return await roles;
+
+        }
+
+        public async Task<List<ModelRoles>> GetAllRoloesOfMessage(ulong guildId, ulong messageId) 
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var guild = await context.Guilds
+                    .Where(x => x.guildId == guildId).FirstOrDefaultAsync();
+
+
+            if (guild == null)
+                return null;
+
+
+            var roles = await context.Roles
+                .Where(x => x.GuildId == guild.Id)
+                .Where(x => x.messageId == messageId)
+                .ToListAsync();
+
+            if (roles.Count == 0)
+            {
+                throw new NotFoundObjectData("No roles found for the linked message");
+            }
+
+            return roles;
         }
 
 

@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using ZenithBeepData.Context;
 using ZenithBeepData;
+using ZenithBeep.Custom;
 
 
 namespace ZenithBeep
@@ -152,7 +153,8 @@ namespace ZenithBeep
                 .AddSingleton<HanderJoinGuilds>()
                 .AddDbContextFactory<BeepDbContext>(
                     options => options.UseNpgsql(_config.GetConnectionString("Default")))
-                .AddSingleton<DataAccessLayer>();
+                .AddSingleton<DataAccessLayer>()
+                .AddSingleton<ParseEmoji>();
 
 
 

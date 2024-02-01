@@ -9,13 +9,11 @@ namespace ZenithBeep.Handlers
     public class HanderRoles
     {
         private readonly DiscordSocketClient _clinet;
-        private readonly IServiceProvider _service;
         public readonly DataAccessLayer DataAccessLayer;
 
         public HanderRoles (DiscordSocketClient clinet, IServiceProvider service, DataAccessLayer dataAccessLayer)
         {
             _clinet = clinet;
-            _service = service;
             DataAccessLayer = dataAccessLayer;
         }
 

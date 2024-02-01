@@ -10,10 +10,12 @@ namespace ZenithBeepData
     public class DataAccessLayer
     {
         private readonly IDbContextFactory<BeepDbContext> _contextFactory;
+        public DataRooms dataRooms { get; set; }
 
-        public DataAccessLayer(IDbContextFactory<BeepDbContext> contextFactory)
+        public DataAccessLayer(IDbContextFactory<BeepDbContext> contextFactory, DataRooms rooms)
         {
             _contextFactory = contextFactory;
+            dataRooms = rooms;
         }
 
         public async Task CreateGuild (ulong IdGuild)
@@ -57,6 +59,11 @@ namespace ZenithBeepData
                 
         }
 
+        /// <summary>
+        /// Return primety id the guild itself
+        /// </summary>
+        /// <param name="IdGuild"></param>
+        /// <returns></returns>
         public int GetGuildPrimeryId(ulong IdGuild)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -90,7 +97,12 @@ namespace ZenithBeepData
             await context.SaveChangesAsync();
 
         }
-
+        /// <summary>
+        /// changes the language in a certain guild
+        /// </summary>
+        /// <param name="IdGuild"></param>
+        /// <param name="lang"></param>
+        /// <returns></returns>
         public async Task SetLanguage(ulong IdGuild, string lang)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -150,7 +162,7 @@ namespace ZenithBeepData
         }
 
         /// <summary>
-        /// delete role
+        /// Delete role
         /// </summary>
         /// <param name="guildId"></param>
         

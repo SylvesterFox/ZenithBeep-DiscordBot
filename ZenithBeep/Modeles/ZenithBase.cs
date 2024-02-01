@@ -3,7 +3,6 @@ using Discord.Interactions;
 using ZenithBeepData;
 
 
-
 namespace ZenithBeep.Modeles
 {
     public abstract class ZenithBase : InteractionModuleBase<SocketInteractionContext>

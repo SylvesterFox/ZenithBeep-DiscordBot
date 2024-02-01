@@ -62,13 +62,12 @@ namespace ZenithBeep
                 
                 
 
-
                 _client.Ready += async () =>
                 {
                     Console.WriteLine("RAWR! Bot is ready!");
 
                    
-                    await _sCommand.RegisterCommandsGloballyAsync(false);
+                    await _sCommand.RegisterCommandsGloballyAsync(true);
 
 
                     string audio = _config["audioservice"];
@@ -154,6 +153,7 @@ namespace ZenithBeep
                 .AddDbContextFactory<BeepDbContext>(
                     options => options.UseNpgsql(_config.GetConnectionString("Default")))
                 .AddSingleton<DataAccessLayer>()
+                .AddSingleton<DataRooms>()
                 .AddSingleton<ParseEmoji>();
 
 

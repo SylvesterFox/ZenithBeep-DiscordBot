@@ -13,6 +13,7 @@ namespace ZenithBeepData.Models
         public string Prefix { get; set; } = "!";
 
         public ICollection<ModelRoles> Roles { get; set; } = new List<ModelRoles>();
-       /* public List<ModelRoles> Roles { get; } = new();*/
+        public ICollection<ModelRoomsLobby> Lobbys { get; set; } = new List<ModelRoomsLobby>();
+
     }
 }

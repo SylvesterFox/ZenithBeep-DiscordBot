@@ -40,22 +40,18 @@ namespace ZenithBeep.Modeles
                 return ZenithResult.FromUserError("MassageNotFound", "Message by id was not found");
             }
 
-            Emote _emote = _parseEmoji.GetEmote(emoji);
-            Emoji _emoji = _parseEmoji.GetEmoji(emoji);
+            var _emoji = _parseEmoji.GetParseEmoji(emoji);
+            if (_emoji == null)
+            {
+                return ZenithResult.FromSuccess("IsNotEmoji", "Not emoji");
+            }
 
             try
             {
-                if (_emoji != null)
-                {
-                    await DataAccessLayer.SetRolesAutoMod(guildId, _msg.Id, role.Id, _msg.Channel.Id, _emoji.Name);
-                    await _msg.AddReactionAsync(_emoji);
-                }
 
-                if (_emote != null)
-                {
-                    await DataAccessLayer.SetRolesAutoMod(guildId, _msg.Id, role.Id, _msg.Channel.Id, $"<:{_emote.Name}:{_emote.Id}>");
-                    await _msg.AddReactionAsync(_emote);
-                }
+                string name = _parseEmoji.GetNameEmoji(emoji);
+                await DataAccessLayer.SetRolesAutoMod(guildId, _msg.Id, role.Id, _msg.Channel.Id, name);
+                await _msg.AddReactionAsync(_emoji);
 
                 await SendEmbedAsync("Success!", $"Add role on reaction {role.Mention}", ephemeral: true, color: Color.Green);
                 return ZenithResult.FromSuccess();
@@ -119,17 +115,15 @@ namespace ZenithBeep.Modeles
 
             try
             {
-                Emote _emote = _parseEmoji.GetEmote(role.setEmoji);
-                Emoji _emoji = _parseEmoji.GetEmoji(role.setEmoji);
+                var _emoji = _parseEmoji.GetParseEmoji(role.setEmoji);
+                if (_emoji == null)
+                {
+                    return ZenithResult.FromSuccess("IsNotEmoji", "Not emoji");
+                }
 
                 if (_emoji != null)
                 {
                     await msg.RemoveAllReactionsForEmoteAsync(_emoji);
-                }
-
-                if (_emote != null)
-                {
-                    await msg.RemoveAllReactionsForEmoteAsync(_emote);
                 }
 
                 await DataAccessLayer.DeleteRolesAutoMod(guildId, role.Id);

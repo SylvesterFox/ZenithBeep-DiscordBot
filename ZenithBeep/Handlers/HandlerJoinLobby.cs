@@ -1,6 +1,8 @@
 using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
+using Serilog;
+using ZenithBeepData;
 
 
 namespace ZenithBeep.Handlers
@@ -9,12 +11,13 @@ namespace ZenithBeep.Handlers
     {
         private readonly DiscordSocketClient _client;
         private readonly IServiceProvider _service;
+        private readonly DataAccessLayer _dataAccessLayer;
 
-
-        public HandlerJoinLobby(DiscordSocketClient client, IServiceProvider serviceProvider) 
+        public HandlerJoinLobby(DiscordSocketClient client, IServiceProvider serviceProvider, DataAccessLayer dataAccessLayer) 
         {
             _client = client;
             _service = serviceProvider;
+            _dataAccessLayer = dataAccessLayer;
         }
 
 
@@ -23,108 +26,76 @@ namespace ZenithBeep.Handlers
             _client.UserVoiceStateUpdated += OnCreatePrivateRoom;
         }
 
-/*
-        private async Task<ModelGuild> GetGuildKey(ulong guildId) {
-             var _get_guild_key = new ModelGuild {
-                guildId = (long)guildId
-            };
-            ModelGuild _key = DatabasePost.GetGuild<ModelGuild>(_get_guild_key);
-            return _key;
-        }
 
-
-        private async Task<ModelRoomsLobby> GetIDLobby(int guildKey) {
-            var _dblobbyId = new ModelRoomsLobby { guild_key = guildKey };
-            ModelRoomsLobby _get = DatabasePost.GetIdChannelLobby<ModelRoomsLobby>(_dblobbyId);
-            return _get;
-        }
-*/
         private async Task OnCreatePrivateRoom(SocketUser user, SocketVoiceState state1, SocketVoiceState state2)
         {
             if (user.IsBot)
                 return;
-/*
-            // Выполняется при заходи в лоби по созданию приватного войса
-            if (state2.VoiceChannel != null) {
-                SocketGuild _guild = state2.VoiceChannel.Guild;
-                ModelGuild key_guild = await GetGuildKey(_guild.Id);
-                var _lobby = await GetIDLobby(key_guild.Id);
 
-                if ((ulong)_lobby.lobby_id == state2.VoiceChannel.Id) {
+            // Выполняется при заходи в лоби по созданию приватного войса
+            if (state2.VoiceChannel != null)
+            {
+                SocketGuild _guild = state2.VoiceChannel.Guild;
+                var lobby = await _dataAccessLayer.dataRooms.GetLobby(_guild.Id);
+
+                if (lobby.lobby_id == state2.VoiceChannel.Id)
+                {
                     var _user = state2.VoiceChannel.GetUser(user.Id);
                     var _category = state2.VoiceChannel.CategoryId ?? 0;
-                    await CreateRoom(_user, _guild, _category);                    
+                    await CreateRoom(_user, _guild, _category);
                 }
             }
 
             // Выполеяется при выходи из приватного войса
-            if (state1.VoiceChannel != null) {
+            if (state1.VoiceChannel != null)
+            {
                 int _countVoiceUser = state1.VoiceChannel.ConnectedUsers.Count;
                 ulong _id_channel = state1.VoiceChannel.Id;
-                var _temp = new ModelTempRoom {
-                    channel_room = (long)_id_channel
-                };
-                ModelTempRoom temproom = DatabasePost.GetTempRoom<ModelTempRoom>(_temp);
-                if (_countVoiceUser == 0 && temproom != null) {
+                var _temp = await _dataAccessLayer.dataRooms.GetTempRoom(_id_channel);
+                
+                if (_countVoiceUser == 0 && _temp != null)
+                {
                     await DestroyerRoom(state1.VoiceChannel);
                     return;
                 }
                 return;
-            }*/
+            }
         }
 
-       /* private async Task<RestVoiceChannel> CreateRoom(SocketGuildUser userOwner, SocketGuild guild, ulong category) 
-        { 
-            var _req = new ModelRooms {
-                channel_owmer = (long)userOwner.Id
-            };
-            ModelRooms _get = DatabasePost.GetRoom<ModelRooms>(_req);
-            string name = $"Voice-{userOwner.Username}";
-            int limit_vc = 0;
+        private async Task<RestVoiceChannel> CreateRoom(SocketGuildUser userOwner, SocketGuild guild, ulong category)
+        {
+           
+            string name = $"{userOwner.Username}'s Lair";
+            var room_settings = await _dataAccessLayer.dataRooms.GetRoomSettings(userOwner.Id, name);
 
-            if (_get != null)
-            {
-                name = _get.name;
-                limit_vc = _get.limit;
-            } else {
-
-                var _addSettings = new ModelRooms{
-                    channel_owmer = (long)userOwner.Id,
-                    name = name
-                };     
-                DatabasePost.insertSettingRoom(_addSettings);
-            }
-            
-            var room = await guild.CreateVoiceChannelAsync($"{name}");
+            var room = await guild.CreateVoiceChannelAsync($"{room_settings.channel_name}");
             await room.AddPermissionOverwriteAsync(guild.EveryoneRole, new OverwritePermissions(connect: PermValue.Inherit));
-            await room.AddPermissionOverwriteAsync(userOwner, new OverwritePermissions(connect: PermValue.Allow));
+            await room.AddPermissionOverwriteAsync(userOwner, new OverwritePermissions(connect: PermValue.Allow, manageChannel: PermValue.Allow));
 
-            if (limit_vc != 0) {
-                await room.ModifyAsync(x => x.UserLimit = limit_vc);
-            }
+            await room.ModifyAsync(x => x.UserLimit = room_settings.limit);
 
-            var _temp = new ModelTempRoom {
-                channel_room = (long)room.Id,
-                id_user = (long)userOwner.Id
-            };
 
-            if (category != 0) {
+            if (category != 0)
+            {
                 await room.ModifyAsync(x => x.CategoryId = category);
             }
 
-            await userOwner.ModifyAsync(x => {
+            await userOwner.ModifyAsync(x =>
+            {
                 x.ChannelId = room.Id;
             });
 
-            DatabasePost.insertTempRoom(_temp);
-            Console.WriteLine("Create room OK");
+            await _dataAccessLayer.dataRooms.CreateTempRoom(room.Id, userOwner.Id);
+
+            Log.Debug("Create room OK");
             return room;
         }
 
-        private async Task DestroyerRoom(SocketVoiceChannel channel) {;
-            DatabasePost.deleteTempRoom((long)channel.Id);
+        private async Task DestroyerRoom(SocketVoiceChannel channel)
+        {
+            await _dataAccessLayer.dataRooms.DeleteTempRoom(channel.Id);
             await channel.DeleteAsync();
-      
-        } */
+
+        }
     } 
 }

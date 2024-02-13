@@ -120,6 +120,9 @@
   <data name="IntaractionModuleOthers" xml:space="preserve">
     <value>⚙ Others</value>
   </data>
+  <data name="IntaractionModuleRoles" xml:space="preserve">
+    <value>🎟 Roles</value>
+  </data>
   <data name="IntaractionModuleRoomers" xml:space="preserve">
     <value>🗝 Roomers</value>
   </data>
@@ -128,8 +131,5 @@
   </data>
   <data name="InteractionModuleMusic" xml:space="preserve">
     <value>🎵 Music</value>
-  </data>
-  <data name="InteractionModuleTest" xml:space="preserve">
-    <value>Test</value>
   </data>
 </root>

@@ -35,7 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Resources\Help-en.Designer.cs">
+    <Compile Update="ResourcesBot\Help-en.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>Help-en.resx</DependentUpon>
@@ -43,7 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Resources\Help-en.resx">
+    <EmbeddedResource Update="ResourcesBot\Help-en.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Help-en.Designer.cs</LastGenOutput>
     </EmbeddedResource>
@@ -53,7 +53,7 @@
     <None Update="appsettings.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Resources\StatusContext.json">
+    <None Update="ResourcesBot\StatusContext.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

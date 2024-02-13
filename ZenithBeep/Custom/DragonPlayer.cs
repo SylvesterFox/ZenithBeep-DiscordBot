@@ -4,7 +4,7 @@ using Lavalink4NET.Events;
 using Lavalink4NET.Player;
 
 
-namespace GrechkaBOT.Custom
+namespace ZenithBeep.Custom
 {
     internal sealed class DragonPlayer : VoteLavalinkPlayer
     {

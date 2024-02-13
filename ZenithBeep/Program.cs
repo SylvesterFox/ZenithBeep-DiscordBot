@@ -3,18 +3,21 @@ using Serilog;
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
-using GrechkaBOT.Database;
-using GrechkaBOT.Handlers;
-using GrechkaBOT.Services;
+using ZenithBeep.Handlers;
+using ZenithBeep.Services;
 using Lavalink4NET;
 using Lavalink4NET.DiscordNet;
 using Lavalink4NET.Logging.Microsoft;
 using Lavalink4NET.MemoryCache;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using ZenithBeepData.Context;
+using ZenithBeepData;
+using ZenithBeep.Custom;
 
 
-namespace Csharp_GrechkaBot
+namespace ZenithBeep
 {
     public class Program
     {
@@ -29,7 +32,7 @@ namespace Csharp_GrechkaBot
             new Program().MainAsync().GetAwaiter().GetResult();
         }
 
-         public Program() {
+        public Program() {
             var config = new ConfigurationBuilder()
                 .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
                 .AddYamlFile("appsettings.yml");
@@ -56,40 +59,31 @@ namespace Csharp_GrechkaBot
                 await services.GetRequiredService<HanderJoinGuilds>().InitializeAsync();
                 await services.GetRequiredService<HandlerJoinLobby>().InitializeAsync();
                 services.GetRequiredService<LoggingService>();
-                services.GetRequiredService<ConnectionDB>();
+                
+                
 
                 _client.Ready += async () =>
                 {
                     Console.WriteLine("RAWR! Bot is ready!");
 
-                    
-                    await _sCommand.RegisterCommandsGloballyAsync(false);
+                   
+                    await _sCommand.RegisterCommandsGloballyAsync(true);
 
-                    var listGuild = new List<ModelGuild>();
-                    foreach (var guild in _client.Guilds)
+
+                    string audio = _config["audioservice"];
+                    switch (audio)
                     {
-
-                        var guild_db = new ModelGuild
-                        {
-                            Name = guild.Name,
-                            guildId = (long)guild.Id,
-                            Leng = "Us-en"
-                        };
-
-                        var get = new ModelGuild { guildId = (long)guild.Id };
-
-                        ModelGuild info = DatabasePost.GetGuild<ModelGuild>(get);
-
-                        if (info == null)
-                        {
-                            listGuild.Add(guild_db);
-                        }
-                        
+                        case "true":
+                            await audioService.InitializeAsync();
+                            break;
+                        case "false":
+                            break;
+                        default:
+                            await audioService.InitializeAsync();
+                            break;
                     }
-
-                    DatabasePost.insertGuild(listGuild);
-
-                    await audioService.InitializeAsync();
+                    
+                   
                 };
 
                 Console.CancelKeyPress += OnCancel;
@@ -120,7 +114,6 @@ namespace Csharp_GrechkaBot
             }
         }
 
-
         private ServiceProvider ConfigureServices() 
         {
             var services = new ServiceCollection()
@@ -133,6 +126,7 @@ namespace Csharp_GrechkaBot
                     HandlerTimeout = 5000,
                     MessageCacheSize = 1000,
                     DefaultRetryMode = Discord.RetryMode.RetryRatelimit,
+                    UseInteractionSnowflakeDate = false
                 }))
                 .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
                 .AddSingleton<HanderInteraction>()
@@ -145,16 +139,25 @@ namespace Csharp_GrechkaBot
                 .AddSingleton<HanderRoles>()
                 .AddMicrosoftExtensionsLavalinkLogging()
                 .AddLogging(configure => configure.AddSerilog())
-                .AddSingleton(new LavalinkNodeOptions {
+                .AddSingleton(new LavalinkNodeOptions
+                {
                     RestUri = $"http://{_config["lavalink_host"]}:2333/",
                     WebSocketUri = $"ws://{_config["lavalink_host"]}:2333/",
-                    Password = _config["lavalink_password"]
+                    Password = _config["lavalink_password"],
+
 
                 })
                 .AddSingleton<ILavalinkCache, LavalinkCache>()
-                .AddSingleton<ConnectionDB>()
                 .AddSingleton<HandlerJoinLobby>()
-                .AddSingleton<HanderJoinGuilds>();
+                .AddSingleton<HanderJoinGuilds>()
+                .AddDbContextFactory<BeepDbContext>(
+                    options => options.UseNpgsql(_config.GetConnectionString("Default")))
+                .AddSingleton<DataAccessLayer>()
+                .AddSingleton<DataRooms>()
+                .AddSingleton<ParseEmoji>();
+
+
+
 
             if (!string.IsNullOrEmpty(_config["logs"]))
             {
@@ -211,6 +214,7 @@ namespace Csharp_GrechkaBot
             }
 
             var serviceProvider = services.BuildServiceProvider();
+            
             return serviceProvider;
         }
 

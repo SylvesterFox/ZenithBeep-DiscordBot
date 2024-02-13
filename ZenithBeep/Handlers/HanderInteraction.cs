@@ -1,15 +1,14 @@
-﻿
-using Discord;
+﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using GrechkaBOT.Custom;
-using GrechkaBOT.Services;
+using ZenithBeep.Custom;
+using ZenithBeep.Services;
 using Lavalink4NET.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
 
-namespace GrechkaBOT.Handlers
+namespace ZenithBeep.Handlers
 {
     public class HanderInteraction
     {
@@ -41,6 +40,7 @@ namespace GrechkaBOT.Handlers
             _command.ModalCommandExecuted += HandleModal;
             _command.ComponentCommandExecuted += ComponentCommandExecuted;
             _command.Log += OnLogAsync;
+            
 
             if (_logger_lava is EventLogger log)
             {

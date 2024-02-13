@@ -1,11 +1,19 @@
 ﻿using Discord;
 using Discord.Interactions;
+using ZenithBeepData;
 
 
-namespace GrechkaBOT.Modeles
+namespace ZenithBeep.Modeles
 {
     public abstract class ZenithBase : InteractionModuleBase<SocketInteractionContext>
     {
+        public readonly DataAccessLayer DataAccessLayer;
+
+        public ZenithBase(DataAccessLayer dataAccessLayer)
+        {
+            DataAccessLayer = dataAccessLayer;
+        }
+
         /// <summary>
         /// Send as embed containing
         /// </summary>
@@ -65,7 +73,7 @@ namespace GrechkaBOT.Modeles
                 builder.WithCurrentTimestamp();
             }
 
-            await RespondAsync(embed: builder.Build(), ephemeral: ephemeral);
+            await FollowupAsync(embed: builder.Build(), ephemeral: ephemeral);
 
             return ZenithResult.FromSuccess();
         }

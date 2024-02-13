@@ -1,9 +1,9 @@
 ﻿using Discord;
 using Lavalink4NET.Artwork;
 using Lavalink4NET.Player;
-using static GrechkaBOT.Custom.DragonPlayer;
+using static ZenithBeep.Custom.DragonPlayer;
 
-namespace GrechkaBOT.Custom
+namespace ZenithBeep.Custom
 {
     public static class LavaLinkExtension
     {

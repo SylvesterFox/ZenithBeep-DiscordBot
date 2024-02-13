@@ -1,12 +1,8 @@
 ﻿using Discord;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+using ZenithBeepData.Models;
 
-namespace GrechkaBOT.Custom
+
+namespace ZenithBeep.Custom
 {
     public static class InteractionExtension
     {
@@ -21,11 +17,39 @@ namespace GrechkaBOT.Custom
         {
             if (interaction.HasResponded)
             {
+                
                 return interaction.FollowupAsync(text, embeds, isTTS, ephemeral, allowed, component, embed, options);
             }
 
             return interaction.RespondAsync(text, embeds, isTTS, ephemeral, allowed, component, embed, options);
         }
+
+        public static IEnumerable<string> GetPagedRoles(this List<ModelRoles> roles, int items)
+        {
+            List<string> pages = new List<string>();
+            List<string> lines = new List<string>();
+            int count = 0;
+
+            foreach (ModelRoles role in roles) 
+            {
+                string line = $"• **IdKey:** `{role.Id}` Role: <@&{role.roleId}> - **Emoji:** {role.setEmoji}";
+                count++;
+                if (count % (items + 1) == 0)
+                {
+                    lines.Reverse();
+                    pages.Add(string.Join("\n", lines));
+                    lines.Clear();
+                }
+                lines.Add(line);
+
+            }
+
+            lines.Reverse();
+            pages.Add(string.Join("\n", lines));
+            return pages;
+        }
             
     }
+
+
 }

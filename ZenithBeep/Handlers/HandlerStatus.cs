@@ -3,7 +3,7 @@ using Discord;
 using System.Text.Json;
 
 
-namespace GrechkaBOT.Handlers
+namespace ZenithBeep.Handlers
 {
 
     public class HandlerStatus
@@ -30,7 +30,7 @@ namespace GrechkaBOT.Handlers
 
         private Task OnStatusBot()
         {
-            string fileName = AppDomain.CurrentDomain.BaseDirectory + "Resources/StatusContext.json";
+            string fileName = AppDomain.CurrentDomain.BaseDirectory + "ResourcesBot/StatusContext.json";
             string jsonString = File.ReadAllText(fileName);
             
 

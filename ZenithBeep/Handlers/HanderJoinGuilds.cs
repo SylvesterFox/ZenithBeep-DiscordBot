@@ -1,18 +1,19 @@
 ﻿using Discord.WebSocket;
-using GrechkaBOT.Database;
+using ZenithBeepData;
 
-namespace GrechkaBOT.Handlers
+
+namespace ZenithBeep.Handlers
 {
     public class HanderJoinGuilds
     {
         private readonly DiscordSocketClient _client;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly DataAccessLayer _db;
 
 
-        public HanderJoinGuilds(DiscordSocketClient client, IServiceProvider serviceProvider)
+        public HanderJoinGuilds(DiscordSocketClient client, IServiceProvider serviceProvider, DataAccessLayer dataAccessLayer)
         {
             _client = client;
-            _serviceProvider = serviceProvider;
+            _db = dataAccessLayer;
         }
 
         public async Task InitializeAsync()
@@ -20,17 +21,9 @@ namespace GrechkaBOT.Handlers
             _client.JoinedGuild += OnBotJoinGuild;
         }
 
-        private Task OnBotJoinGuild(SocketGuild guild)
+        private async Task OnBotJoinGuild(SocketGuild guild)
         {
-            var guildInfo = new ModelGuild
-            {
-                Name = guild.Name,
-                guildId = (long)guild.Id,
-                Leng = "us"
-            };
-
-            DatabasePost.insertGuild(guildInfo);
-            return Task.CompletedTask;
+            await _db.CreateGuild(guild.Id);
         }
     }
 }

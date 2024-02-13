@@ -1,21 +1,25 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using GrechkaBOT.Custom;
-using GrechkaBOT.Services;
+using ZenithBeep.Custom;
+using ZenithBeep.Services;
 using Lavalink4NET;
 using Lavalink4NET.Player;
 using Lavalink4NET.Rest;
-using static GrechkaBOT.Custom.DragonPlayer;
+using static ZenithBeep.Custom.DragonPlayer;
+using ZenithBeepData;
 
-namespace GrechkaBOT.Modeles
+namespace ZenithBeep.Modeles
 {
     public class InteractionModuleMusic : ZenithBase
     {
         public IAudioService LavaNode { private get; set; }
         public PaginationService Pagination { private get; set; }
 
-
+        public InteractionModuleMusic(DataAccessLayer accessLayer) : base(accessLayer)
+        {
+            
+        }
 
         [SlashCommand("play", "Playing music", runMode: RunMode.Async)]
         public async Task<RuntimeResult> PlayAsync(string query)

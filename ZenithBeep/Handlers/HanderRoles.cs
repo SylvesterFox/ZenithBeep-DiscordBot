@@ -1,19 +1,20 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using GrechkaBOT.Database;
+using ZenithBeepData;
 
-namespace GrechkaBOT.Handlers
+
+namespace ZenithBeep.Handlers
 {
 
     public class HanderRoles
     {
         private readonly DiscordSocketClient _clinet;
-        private readonly IServiceProvider _service;
+        public readonly DataAccessLayer DataAccessLayer;
 
-        public HanderRoles (DiscordSocketClient clinet, IServiceProvider service)
+        public HanderRoles (DiscordSocketClient clinet, IServiceProvider service, DataAccessLayer dataAccessLayer)
         {
             _clinet = clinet;
-            _service = service;
+            DataAccessLayer = dataAccessLayer;
         }
 
         public async Task InitializeAsync()
@@ -30,22 +31,18 @@ namespace GrechkaBOT.Handlers
                 return;
             }
 
-            var get_role = new ModelRoles
-            {
-                setEmoji = reaction.Emote.ToString(),
-                messageId = (long)reaction.MessageId
-            };
+            var guild = ((SocketGuildChannel)reaction.Channel).Guild;
+            var _emoji = reaction.Emote.ToString();
 
-            ModelRoles roledb = DatabasePost.GetRole<ModelRoles>(get_role);
+            Console.WriteLine(_emoji);
+            var roledb = await DataAccessLayer.GetRoleAutoMod(guild.Id, reaction.MessageId, _emoji);
 
             if (roledb is null)
             {
                 return;
             }
 
-            Console.WriteLine(roledb.roleName);
-
-            var role = ((SocketGuildChannel)reaction.Channel).Guild.GetRole((ulong)roledb.roleId);
+            var role = guild.GetRole(roledb.roleId);
             await ((SocketGuildUser)reaction.User.Value).AddRoleAsync(role);
         }
 
@@ -58,22 +55,18 @@ namespace GrechkaBOT.Handlers
                 return;
             }
 
+            var guild = ((SocketGuildChannel)reaction.Channel).Guild;
+            var _emoji = reaction.Emote.ToString();
 
-            var get_role = new ModelRoles
-            {
-                setEmoji = reaction.Emote.ToString(),
-                messageId = (long)reaction.MessageId
-            };
-
-
-            ModelRoles roledb = DatabasePost.GetRole<ModelRoles>(get_role);
+            Console.WriteLine(_emoji);
+            var roledb = await DataAccessLayer.GetRoleAutoMod(guild.Id, reaction.MessageId, _emoji);
 
             if (roledb is null)
             {
                 return;
             }
 
-            var role = ((SocketGuildChannel)reaction.Channel).Guild.GetRole((ulong)roledb.roleId);
+            var role = guild.GetRole(roledb.roleId);
             await ((SocketGuildUser)reaction.User.Value).RemoveRoleAsync(role);
 
         }

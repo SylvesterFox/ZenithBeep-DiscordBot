@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 
-namespace GrechkaBOT.Services
+namespace ZenithBeep.Services
 {
     public class LoggingService
     {

@@ -7,7 +7,7 @@
 
 
 # About
-My personal Discord bot, which was rewritten from my old work under .NET-6
+My personal Discord bot, which was rewritten from my old work under .NET-8
 The project started on October 27, 2022. Under the old name LunaBot, especially for the IB workshop server
 
 Briefly about the bot, at the moment it can create private voice channels, has a system for issuing roles and, of course, the bot has musical capabilities and can play music from YouTube in a voice channel.

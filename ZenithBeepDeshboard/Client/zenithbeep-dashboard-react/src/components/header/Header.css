@@ -1,0 +1,115 @@
+/* Start Header */
+
+.header__row {
+    display: flex;
+    column-gap: 30px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+}
+
+.elements__first {
+    display: flex;
+    align-items: center;
+    column-gap: 30px;
+}
+
+.elements__second {
+    display: flex;
+    align-items: center;
+    column-gap: 30px;
+}
+
+.header__logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo__link {
+    display: flex;
+    align-items: center;
+    column-gap: 10px;
+    text-decoration: none;
+    font-size: 40px;
+    color: var(--textColor);
+    font-weight: bold;
+}
+
+.logo__image {
+    display: flex;
+    padding-bottom: 5px;
+}
+
+
+
+.header__nav__first ul {
+    display: flex;
+    column-gap: 30px;
+    padding-top: 5px;
+}
+
+
+.header__nav__second ul {
+    display: flex;
+    column-gap: 30px;
+    padding-top: 5px;
+}
+
+.header__nav__first a {
+    color: var(--textColor);
+    text-decoration: none;
+    font-weight: 400;
+    font-size: 20px;
+    text-align: center;
+}
+
+.header__nav__second a {
+    color: var(--textColor);
+    text-decoration: none;
+    font-weight: 400;
+    font-size: 20px;
+    z-index: 2;
+}
+
+
+.link_nav span{
+    position: relative;
+    display: flex;
+    content: url(../../static/charm_menu-kebab.svg);
+
+}
+
+.Sign_in span{
+    position: relative;
+    content: url(../../static/clarity_sign-in-solid.svg);
+    top: 3px;
+    padding-right: 5px;
+}
+
+.docs span{
+    content: url(../../static/docs.svg);
+    padding-right: 5px;
+}
+
+.commands {
+    position: relative;
+    bottom: 2px;
+}
+
+.commands span{
+    position: relative;
+    content: url(../../static/clarity_cog-solid.svg);
+    padding-right: 5px;
+    top: 2px
+}
+
+.support_us span{
+    position: relative;
+    content: url(../../static/solar_heart-bold.svg);
+    padding-right: 5px;
+    top: 1px;
+}
+
+
+
+/* End Header */

@@ -1,0 +1,17 @@
+:root {
+  --textColor: #fff;
+}
+
+
+body {
+  background-color: #352C31;
+  color: #ffffff;
+  font-family: "Baloo Tamma 2", system-ui;
+  color: var(--textColor)
+}
+
+.container {
+  max-width: 1516px;
+  margin: 0 auto;
+  padding: 0 30px;
+}

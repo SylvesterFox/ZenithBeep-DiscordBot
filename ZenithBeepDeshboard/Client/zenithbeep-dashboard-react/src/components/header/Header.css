@@ -44,46 +44,66 @@
 
 .header__nav__first ul {
     display: flex;
-    column-gap: 30px;
+    column-gap: 10px;
     padding-top: 5px;
 }
 
 
 .header__nav__second ul {
     display: flex;
-    column-gap: 30px;
+    column-gap: 10px;
     padding-top: 5px;
 }
 
 .header__nav__first a {
     color: var(--textColor);
     text-decoration: none;
-    font-weight: 400;
+    font-weight: bold;
     font-size: 20px;
     text-align: center;
+    padding: 7px 15px;
 }
+
+
 
 .header__nav__second a {
     color: var(--textColor);
     text-decoration: none;
-    font-weight: 400;
+    font-weight: bold;
     font-size: 20px;
-    z-index: 2;
+    padding: 7px 15px;
 }
 
 
-.link_nav span{
+
+
+.Sign_in{
     position: relative;
     display: flex;
-    content: url(../../static/charm_menu-kebab.svg);
+}
 
+.button {
+    display: flex;
+    margin-top: 5px;
+}
+
+.button img {
+    padding: 5px;
+    margin-top: -5px;
+
+}
+
+.button img:hover {
+    background-color: #ffffff34;
+    border-radius: 30px;
+    transition: .5s;
 }
 
 .Sign_in span{
     position: relative;
     content: url(../../static/clarity_sign-in-solid.svg);
-    top: 3px;
     padding-right: 5px;
+    top: -2px
 }
 
 .docs span{
@@ -110,6 +130,18 @@
     top: 1px;
 }
 
+.header__nav__first ul li a {
+    text-transform: uppercase;
+}
 
+.header__nav__second ul li a {
+    text-transform: uppercase;
+}
+
+a.active, a:hover {
+    background-color: #ffffff34;
+    transition: .5s;
+    border-radius: 58px
+}
 
 /* End Header */

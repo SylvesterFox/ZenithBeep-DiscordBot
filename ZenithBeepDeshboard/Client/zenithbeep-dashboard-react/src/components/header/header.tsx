@@ -1,4 +1,5 @@
 import logo from '../../static/logo.svg'
+import kekba from '../../static/charm_menu-kebab.svg'
 import "./Header.css"
 
 function Header () {
@@ -16,13 +17,16 @@ function Header () {
                         <nav className='header__nav__first'>
                             <ul>
                                 <li>
+                                    
                                     <a href="#!" className='docs'><span></span>DOCS</a>
                                 </li>
                                 <li>
                                     <a href="#!" className='commands'><span></span>COMMANDS</a>
+                                    
                                 </li>
                                 <li className='list__header'>
                                     <a href="#!" className='support_us'><span></span>SUPPORT US</a>
+                                
                                 </li>
                             </ul>
                         </nav>
@@ -31,7 +35,7 @@ function Header () {
                         <nav className="header__nav__second">
                             <ul>
                                 <li>
-                                    <a href="#!" className="link_nav"><span></span></a>
+                                    <span className='button'><img src={kekba} alt="" /></span>
                                 </li>
                                 <li>
                                     <a href="#!" className='Sign_in'><span></span>SIGN IN</a>

@@ -15,6 +15,8 @@ using Microsoft.EntityFrameworkCore;
 using ZenithBeepData.Context;
 using ZenithBeepData;
 using ZenithBeep.Custom;
+using DotNetEnv.Configuration;
+using DotNetEnv;
 
 
 namespace ZenithBeep
@@ -35,9 +37,10 @@ namespace ZenithBeep
         public Program() {
             var config = new ConfigurationBuilder()
                 .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                .AddYamlFile("appsettings.yml");
+                .AddDotNetEnv(".env", LoadOptions.TraversePath());
 
             _config = config.Build();
+            
         }
 
         private readonly CancellationTokenSource tokenSource = new CancellationTokenSource();
@@ -58,6 +61,7 @@ namespace ZenithBeep
                 await services.GetRequiredService<HanderRoles>().InitializeAsync();
                 await services.GetRequiredService<HanderJoinGuilds>().InitializeAsync();
                 await services.GetRequiredService<HandlerJoinLobby>().InitializeAsync();
+
                 services.GetRequiredService<LoggingService>();
                 
                 
@@ -65,12 +69,11 @@ namespace ZenithBeep
                 _client.Ready += async () =>
                 {
                     Console.WriteLine("RAWR! Bot is ready!");
-
                    
                     await _sCommand.RegisterCommandsGloballyAsync(true);
 
 
-                    string audio = _config["audioservice"];
+                    string audio = _config["AUDIOSERVICE"];
                     switch (audio)
                     {
                         case "true":
@@ -88,7 +91,7 @@ namespace ZenithBeep
 
                 Console.CancelKeyPress += OnCancel;
 
-                await client.LoginAsync(TokenType.Bot, _config["token"]);
+                await client.LoginAsync(TokenType.Bot, _config["TOKEN"]);
                 await client.StartAsync();
 
                 try {
@@ -116,6 +119,7 @@ namespace ZenithBeep
 
         private ServiceProvider ConfigureServices() 
         {
+            
             var services = new ServiceCollection()
                 .AddSingleton(_config)
                 .AddSingleton(x => new DiscordSocketClient(new DiscordSocketConfig
@@ -141,17 +145,19 @@ namespace ZenithBeep
                 .AddLogging(configure => configure.AddSerilog())
                 .AddSingleton(new LavalinkNodeOptions
                 {
-                    RestUri = $"http://{_config["lavalink_host"]}:2333/",
-                    WebSocketUri = $"ws://{_config["lavalink_host"]}:2333/",
-                    Password = _config["lavalink_password"],
+                    RestUri = $"http://{_config["LAVALINK_HOST"]}:2333/",
+                    WebSocketUri = $"ws://{_config["LAVALINK_HOST"]}:2333/",
+                    Password = _config["LAVALINK_PASSWORD"],
 
 
                 })
                 .AddSingleton<ILavalinkCache, LavalinkCache>()
                 .AddSingleton<HandlerJoinLobby>()
                 .AddSingleton<HanderJoinGuilds>()
-                .AddDbContextFactory<BeepDbContext>(
-                    options => options.UseNpgsql(_config.GetConnectionString("Default")))
+                .AddDbContextFactory<BeepDbContext>( options => options.UseNpgsql(
+                    $"Host={_config["POSTGRES_HOST"]};Database={_config["POSTGRES_DB"]};Username={_config["POSTGRES_USER"]};Password={_config["POSTGRES_PASSWORD"]};"
+                ))
+                     
                 .AddSingleton<DataAccessLayer>()
                 .AddSingleton<DataRooms>()
                 .AddSingleton<ParseEmoji>();
@@ -159,11 +165,11 @@ namespace ZenithBeep
 
 
 
-            if (!string.IsNullOrEmpty(_config["logs"]))
+            if (!string.IsNullOrEmpty(_config["LOGS"]))
             {
 
 
-                switch (_config["logs"].ToLower())
+                switch (_config["LOGS"].ToLower())
                 {
                     case "info": 
                     {

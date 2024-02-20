@@ -4,8 +4,6 @@
 [![Discord.net](https://img.shields.io/nuget/vpre/Discord.Net.svg?maxAge=2592000?style=plasti)](#Discord.Net)
 [![Static Badge](https://img.shields.io/badge/lavalink-net)](https://github.com/angelobreuer/Lavalink4NET)
 
-
-
 # About
 My personal Discord bot, which was rewritten from my old work under .NET-8
 The project started on October 27, 2022. Under the old name LunaBot, especially for the IB workshop server
@@ -13,5 +11,27 @@ The project started on October 27, 2022. Under the old name LunaBot, especially 
 Briefly about the bot, at the moment it can create private voice channels, has a system for issuing roles and, of course, the bot has musical capabilities and can play music from YouTube in a voice channel.
 Moderation will be available soon
 
-## How build and configure
-Soon
+## How deploying ZenitBeep
+
+# Through the docker container
+
+In the repository folder create the `.env` file
+
+```bash
+TOKEN=tokenbot
+LOGS=info
+AUDIOSERVICE=true
+
+LAVALINK_HOST=lavalink
+LAVALINK_PASSWORD=youshallnotpass
+
+POSTGRES_DB=zenithbeep
+POSTGRES_USER=docker
+POSTGRES_HOST=db
+POSTGRES_PORT=5432
+POSTGRES_PASSWORD=PASSWORDTEST
+
+
+PG_DATA=/var/lib/pgsql/pgdata
+```
+

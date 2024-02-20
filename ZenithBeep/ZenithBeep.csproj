@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="3.10.0" />
+    <PackageReference Include="DotNetEnv" Version="3.0.0" />
     <PackageReference Include="Lavalink4NET" Version="3.0.1" />
     <PackageReference Include="Lavalink4NET.Discord.NET" Version="3.0.1" />
     <PackageReference Include="Lavalink4NET.Logging.Microsoft" Version="3.0.1" />
@@ -54,6 +55,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="ResourcesBot\StatusContext.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="..\.env">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

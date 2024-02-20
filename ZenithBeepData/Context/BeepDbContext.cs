@@ -7,8 +7,10 @@ namespace ZenithBeepData.Context
 {
     public class BeepDbContext : DbContext
     {
+        
         public BeepDbContext(DbContextOptions options) : base(options)
         {
+            Database.EnsureCreated();
 
         }
 

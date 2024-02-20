@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DotNetEnv.Configuration;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 
@@ -11,14 +12,16 @@ namespace ZenithBeepData.Context
         {
             var config = new ConfigurationBuilder()
                .SetBasePath(Directory.GetCurrentDirectory())
-               .AddYamlFile("appsettings.yml");
+               .AddDotNetEnv("../.env");
 
             var _config = config.Build();
 
             var optionsBuilder = new DbContextOptionsBuilder()
-                .UseNpgsql(_config.GetConnectionString("Default"));
+                .UseNpgsql($"Host={_config["POSTGRES_HOST"]};Database={_config["POSTGRES_DB"]};Username={_config["POSTGRES_USER"]};Password={_config["POSTGRES_PASSWORD"]};");
 
             return new BeepDbContext(optionsBuilder.Options);
         }
+
+       
     }
 }

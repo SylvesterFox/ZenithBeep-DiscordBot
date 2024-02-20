@@ -11,7 +11,7 @@ services:
       - .env
     volumes:
       - pgdata:/var/lib/postgressql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/1-schema.sql
+      - ./ZenithBeepData/init.sql:/docker-entrypoint-initdb.d/1-schema.sql
     restart: on-failure
     ports:
       - "5432:5432"
@@ -19,8 +19,16 @@ services:
     build: 
       context: .
       args:
-        ENV: ${TOKEN}
-    command: sh -c "./publish/build/GrechkaBOT"  
+        TOKEN: ${TOKEN}
+        LOG: ${LOGS}
+        NAME_DB: ${POSTGRES_DB}
+        USER_DB: ${POSTGRES_USER}
+        HOST_DB: ${POSTGRES_HOST}
+        PORT_DB: ${POSTGRES_PORT}
+        PASSWORD_DB: ${POSTGRES_PASSWORD} 
+        LAVALINK_HOST: ${LAVALINK_HOST}
+        LAVALINK_PASSWORD: ${LAVALINK_PASSWORD}    
+    command: sh -c "./publish/build/ZenithBeep"  
     env_file:
       - .env
     restart: always

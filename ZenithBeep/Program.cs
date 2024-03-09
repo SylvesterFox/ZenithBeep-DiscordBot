@@ -63,13 +63,14 @@ namespace ZenithBeep
                 await services.GetRequiredService<HandlerJoinLobby>().InitializeAsync();
 
                 services.GetRequiredService<LoggingService>();
+                var context = services.GetRequiredService<BeepDbContext>();
                 
                 
 
                 _client.Ready += async () =>
                 {
+                    // context.ApplyMigrations();
                     Console.WriteLine("RAWR! Bot is ready!");
-                   
                     await _sCommand.RegisterCommandsGloballyAsync(true);
 
 
@@ -154,13 +155,11 @@ namespace ZenithBeep
                 .AddSingleton<ILavalinkCache, LavalinkCache>()
                 .AddSingleton<HandlerJoinLobby>()
                 .AddSingleton<HanderJoinGuilds>()
-                .AddDbContextFactory<BeepDbContext>( options => options.UseNpgsql(
-                    $"Host={_config["POSTGRES_HOST"]};Database={_config["POSTGRES_DB"]};Username={_config["POSTGRES_USER"]};Password={_config["POSTGRES_PASSWORD"]};"
-                ))
-                     
+                .AddDbContextFactory<BeepDbContext>( options => options.UseNpgsql(_config.GetConnectionString("db")))
                 .AddSingleton<DataAccessLayer>()
                 .AddSingleton<DataRooms>()
-                .AddSingleton<ParseEmoji>();
+                .AddSingleton<ParseEmoji>()
+                .AddSingleton<BeepDbContext>();
 
 
 

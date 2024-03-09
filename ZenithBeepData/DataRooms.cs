@@ -31,7 +31,7 @@ namespace ZenithBeepData
             await context.SaveChangesAsync();
         }
 
-        public async Task<ModelRoomsLobby> GetLobby(ulong IdGuild)
+        public async Task<ModelRoomsLobby?> GetLobby(ulong IdGuild)
         {
             using var context = _contextFactory.CreateDbContext();
             var guild = context.Guilds

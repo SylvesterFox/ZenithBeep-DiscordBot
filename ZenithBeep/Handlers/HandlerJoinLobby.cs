@@ -38,6 +38,9 @@ namespace ZenithBeep.Handlers
                 SocketGuild _guild = state2.VoiceChannel.Guild;
                 var lobby = await _dataAccessLayer.dataRooms.GetLobby(_guild.Id);
 
+                if (lobby == null)
+                    return;
+
                 if (lobby.lobby_id == state2.VoiceChannel.Id)
                 {
                     var _user = state2.VoiceChannel.GetUser(user.Id);

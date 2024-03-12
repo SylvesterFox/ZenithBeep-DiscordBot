@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -8,10 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Discord.Net" Version="3.10.0" />
+    <PackageReference Include="Discord.Net" Version="3.13.1" />
     <PackageReference Include="DotNetEnv" Version="3.0.0" />
-    <PackageReference Include="Lavalink4NET" Version="3.0.1" />
-    <PackageReference Include="Lavalink4NET.Discord.NET" Version="3.0.1" />
+    <PackageReference Include="Lavalink4NET" Version="4.0.14" />
+    <PackageReference Include="Lavalink4NET.Discord.NET" Version="4.0.14" />
     <PackageReference Include="Lavalink4NET.Logging.Microsoft" Version="3.0.1" />
     <PackageReference Include="Lavalink4NET.MemoryCache" Version="3.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.1" />

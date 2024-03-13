@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using Microsoft.Extensions.Configuration;
 using Serilog;
 using ZenithBeepData;
 using RuntimeResult = Discord.Interactions.RuntimeResult;
@@ -10,11 +11,11 @@ namespace ZenithBeep.Modeles
 {
     public class IntaractionModuleUtility : ZenithBase
     {
-
+        private IConfigurationRoot _config;
         
-        public IntaractionModuleUtility(DataAccessLayer accessLayer) : base(accessLayer) 
+        public IntaractionModuleUtility(DataAccessLayer accessLayer, IConfigurationRoot config) : base(accessLayer) 
         {
-            
+            _config = config;
         }
         
 
@@ -23,7 +24,7 @@ namespace ZenithBeep.Modeles
            await RespondAsync("boop!! :ping_pong:");
            var msg = await GetOriginalResponseAsync();
            await msg.ModifyAsync(msg => msg.Content = $"pong.. :ping_pong: \n ping: {Context.Client.Latency}ms");
-           Log.Debug("test");
+           Log.Debug($"test {_config["TEST"]}");
            return ZenithResult.FromSuccess();
         }
 

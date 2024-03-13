@@ -1,50 +1,38 @@
 ﻿using Discord;
-using Serilog;
-using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
 using ZenithBeep.Handlers;
 using ZenithBeep.Services;
-using Lavalink4NET;
-using Lavalink4NET.DiscordNet;
-using Lavalink4NET.Logging.Microsoft;
-using Lavalink4NET.MemoryCache;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
 using ZenithBeepData.Context;
+using Discord.Commands;
+using Serilog;
+using Microsoft.EntityFrameworkCore;
 using ZenithBeepData;
 using ZenithBeep.Custom;
-using DotNetEnv.Configuration;
-using DotNetEnv;
+using Serilog.Events;
+using Lavalink4NET.Extensions;
+using Lavalink4NET;
+
 
 
 namespace ZenithBeep
 {
     public class Program
     {
-        private readonly IConfiguration _config;
+        private IConfigurationRoot _config;
         private DiscordSocketClient _client;
 
         private readonly CancellationTokenSource cancellation = new CancellationTokenSource();
        
         static void Main(string[] args = null) {
 
-           
             new Program().MainAsync().GetAwaiter().GetResult();
         }
 
-        public Program() {
-            var config = new ConfigurationBuilder()
-                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                .AddDotNetEnv(".env", LoadOptions.TraversePath());
-
-            _config = config.Build();
-            
-        }
 
         private readonly CancellationTokenSource tokenSource = new CancellationTokenSource();
-
 
         public async Task MainAsync()
         {
@@ -56,11 +44,12 @@ namespace ZenithBeep
 
                 var _sCommand = services.GetRequiredService<InteractionService>();
                 await services.GetRequiredService<HanderInteraction>().InitializeAsync();
-                var audioService = services.GetRequiredService<IAudioService>();
                 await services.GetRequiredService<HandlerStatus>().InitializeAsync();
                 await services.GetRequiredService<HanderRoles>().InitializeAsync();
                 await services.GetRequiredService<HanderJoinGuilds>().InitializeAsync();
                 await services.GetRequiredService<HandlerJoinLobby>().InitializeAsync();
+                var player = services.GetRequiredService<IAudioService>();
+                await player.StartAsync();
 
                 services.GetRequiredService<LoggingService>();
                 var context = services.GetRequiredService<BeepDbContext>();
@@ -69,24 +58,8 @@ namespace ZenithBeep
 
                 _client.Ready += async () =>
                 {
-                    // context.ApplyMigrations();
                     Console.WriteLine("RAWR! Bot is ready!");
                     await _sCommand.RegisterCommandsGloballyAsync(true);
-
-
-                    string audio = _config["AUDIOSERVICE"];
-                    switch (audio)
-                    {
-                        case "true":
-                            await audioService.InitializeAsync();
-                            break;
-                        case "false":
-                            break;
-                        default:
-                            await audioService.InitializeAsync();
-                            break;
-                    }
-                    
                    
                 };
 
@@ -118,8 +91,23 @@ namespace ZenithBeep
             }
         }
 
-        private ServiceProvider ConfigureServices() 
+        void ConfigureLogger(LogEventLevel eventLevel) {
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.Console()
+                .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
+                .MinimumLevel.Is(eventLevel)
+                .CreateLogger();
+        }
+
+        public ServiceProvider ConfigureServices() 
         {
+            var root = Directory.GetCurrentDirectory();
+            var dotenv = Path.Combine(root, ".env");
+            CommonConfigService.Load(dotenv);
+
+            _config = new ConfigurationBuilder()
+                .AddEnvironmentVariables()
+                .Build();
             
             var services = new ServiceCollection()
                 .AddSingleton(_config)
@@ -138,84 +126,34 @@ namespace ZenithBeep
                 .AddSingleton(x => new CommandService())
                 .AddSingleton<LoggingService>()
                 .AddSingleton<HandlerStatus>()
-                .AddSingleton<IAudioService, LavalinkNode>()
-                .AddSingleton<IDiscordClientWrapper, DiscordClientWrapper>()
                 .AddSingleton<PaginationService>()
                 .AddSingleton<HanderRoles>()
-                .AddMicrosoftExtensionsLavalinkLogging()
                 .AddLogging(configure => configure.AddSerilog())
-                .AddSingleton(new LavalinkNodeOptions
-                {
-                    RestUri = $"http://{_config["LAVALINK_HOST"]}:2333/",
-                    WebSocketUri = $"ws://{_config["LAVALINK_HOST"]}:2333/",
-                    Password = _config["LAVALINK_PASSWORD"],
-
-
-                })
-                .AddSingleton<ILavalinkCache, LavalinkCache>()
                 .AddSingleton<HandlerJoinLobby>()
                 .AddSingleton<HanderJoinGuilds>()
                 .AddDbContextFactory<BeepDbContext>( options => options.UseNpgsql(_config.GetConnectionString("db")))
                 .AddSingleton<DataAccessLayer>()
                 .AddSingleton<DataRooms>()
                 .AddSingleton<ParseEmoji>()
+                .AddLavalink()
+                .ConfigureLavalink(config => {
+                    config.BaseAddress = new Uri("http://localhost:2333");
+                    config.WebSocketUri = new Uri("ws://localhost:2333/v4/websocket");
+                    config.ReadyTimeout = TimeSpan.FromSeconds(10);
+                    config.Passphrase = "youshallnotpass";
+                })
                 .AddSingleton<BeepDbContext>();
 
-
-
-
-            if (!string.IsNullOrEmpty(_config["LOGS"]))
+            if(string.IsNullOrEmpty(_config["LOGS"]))
             {
-
-
-                switch (_config["LOGS"].ToLower())
-                {
-                    case "info": 
-                    {
-                        Log.Logger = new LoggerConfiguration()
-                            .WriteTo.Console()
-                            .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
-                            .MinimumLevel.Information()
-                            .CreateLogger();
-                        break;
-                    }
-                    case "error": 
-                    {
-
-
-                        Log.Logger = new LoggerConfiguration()
-                            .WriteTo.Console()
-                            .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
-                            .MinimumLevel.Error()
-                            .CreateLogger();
-                        break;
-                    }
-                    case "debug":
-                    {
-                        Log.Logger = new LoggerConfiguration()
-                            .WriteTo.Console()
-                            .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
-                            .MinimumLevel.Debug()
-                            .CreateLogger();
-                        break;
-                    }
-                    default: 
-                    {
-                        Log.Logger = new LoggerConfiguration()
-                            .WriteTo.Console()
-                            .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
-                            .MinimumLevel.Information()
-                            .CreateLogger();
-                        break;
-                    }
-                }
+                ConfigureLogger(LogEventLevel.Information);
             }
             else {
-                    Log.Logger = new LoggerConfiguration()
-                        .WriteTo.Console()
-                        .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
-                        .MinimumLevel.Information()
-                        .CreateLogger();
+                LogEventLevel logLevel;
+                if (!Enum.TryParse(_config["LOGS"], true, out logLevel)) {
+                    logLevel = LogEventLevel.Information;
+                }
+                ConfigureLogger(logLevel);
             }
 
             var serviceProvider = services.BuildServiceProvider();
@@ -223,5 +161,6 @@ namespace ZenithBeep
             return serviceProvider;
         }
 
+        
     }
 }

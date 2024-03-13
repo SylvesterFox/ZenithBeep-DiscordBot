@@ -3,7 +3,6 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using ZenithBeep.Custom;
 using ZenithBeep.Services;
-using Lavalink4NET.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
@@ -15,17 +14,16 @@ namespace ZenithBeep.Handlers
         private readonly DiscordSocketClient _client;
         private readonly InteractionService _command;
         private readonly IServiceProvider _service;
-        private readonly Lavalink4NET.Logging.ILogger _logger_lava;
+
 
         private readonly Microsoft.Extensions.Logging.ILogger _log;
   
 
-        public HanderInteraction(DiscordSocketClient client, InteractionService command, IServiceProvider service, Lavalink4NET.Logging.ILogger log)
+        public HanderInteraction(DiscordSocketClient client, InteractionService command, IServiceProvider service)
         {
             _client = client;
             _command = command;
             _service = service;
-            _logger_lava = log;
             _log = service.GetRequiredService<ILogger<LoggingService>>();
         }
 
@@ -42,10 +40,10 @@ namespace ZenithBeep.Handlers
             _command.Log += OnLogAsync;
             
 
-            if (_logger_lava is EventLogger log)
-            {
-                log.LogMessage += OnLogAsync;
-            }
+            // if (_logger_lava is EventLogger log)
+            // {
+            //     log.LogMessage += OnLogAsync;
+            // }
         }
 
     
@@ -177,11 +175,11 @@ namespace ZenithBeep.Handlers
             return Task.CompletedTask;
         }
 
-        private static void OnLogAsync(object? obj, LogMessageEventArgs args)
-        {
-            string txt = $"{DateTime.Now,-8:hh:mm:ss} {$"[{args.Level}]",-9} {args.Source,-8} | {args.Exception?.ToString() ?? args.Message}";
-            Console.WriteLine(txt);
-        }
+        // private static void OnLogAsync(object? obj, LogMessageEventArgs args)
+        // {
+        //     string txt = $"{DateTime.Now,-8:hh:mm:ss} {$"[{args.Level}]",-9} {args.Source,-8} | {args.Exception?.ToString() ?? args.Message}";
+        //     Console.WriteLine(txt);
+        // }
 
     }
 }

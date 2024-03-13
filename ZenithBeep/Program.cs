@@ -137,10 +137,10 @@ namespace ZenithBeep
                 .AddSingleton<ParseEmoji>()
                 .AddLavalink()
                 .ConfigureLavalink(config => {
-                    config.BaseAddress = new Uri("http://localhost:2333");
-                    config.WebSocketUri = new Uri("ws://localhost:2333/v4/websocket");
+                    config.BaseAddress = new Uri(_config["LAVALINK_ADDRESS"]);
+                    config.WebSocketUri = new Uri(_config["LAVALINK_WEBSOCKET"]);
                     config.ReadyTimeout = TimeSpan.FromSeconds(10);
-                    config.Passphrase = "youshallnotpass";
+                    config.Passphrase = _config["LAVALINK_PASSWORD"];
                 })
                 .AddSingleton<BeepDbContext>();
 

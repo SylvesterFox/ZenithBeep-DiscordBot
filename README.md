@@ -22,7 +22,9 @@ TOKEN=<TOKEN>
 LOGS=info
 AUDIOSERVICE=true
 
-LAVALINK_HOST=lavalink
+
+LAVALINK_ADDRESS=http://localhost:2333
+LAVALINK_WEBSOCKET=ws://localhost:2333/v4/websocket
 LAVALINK_PASSWORD=youshallnotpass
 
 

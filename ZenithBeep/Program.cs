@@ -14,6 +14,7 @@ using ZenithBeep.Custom;
 using Serilog.Events;
 using Lavalink4NET.Extensions;
 using Lavalink4NET;
+using ZenithBeep.Player;
 
 
 
@@ -41,7 +42,6 @@ namespace ZenithBeep
            {
                 var client = services.GetRequiredService<DiscordSocketClient>();
                 _client = client;
-
                 var _sCommand = services.GetRequiredService<InteractionService>();
                 await services.GetRequiredService<HanderInteraction>().InitializeAsync();
                 await services.GetRequiredService<HandlerStatus>().InitializeAsync();
@@ -50,7 +50,6 @@ namespace ZenithBeep
                 await services.GetRequiredService<HandlerJoinLobby>().InitializeAsync();
                 var player = services.GetRequiredService<IAudioService>();
                 await player.StartAsync();
-
                 services.GetRequiredService<LoggingService>();
                 var context = services.GetRequiredService<BeepDbContext>();
                 
@@ -102,7 +101,7 @@ namespace ZenithBeep
         public ServiceProvider ConfigureServices() 
         {
             var root = Directory.GetCurrentDirectory();
-            var dotenv = Path.Combine(root, ".env");
+            var dotenv = Path.Combine(root, "./.env");
             CommonConfigService.Load(dotenv);
 
             _config = new ConfigurationBuilder()
@@ -135,6 +134,7 @@ namespace ZenithBeep
                 .AddSingleton<DataAccessLayer>()
                 .AddSingleton<DataRooms>()
                 .AddSingleton<ParseEmoji>()
+                .AddSingleton<MusicZenithHelper>()
                 .AddLavalink()
                 .ConfigureLavalink(config => {
                     config.BaseAddress = new Uri(_config["LAVALINK_ADDRESS"]);

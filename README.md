@@ -6,7 +6,7 @@
 
 # <center>ZenitBeep</center>
 ![Logo](https://i.imgur.com/ovLUlWm.png)
-img[alt=logo] { width: 150px; }
+img[alt=Logo] { width: 150px; }
 
 # About
 My personal Discord bot, which was rewritten from my old work under .NET-8

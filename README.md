@@ -4,7 +4,7 @@
 [![Discord.net](https://img.shields.io/nuget/vpre/Discord.Net.svg?maxAge=2592000?style=plasti)](#Discord.Net)
 [![Static Badge](https://img.shields.io/badge/lavalink-net)](https://github.com/angelobreuer/Lavalink4NET)
 
-<p align="center"><font size="7">ZenitBeep</font></p>
+<p align="center"><b style="font-size: large;">ZenitBeep</b></p>
 <div align="center" width="100%">
   <img src="https://i.imgur.com/ovLUlWm.png" alt="logo" width="150" height="150" align="center">
 </div>

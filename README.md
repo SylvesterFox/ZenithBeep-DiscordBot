@@ -5,8 +5,8 @@
 [![Static Badge](https://img.shields.io/badge/lavalink-net)](https://github.com/angelobreuer/Lavalink4NET)
 
 # <center>ZenitBeep</center>
-![Logo](https://i.imgur.com/ovLUlWm.png)
-img[alt=Logo] { width: 150px; }
+<center>![Logo](https://i.imgur.com/ovLUlWm.png =150x150)</center>
+
 
 # About
 My personal Discord bot, which was rewritten from my old work under .NET-8

@@ -58,7 +58,7 @@ namespace ZenithBeep.Modeles
             } else
             {
                 builder.WithFooter(x => {
-                    x.Text = "ZenithBeep v1.06[DEV] • SylvesterNotCute © Все права задраконины";
+                    x.Text = "ZenithBeep v1.08[DEV] • SylvesterNotCute © Все права задраконины";
                     x.WithIconUrl("https://avatars.githubusercontent.com/u/51517881?v=4");
                 });
             }

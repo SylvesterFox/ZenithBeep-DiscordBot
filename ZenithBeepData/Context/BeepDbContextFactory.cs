@@ -7,18 +7,17 @@ namespace ZenithBeepData.Context
 {
     public class BeepDbContextFactory : IDesignTimeDbContextFactory<BeepDbContext>
     {
+      
         public BeepDbContext CreateDbContext(string[] args)
         {
-            var config = new ConfigurationBuilder()
-               .SetBasePath(Directory.GetCurrentDirectory())
-               .AddYamlFile("appsettings.yml");
-
-            var _config = config.Build();
+            var config = ConfigDb.buildConfig(Directory.GetCurrentDirectory());
 
             var optionsBuilder = new DbContextOptionsBuilder()
-                .UseNpgsql(_config.GetConnectionString("Default"));
+                .UseNpgsql(config.GetConnectionString("db"));
 
             return new BeepDbContext(optionsBuilder.Options);
         }
+
+        
     }
 }

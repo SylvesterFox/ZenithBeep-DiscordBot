@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ZenithBeepData.Models
 {
-    public class ModelTempRoom
+    public class ModelTempRoom : BaseDbEntity
     {
     
         public ulong userId { get; set; }   

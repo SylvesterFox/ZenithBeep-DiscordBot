@@ -97,7 +97,7 @@ namespace ZenithBeep.Modeles
             await DeferAsync(ephemeral: true);
 
             var guildId = Context.Guild.Id;
-            var role = await DataAccessLayer.GetKeyRole(guildId, key);
+            var role = await DataAccessLayer.GetKeyRole(guildId, (ulong)key);
 
 
             if (role == null)

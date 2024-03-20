@@ -23,7 +23,7 @@ namespace ZenithBeep.Handlers
 
         private async Task OnBotJoinGuild(SocketGuild guild)
         {
-            await _db.CreateGuild(guild.Id);
+            await _db.CreateGuild(guild);
         }
     }
 }

@@ -364,5 +364,5 @@ FodyWeavers.xsd
 
 .vscode/
 ZenithBeep/.config/
-ZenithBeepData/Migrations/
+
 .env

@@ -24,7 +24,7 @@ namespace ZenithBeep.Modeles
            await RespondAsync("boop!! :ping_pong:");
            var msg = await GetOriginalResponseAsync();
            await msg.ModifyAsync(msg => msg.Content = $"pong.. :ping_pong: \n ping: {Context.Client.Latency}ms");
-           Log.Debug($"test {_config["TEST"]}");
+  /*         Log.Debug($"test {_config["TEST"]}");*/
            return ZenithResult.FromSuccess();
         }
 

@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Lavalink4NET.Players.Vote;
 using Lavalink4NET.Tracks;
+using TimeSpanParserUtil;
 
 namespace ZenithBeep.Player
 {
@@ -65,6 +66,19 @@ namespace ZenithBeep.Player
             lines.Reverse();
             pages.Add(string.Join("\n", lines));
             return pages;
+        }
+
+        public static TimeSpan? TryParseTimeStamp(this string input)
+        {
+            TimeSpan ts;
+
+            if (TimeSpan.TryParseExact(input, new string[] { "ss", "mm\\:ss", "mm\\-ss", "mm\\'ss", "mm\\;ss" }, null, out ts))
+                return ts;
+
+            if (TimeSpanParser.TryParse(input, timeSpan: out ts))
+                return ts;
+
+            return null;
         }
     }
 }

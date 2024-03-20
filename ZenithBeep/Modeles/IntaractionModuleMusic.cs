@@ -1,7 +1,5 @@
 ﻿
-using Discord;
 using Discord.Interactions;
-using Discord.WebSocket;
 using Lavalink4NET;
 using Lavalink4NET.Rest.Entities.Tracks;
 using Lavalink4NET.Tracks;
@@ -29,7 +27,7 @@ public class IntaractionModuleMusic : BaseAudioCommandModule
     {
         var member = Context.Guild.GetUser(Context.User.Id);
         var voiceState = member.VoiceState;
-        await DeferAsync().ConfigureAwait(false);
+        await DeferAsync(ephemeral: true).ConfigureAwait(false);
 
         if (member?.VoiceState == null || member?.VoiceState.Value.VoiceChannel.Id == null)
         {
@@ -53,7 +51,7 @@ public class IntaractionModuleMusic : BaseAudioCommandModule
 
     [SlashCommand("play", "Starting play music", runMode: RunMode.Async)]
     public async Task Play(String query) {
-        await DeferAsync().ConfigureAwait(false);
+        await DeferAsync(ephemeral: true).ConfigureAwait(false);
 
         var member = Context.Guild.GetUser(Context.User.Id);
         var voiceState = member.VoiceState;
@@ -103,7 +101,7 @@ public class IntaractionModuleMusic : BaseAudioCommandModule
     private async Task _play_Single(ZenithPlayer player, LavalinkTrack? track) {
         if (track is null)
         {
-            await FollowupAsync($"Failed to parse track");
+            await FollowupAsync($"Failed to parse track", ephemeral: true);
             return;
         }
 

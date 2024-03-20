@@ -1,6 +1,6 @@
 ﻿
+using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
-
 using ZenithBeepData.Context;
 using ZenithBeepData.ExceptionData;
 using ZenithBeepData.Models;
@@ -18,14 +18,25 @@ namespace ZenithBeepData
             dataRooms = rooms;
         }
 
-        public async Task CreateGuild (ulong IdGuild)
+        public async Task<ModelGuild> GetOrCreateGuild (SocketGuild guild)
         {
+            ModelGuild dbGuild;
             using var context = _contextFactory.CreateDbContext();
-            if (context.Guilds.Any(x => x.guildId == IdGuild))
-                return;
+            var query = context.Guilds.Where(x => x.Id == guild.Id);
+            if (await query.AnyAsync() == false) {
+                dbGuild = new ModelGuild()
+                {
+                    Id = guild.Id,
+                    guildName = guild.Name,
+                    IsPlaying = false,
+                    TrackCount = 0
+                };
+                context.Add(dbGuild);
+                await context.SaveChangesAsync();
+            } else dbGuild = await query.FirstAsync();
 
-            context.Add(new ModelGuild { guildId = IdGuild });
-            await context.SaveChangesAsync();
+            return dbGuild;
+            
         }
 
         public string GetPrefix(ulong IdGuild)
@@ -64,7 +75,7 @@ namespace ZenithBeepData
         /// </summary>
         /// <param name="IdGuild"></param>
         /// <returns></returns>
-        public int GetGuildPrimeryId(ulong IdGuild)
+        public ulong GetGuildPrimeryId(ulong IdGuild)
         {
             using var context = _contextFactory.CreateDbContext();
             var guild = context.Guilds.Where(x => x.guildId == IdGuild).FirstOrDefault();
@@ -167,7 +178,7 @@ namespace ZenithBeepData
         /// <param name="guildId"></param>
         
         /// <returns></returns>
-        public async Task DeleteRolesAutoMod(ulong guildId, int primirykeyId)
+        public async Task DeleteRolesAutoMod(ulong guildId, ulong primirykeyId)
         {
             using var context = _contextFactory.CreateDbContext();
 
@@ -224,7 +235,7 @@ namespace ZenithBeepData
             return await roles;
         }
 
-        public async Task<ModelRoles> GetKeyRole(ulong guildId, int key)
+        public async Task<ModelRoles> GetKeyRole(ulong guildId, ulong key)
         {
             using var context = _contextFactory.CreateDbContext();
 

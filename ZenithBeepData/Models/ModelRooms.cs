@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ZenithBeepData.Models
 {
-    public class ModelRooms
+    public class ModelRooms : BaseDbEntity
     {
         [Key]
         public int Id { get; set; }

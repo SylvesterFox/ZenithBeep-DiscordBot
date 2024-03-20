@@ -17,7 +17,6 @@ using Lavalink4NET;
 using ZenithBeep.Player;
 
 
-
 namespace ZenithBeep
 {
     public class Program
@@ -49,7 +48,6 @@ namespace ZenithBeep
                 await services.GetRequiredService<HanderJoinGuilds>().InitializeAsync();
                 await services.GetRequiredService<HandlerJoinLobby>().InitializeAsync();
                 var player = services.GetRequiredService<IAudioService>();
-                await player.StartAsync();
                 services.GetRequiredService<LoggingService>();
                 var context = services.GetRequiredService<BeepDbContext>();
                 
@@ -57,9 +55,16 @@ namespace ZenithBeep
 
                 _client.Ready += async () =>
                 {
+                    if (_config["ARCHIVAL_MODE"] == "true")
+                    {
+                        Log.Information("!!! ARCHIVE MODE ONLY !!!");
+                    } else
+                    {
+                        await setupDatabase(context);
+                    }
                     Console.WriteLine("RAWR! Bot is ready!");
                     await _sCommand.RegisterCommandsGloballyAsync(true);
-                   
+                    await player.StartAsync();
                 };
 
                 Console.CancelKeyPress += OnCancel;
@@ -107,6 +112,7 @@ namespace ZenithBeep
             _config = new ConfigurationBuilder()
                 .AddEnvironmentVariables()
                 .Build();
+
             
             var services = new ServiceCollection()
                 .AddSingleton(_config)
@@ -130,7 +136,7 @@ namespace ZenithBeep
                 .AddLogging(configure => configure.AddSerilog())
                 .AddSingleton<HandlerJoinLobby>()
                 .AddSingleton<HanderJoinGuilds>()
-                .AddDbContextFactory<BeepDbContext>( options => options.UseNpgsql(_config.GetConnectionString("db")))
+                .AddDbContextFactory<BeepDbContext>( options => options.UseNpgsql($"Host={_config["POSTGRES_HOST"]};Database={_config["POSTGRES_DB"]};Username={_config["POSTGRES_USER"]};Password={_config["POSTGRES_PASSWORD"]};Port={_config["POSTGRES_PORT"]}"))
                 .AddSingleton<DataAccessLayer>()
                 .AddSingleton<DataRooms>()
                 .AddSingleton<ParseEmoji>()
@@ -139,7 +145,7 @@ namespace ZenithBeep
                 .ConfigureLavalink(config => {
                     config.BaseAddress = new Uri(_config["LAVALINK_ADDRESS"]);
                     config.WebSocketUri = new Uri(_config["LAVALINK_WEBSOCKET"]);
-                    config.ReadyTimeout = TimeSpan.FromSeconds(10);
+                    config.ReadyTimeout = TimeSpan.FromSeconds(20);
                     config.Passphrase = _config["LAVALINK_PASSWORD"];
                 })
                 .AddSingleton<BeepDbContext>();
@@ -159,6 +165,21 @@ namespace ZenithBeep
             var serviceProvider = services.BuildServiceProvider();
             
             return serviceProvider;
+        }
+
+        private static async Task setupDatabase(BeepDbContext ctx)
+        {
+            Log.Information("Setting up database");
+            var migrations = await ctx.Database.GetPendingMigrationsAsync();
+            if (migrations.Any())
+            {
+                Log.Information("Migrations required: " + string.Join(", ", migrations) + ".");
+                await ctx.Database.MigrateAsync();
+                await ctx.SaveChangesAsync();
+            }
+
+            await ctx.Database.EnsureCreatedAsync();
+
         }
 
         

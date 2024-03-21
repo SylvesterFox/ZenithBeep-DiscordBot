@@ -2,9 +2,12 @@
 using Discord.WebSocket;
 using Lavalink4NET.Players;
 using Lavalink4NET.Players.Vote;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using System.Runtime.Serialization;
 using ZenithBeepData;
+using ZenithBeepData.Models;
 
 namespace ZenithBeep.Player
 {
@@ -58,7 +61,30 @@ namespace ZenithBeep.Player
                 await musicZenithHelper.DeletePastStatusMessage(dbGuild, outputChannel);
             }
 
-            
+            ModelGuildQueueItem? dbTrack = null;
+
+            var currentTrackIdx = dbGuild.CurrentTrack;
+
+            var requstedBy = "<#ERROR>";
+            var db = DataAccessLayer._contextFactory.CreateDbContext();
+            var currentTrackQuery = db.GuildQueueItems.Include(p => p.RequestedBy).Where(x => x.GuildId == dbGuild.Id && x.Position == currentTrackIdx);
+            if (currentTrackQuery.Any())
+            {
+                dbTrack = await currentTrackQuery.FirstAsync(cancellationToken);
+                requstedBy = (dbTrack?.RequestedBy == null) ? "<#NULL>" : dbTrack?.RequestedBy.DisplayName;
+            }
+
+            var musicEmbed = await LavaExtension.MusicEmbed(track, "Playing", dbTrack: dbTrack, requestedBy: requstedBy);
+
+            if (guildState.ShuffleEnbled)
+                musicEmbed.AddField("Shuffle", "Enabled", true);
+
+            if (guildState.RepeatEnabled)
+                musicEmbed.AddField("Repeat", $"Repeated `{guildState.TimesRepeated}` time", true);
+
+            var embedIndex = musicEmbed.Fields.Count;
+            var message = await outputChannel.SendMessageAsync(embed: musicEmbed.Build());
+
         }
 
         #region Guild and Track Functions

@@ -9,7 +9,7 @@ namespace ZenithBeepData
 {
     public class DataAccessLayer
     {
-        private readonly IDbContextFactory<BeepDbContext> _contextFactory;
+        public readonly IDbContextFactory<BeepDbContext> _contextFactory;
         public DataRooms dataRooms { get; set; }
 
         public DataAccessLayer(IDbContextFactory<BeepDbContext> contextFactory, DataRooms rooms)

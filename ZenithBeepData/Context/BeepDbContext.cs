@@ -10,7 +10,7 @@ namespace ZenithBeepData.Context
         
         public BeepDbContext(DbContextOptions options) : base(options)
         {
-            
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         }
 
         public DbSet<ModelGuild> Guilds { get; set; }

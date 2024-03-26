@@ -56,7 +56,7 @@
     <None Update="ResourcesBot\StatusContext.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update=".env">
+    <None Update="..\.env">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

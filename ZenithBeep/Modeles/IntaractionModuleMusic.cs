@@ -1,103 +1,74 @@
 ﻿
 using Discord.Interactions;
 using Lavalink4NET;
+using Lavalink4NET.DiscordNet;
+using Lavalink4NET.Players;
+using Lavalink4NET.Players.Vote;
 using Lavalink4NET.Rest.Entities.Tracks;
-using Lavalink4NET.Tracks;
 using ZenithBeep.Modeles;
-using ZenithBeep.Player;
+using ZenithBeepData;
 
 namespace ZenithBeep;
 
-public class IntaractionModuleMusic : BaseAudioCommandModule
+public class IntaractionModuleMusic : ZenithBase
 {
+    private readonly IAudioService _audioService;
 
-    public IntaractionModuleMusic(IAudioService audioService, MusicZenithHelper musicZenithHelper) : base(audioService, musicZenithHelper)
+    public IntaractionModuleMusic(DataAccessLayer dataAccessLayer, IAudioService audioService) : base(dataAccessLayer)
     {
+        ArgumentNullException.ThrowIfNull(audioService);
 
-    }
-
-    static bool IsUrl(string input)
-    {
-        return Uri.TryCreate(input, UriKind.Absolute, out var uriResult)
-            && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+        _audioService = audioService;
     }
 
     [SlashCommand("disconnect", "Disconnects from the current voice channel connected", runMode: RunMode.Async)]
+<<<<<<< HEAD
     public async Task Disconnect()
     {
         var member = Context.Guild.GetUser(Context.User.Id);
         var voiceState = member.VoiceState;
         await DeferAsync(ephemeral: true).ConfigureAwait(false);
+=======
+    public async Task Disconnect() {
+        var player = await GetPlayerAsync().ConfigureAwait(false);
+>>>>>>> parent of b9a63d5 (Dev-commit #2)
 
-        if (member?.VoiceState == null || member?.VoiceState.Value.VoiceChannel.Id == null)
-        {
-            await FollowupAsync("You are not in a voice channel.");
+        if (player is null) {
             return;
         }
 
-        var voiceChannel = voiceState.Value.VoiceChannel;
-        (var playerState, var playerIsConnected) = await GetPlayerAsync(Context.Guild.Id, voiceChannel.Id, connectToVoiceChannel: false);
-
-        if (playerIsConnected && playerState.Player != null)
-        {
-            await playerState.Player.DisconnectAsync().ConfigureAwait(false);
-
-            await FollowupAsync($"Left <#{member?.VoiceState.Value.VoiceChannel.Id}>");
-        } else
-        {
-            await FollowupAsync("Music bot is not connected.");
-        }
+        await player.DisconnectAsync().ConfigureAwait(false);
     }
 
     [SlashCommand("play", "Starting play music", runMode: RunMode.Async)]
     public async Task Play(String query) {
         await DeferAsync(ephemeral: true).ConfigureAwait(false);
 
-        var member = Context.Guild.GetUser(Context.User.Id);
-        var voiceState = member.VoiceState;
+        var player = await GetPlayerAsync(connectToVoiceChannel: true).ConfigureAwait(false);
 
-        if (voiceState is null || voiceState.Value.VoiceChannel is null || member is null)
-        {
-            await FollowupAsync("Not a vaild voice channel");
+        if (player is null) {
             return;
         }
 
-        if (voiceState.Value.VoiceChannel.Guild.Id != Context.Guild.Id)
-        {
-            await FollowupAsync("Not in voice channel of this guild");
+        var track = await _audioService.Tracks
+            .LoadTrackAsync(query, TrackSearchMode.YouTube)
+            .ConfigureAwait(false);
+
+        if (track is null) {
+            await FollowupAsync("No results").ConfigureAwait(false);
             return;
         }
 
+        var position = await player.PlayAsync(track).ConfigureAwait(false);
 
-        var voiceChannel = voiceState.Value.VoiceChannel;
-        (var playerState, var playerIsConnected) = await GetPlayerAsync(Context.Guild.Id, voiceChannel.Id, connectToVoiceChannel: true).ConfigureAwait(false);
-        if (playerIsConnected == false || playerState.Player == null)
-        {
-            await FollowupAsync(GetPlayerErrorMessage(playerState.Status));
-            return;
+        if (position is 0){
+            await FollowupAsync($"Playing: {track.Uri}").ConfigureAwait(false);
+        } else {
+            await FollowupAsync($"Added to queue: {track.Uri}").ConfigureAwait(false);
         }
-
-        await FollowupAsync($"Connected to <#{member?.VoiceState.Value.VoiceChannel.Id}>");
-        bool isYouTubeUrl = false;
-        TrackLoadResult track;
-
-        if (IsUrl(query))
-        {
-            isYouTubeUrl = true;
-
-            track = await _audioService.Tracks
-                .LoadTracksAsync(query, TrackSearchMode.None)
-                .ConfigureAwait(false);
-        } else
-        {
-            track = await _audioService.Tracks
-                .LoadTracksAsync(query, TrackSearchMode.YouTube)
-                .ConfigureAwait(false);
-        }
-
-        await _play_Single(playerState.Player, track.Track);
     }
 
+<<<<<<< HEAD
     private async Task _play_Single(ZenithPlayer player, LavalinkTrack? track) {
         if (track is null)
         {
@@ -135,6 +106,9 @@ public class IntaractionModuleMusic : BaseAudioCommandModule
 
 
     /*private async ValueTask<VoteLavalinkPlayer?> GetPlayerAsync(bool connectToVoiceChannel = true) {
+=======
+    private async ValueTask<VoteLavalinkPlayer?> GetPlayerAsync(bool connectToVoiceChannel = true) {
+>>>>>>> parent of b9a63d5 (Dev-commit #2)
         var retrieveOptions = new PlayerRetrieveOptions(
             ChannelBehavior: connectToVoiceChannel ? PlayerChannelBehavior.Join : PlayerChannelBehavior.None
         );
@@ -155,6 +129,6 @@ public class IntaractionModuleMusic : BaseAudioCommandModule
         }
 
         return result.Player;
-    }*/
+    }
 
 }

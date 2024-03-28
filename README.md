@@ -4,6 +4,12 @@
 [![Discord.net](https://img.shields.io/nuget/vpre/Discord.Net.svg?maxAge=2592000?style=plasti)](#Discord.Net)
 [![Static Badge](https://img.shields.io/badge/lavalink-net)](https://github.com/angelobreuer/Lavalink4NET)
 
+# ZenitBeep
+<div align="center" width="100%">
+  <img src="https://i.imgur.com/ovLUlWm.png" alt="logo" width="150" height="150" align="center">
+</div>
+
+
 # About
 My personal Discord bot, which was rewritten from my old work under .NET-8
 The project started on October 27, 2022. Under the old name LunaBot, especially for the IB workshop server

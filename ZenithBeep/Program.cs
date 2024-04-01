@@ -136,6 +136,7 @@ namespace ZenithBeep
                 .AddSingleton<ParseEmoji>()
                 .AddSingleton<MusicZenithHelper>()
                 .AddLavalink()
+                .AddSingleton<GetExtension>()
                 .ConfigureLavalink(config => {
                     config.BaseAddress = new Uri(_config["LAVALINK_ADDRESS"]);
                     config.WebSocketUri = new Uri(_config["LAVALINK_WEBSOCKET"]);

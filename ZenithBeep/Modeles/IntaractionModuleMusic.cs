@@ -26,4 +26,9 @@ public class IntaractionModuleMusic : MusicCmd
     public async Task Leave() {
         await LeaveAsync(Context);
     }
+
+    [SlashCommand("play", "Playing song from YouTube")]
+    public async Task Play(string query) {
+        await PlayAsync(Context, query, false);
+    }
 }

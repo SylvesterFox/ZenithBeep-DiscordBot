@@ -3,6 +3,8 @@ using Discord.Interactions;
 using Lavalink4NET;
 using Lavalink4NET.Clients;
 using Lavalink4NET.Players;
+using Lavalink4NET.Players.Queued;
+using Lavalink4NET.Rest.Entities.Tracks;
 using Microsoft.Extensions.Options;
 using ZenithBeep.Player;
 
@@ -95,15 +97,53 @@ public abstract class MusicCmd : InteractionModuleBase<SocketInteractionContext>
 
     public async Task LeaveAsync(SocketInteractionContext ctx) {
         await ctx.Interaction.DeferAsync(ephemeral: true);
-        var player = await GetPlayerAsync(Context, connectToVoiceChannel: false).ConfigureAwait(false);
+        var player = await GetPlayerAsync(ctx, connectToVoiceChannel: false).ConfigureAwait(false);
         if (player == null)
         {
             return;
         }
 
-        await player.DisposeAsync();
+        await player.DisconnectAsync();
         await player.DisposeAsync();
         await ctx.Interaction.FollowupAsync("bye.");
+    }
+
+    public async Task PlayAsync(SocketInteractionContext ctx, string query, bool playTop) {
+        await ctx.Interaction.DeferAsync();
+        var player = await GetPlayerAsync(ctx);
+        if (player is null) return;
+
+        var searchResult = await _audioService.Tracks
+                    .LoadTracksAsync(query, TrackSearchMode.YouTube);
+
+        if (searchResult.IsFailed) {
+            await ctx.Interaction.FollowupAsync($"Nothing was found for {query}.");
+            return;
+        }
+
+        if (searchResult.IsPlaylist) {
+            await ctx.Interaction.FollowupAsync($"{searchResult.Playlist.Name} Add queue!");
+
+            await player.PlayAsync(searchResult.Track);
+            foreach (var track in searchResult.Tracks[1..]) {
+                await player.Queue.AddAsync(new TrackQueueItem(track));
+            }
+            return;
+        }
+
+        if(playTop)
+        {
+            await player.Queue.InsertAsync(0, new TrackQueueItem(searchResult.Track));
+        }
+        else {
+            var playing = await player.PlayAsync(searchResult.Track);
+            if (playing > 0) {
+                await ctx.Interaction.FollowupAsync($"Add queue `{searchResult.Track.Title}` - {player.Queue.Count}");
+            } else {
+                await ctx.Interaction.FollowupAsync($"Connected to  <#{player.VoiceChannelId}>");
+            }
+        }
+           
     }
 
 }

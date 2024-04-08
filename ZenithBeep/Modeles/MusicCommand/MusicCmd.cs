@@ -143,7 +143,13 @@ public abstract class MusicCmd : InteractionModuleBase<SocketInteractionContext>
                 await ctx.Interaction.FollowupAsync($"Connected to  <#{player.VoiceChannelId}>");
             }
         }
-           
+        
+        
+    }
+
+    public async Task SkipAsync(SocketInteractionContext ctx, long count)
+    {
+
     }
 
 }

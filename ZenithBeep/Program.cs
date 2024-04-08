@@ -15,6 +15,8 @@ using Serilog.Events;
 using Lavalink4NET.Extensions;
 using Lavalink4NET;
 using ZenithBeep.Player;
+using ZenithBeep.Settings;
+
 
 
 
@@ -22,8 +24,10 @@ namespace ZenithBeep
 {
     public class Program
     {
-        private IConfigurationRoot _config;
+        // Без этого не работает Lavalink4NET
+        private IConfigurationRoot _config => new ConfigurationBuilder().Build();
         private DiscordSocketClient _client;
+        private BotConfig _botConfig;
 
         private readonly CancellationTokenSource cancellation = new CancellationTokenSource();
        
@@ -37,7 +41,16 @@ namespace ZenithBeep
 
         public async Task MainAsync()
         {
-           
+
+            if (!Settings.SettingsManager.Instance.LoadConfiguration())
+            {
+                Console.WriteLine("Configuration is not loaded\nPress any key to exit...");
+                Console.ReadKey();
+                return;
+            }
+
+           _botConfig = Settings.SettingsManager.Instance.LoadedConfig;
+
            using (var services = ConfigureServices()) 
            {
                 var client = services.GetRequiredService<DiscordSocketClient>();
@@ -48,11 +61,21 @@ namespace ZenithBeep
                 await services.GetRequiredService<HanderRoles>().InitializeAsync();
                 await services.GetRequiredService<HanderJoinGuilds>().InitializeAsync();
                 await services.GetRequiredService<HandlerJoinLobby>().InitializeAsync();
-                var player = services.GetRequiredService<IAudioService>();
-                await player.StartAsync();
+
+                try
+                {
+                    var player = services.GetRequiredService<IAudioService>();
+                    await player.StartAsync();
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning("Lavalink service not starting!");
+                }
+
+
+
                 services.GetRequiredService<LoggingService>();
                 var context = services.GetRequiredService<BeepDbContext>();
-                
                 
 
                 _client.Ready += async () =>
@@ -64,7 +87,7 @@ namespace ZenithBeep
 
                 Console.CancelKeyPress += OnCancel;
 
-                await client.LoginAsync(TokenType.Bot, _config["TOKEN"]);
+                await client.LoginAsync(TokenType.Bot, _botConfig.TOKEN);
                 await client.StartAsync();
 
                 try {
@@ -100,16 +123,21 @@ namespace ZenithBeep
 
         public ServiceProvider ConfigureServices() 
         {
-            var root = Directory.GetCurrentDirectory();
-            var dotenv = Path.Combine(root, "./.env");
-            CommonConfigService.Load(dotenv);
 
-            _config = new ConfigurationBuilder()
-                .AddEnvironmentVariables()
-                .Build();
-            
-            var services = new ServiceCollection()
-                .AddSingleton(_config)
+            var services = new ServiceCollection();
+
+            AddDiscordServices(services);
+            AddDatabaseServices(services);
+            AddLogging(services);
+            if (_botConfig.AUDIOSERICES)
+                AddLavalink(services);
+
+            return services.BuildServiceProvider();
+        }
+
+        private void AddDiscordServices(IServiceCollection services)
+        {
+            services.AddSingleton(_config)
                 .AddSingleton(x => new DiscordSocketClient(new DiscordSocketConfig
                 {
                     GatewayIntents = Discord.GatewayIntents.All,
@@ -127,41 +155,53 @@ namespace ZenithBeep
                 .AddSingleton<HandlerStatus>()
                 .AddSingleton<PaginationService>()
                 .AddSingleton<HanderRoles>()
-                .AddLogging(configure => configure.AddSerilog())
                 .AddSingleton<HandlerJoinLobby>()
                 .AddSingleton<HanderJoinGuilds>()
-                .AddDbContextFactory<BeepDbContext>( options => options.UseNpgsql(_config.GetConnectionString("db")))
                 .AddSingleton<DataAccessLayer>()
                 .AddSingleton<DataRooms>()
                 .AddSingleton<ParseEmoji>()
-                .AddSingleton<MusicZenithHelper>()
-                .AddLavalink()
-                .AddSingleton<GetExtension>()
-                .ConfigureLavalink(config => {
-                    config.BaseAddress = new Uri(_config["LAVALINK_ADDRESS"]);
-                    config.WebSocketUri = new Uri(_config["LAVALINK_WEBSOCKET"]);
-                    config.ReadyTimeout = TimeSpan.FromSeconds(10);
-                    config.Passphrase = _config["LAVALINK_PASSWORD"];
-                })
-                .AddSingleton<BeepDbContext>();
+                .AddSingleton<GetExtension>();
+        }
 
-            if(string.IsNullOrEmpty(_config["LOGS"]))
+        private void AddDatabaseServices(IServiceCollection services)
+        {
+            services.AddDbContextFactory<BeepDbContext>(options =>
+            options.UseNpgsql($"Host={_botConfig.POSTGRES_HOST};Database=${_botConfig.POSTGRES_DB};Username={_botConfig.POSTGRES_USER};Password={_botConfig.POSTGRES_PASSWORD}"));
+        }
+
+        private void AddLavalink(IServiceCollection services)
+        {
+            services.AddSingleton<MusicZenithHelper>()
+                .AddLavalink()
+                .ConfigureLavalink(config =>
+                {
+                    config.BaseAddress = new Uri(_botConfig.LAVALINK_ADDRES);
+                    config.WebSocketUri = new Uri(_botConfig.LAVALINK_WEBSOCKET);
+                    config.ReadyTimeout = TimeSpan.FromSeconds(10);
+                    config.Passphrase = _botConfig.LAVALINK_PASSWORD;
+                });
+
+        }
+
+        private void AddLogging(IServiceCollection services)
+        {
+            services.AddLogging(configure => configure.AddSerilog());
+
+            if (string.IsNullOrEmpty(_botConfig.LOGS))
             {
                 ConfigureLogger(LogEventLevel.Information);
             }
-            else {
+            else
+            {
                 LogEventLevel logLevel;
-                if (!Enum.TryParse(_config["LOGS"], true, out logLevel)) {
+                if (!Enum.TryParse(_botConfig.LOGS, true, out logLevel))
+                {
                     logLevel = LogEventLevel.Information;
                 }
                 ConfigureLogger(logLevel);
             }
 
-            var serviceProvider = services.BuildServiceProvider();
-            
-            return serviceProvider;
         }
-
         
     }
 }

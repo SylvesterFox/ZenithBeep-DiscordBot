@@ -6,6 +6,7 @@ using ZenithBeep.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
+using ZenithBeep.Modeles;
 
 namespace ZenithBeep.Handlers
 {
@@ -29,7 +30,7 @@ namespace ZenithBeep.Handlers
 
         public async Task InitializeAsync()
         {
-            await _command.AddModulesAsync(Assembly.GetEntryAssembly(), _service);
+            await ModuleInitializeAsync();
 
             _client.InteractionCreated += HandlerInteraction;
 
@@ -40,13 +41,25 @@ namespace ZenithBeep.Handlers
             _command.Log += OnLogAsync;
             
 
-            // if (_logger_lava is EventLogger log)
-            // {
-            //     log.LogMessage += OnLogAsync;
-            // }
         }
 
-    
+        private async Task ModuleInitializeAsync()
+        {
+            // Others commands
+            await _command.AddModuleAsync<IntaractionModuleOthers>(_service);
+            // Utility commands
+            await _command.AddModuleAsync<IntaractionModuleUtility>(_service);
+            // Roles commands
+            await _command.AddModuleAsync<IntaractionModuleRoles>(_service);
+            // Music commands
+            if (Settings.SettingsManager.Instance.LoadedConfig.AUDIOSERICES)
+                await _command.AddModuleAsync<IntaractionModuleMusic>(_service);
+
+            // Romers commands
+            await _command.AddModuleAsync<IntaractionModuleRoomers>(_service);
+
+
+        }
 
         private async Task HandlerInteraction(SocketInteraction arg)
         {

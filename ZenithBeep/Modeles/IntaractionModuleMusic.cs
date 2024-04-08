@@ -1,13 +1,7 @@
 ﻿
-using Discord;
 using Discord.Interactions;
-using Discord.WebSocket;
 using Lavalink4NET;
-using Lavalink4NET.Rest.Entities.Tracks;
-using Lavalink4NET.Tracks;
-using ZenithBeep.Modeles;
 using ZenithBeep.Player;
-using ZenithBeepData;
 
 namespace ZenithBeep;
 

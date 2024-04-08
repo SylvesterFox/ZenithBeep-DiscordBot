@@ -26,7 +26,7 @@ In the repository folder create the `.env` file
 ```bash
 TOKEN=<TOKEN>
 LOGS=info
-AUDIOSERVICE=true
+AUDIOSERICES=true
 
 
 LAVALINK_ADDRESS=http://localhost:2333
@@ -40,8 +40,6 @@ POSTGRES_USER=docker
 POSTGRES_PORT=5432
 POSTGRES_PASSWORD=PASSWORDTEST
 
-
-ConnectionStrings__db=Host=${POSTGRES_HOST};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
 
 
 PG_DATA=/var/lib/pgsql/pgdata

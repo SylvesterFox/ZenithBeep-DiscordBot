@@ -1,6 +1,5 @@
 using Discord;
 using Discord.Interactions;
-using System.Resources;
 using ZenithBeepData;
 
 namespace ZenithBeep.Modeles
@@ -16,21 +15,21 @@ namespace ZenithBeep.Modeles
         {
             
             _service = service;
-            /*ResourceManager rm = new ResourceManager("ZenithBeep.Resources")*/
         }
 
         [SlashCommand("prefix", "Change prefix command")]
         public async Task<RuntimeResult> Prefix(string? prefix = null)
         {
             await DeferAsync();
+            var guildDb = await DataAccessLayer.GetOrCreateGuild(Context.Guild);
             if (prefix == null)
             {
-                var currentPrefix = DataAccessLayer.GetPrefix(Context.Guild.Id);
+                var currentPrefix = await DataAccessLayer.GetPrefix(guildDb.Id);
                 await FollowupAsync($"The prefix of this guild is {currentPrefix}.");
                 return ZenithResult.FromSuccess();
             }
 
-            await DataAccessLayer.SetPrefix(Context.Guild.Id, prefix);
+            await DataAccessLayer.SetPrefix(guildDb.Id, prefix);
             await FollowupAsync($"The prefix has been set to {prefix}.");
             return ZenithResult.FromSuccess();
         }
@@ -42,14 +41,12 @@ namespace ZenithBeep.Modeles
             await DeferAsync();
             List<EmbedFieldBuilder> fieldBuilders = new List<EmbedFieldBuilder>();
             Color color = Color.DarkBlue;
-            string title = "**List of all available commands that are available to the bot**\n[Github project](https://github.com/SylvesterFox/GrechkaBOT-Sharp)\n This is a special version only for this server";
+            string title = "**List of all available commands that are available to the bot**\n[Github project](https://github.com/SylvesterFox/ZenithBeep-DiscordBot)\n This is a special version only for this server";
      
 
             foreach (var module in _service.Modules)
             {
                 string description = String.Empty;
-
-                
 
                 foreach (var cmd in module.SlashCommands)
                 {

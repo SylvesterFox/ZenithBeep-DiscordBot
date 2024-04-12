@@ -92,7 +92,7 @@ namespace ZenithBeep.Modeles
 
         [SlashCommand("roledelete", "Delete role")]
         [DefaultMemberPermissions(GuildPermission.ManageRoles)]
-        public async Task<RuntimeResult> DeleteReactionsRole(int key)
+        public async Task<RuntimeResult> DeleteReactionsRole(ulong key)
         {
             await DeferAsync(ephemeral: true);
 

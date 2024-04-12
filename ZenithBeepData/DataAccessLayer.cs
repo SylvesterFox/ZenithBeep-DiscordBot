@@ -1,4 +1,5 @@
 ﻿
+using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 
 using ZenithBeepData.Context;
@@ -18,27 +19,41 @@ namespace ZenithBeepData
             dataRooms = rooms;
         }
 
+        public async Task<ModelGuild> GetOrCreateGuild (SocketGuild guild)
+        {
+            ModelGuild guildGuild;
+            using var context = _contextFactory.CreateDbContext();
+            var query = context.Guilds.Where(x => x.Id == guild.Id);
+
+            if (await query.AnyAsync() == false) {
+                guildGuild = new ModelGuild()
+                {
+                    Id = guild.Id,
+                    Name = guild.Name,
+                };
+                context.Add(guildGuild);
+                await context.SaveChangesAsync();
+            } else guildGuild = await query.FirstAsync();
+
+            return guildGuild;
+        }
+
         public async Task CreateGuild (ulong IdGuild)
         {
             using var context = _contextFactory.CreateDbContext();
-            if (context.Guilds.Any(x => x.guildId == IdGuild))
+            if (context.Guilds.Any(x => x.Id == IdGuild))
                 return;
 
-            context.Add(new ModelGuild { guildId = IdGuild });
+            context.Add(new ModelGuild {  Id = IdGuild });
             await context.SaveChangesAsync();
         }
 
-        public string GetPrefix(ulong IdGuild)
+        public async Task<string> GetPrefix(ulong IdGuild)
         {
             using var context = _contextFactory.CreateDbContext();
-            var guild = context.Guilds
-              .Where(x => x.guildId == IdGuild).FirstOrDefault();
+            var guild = await context.Guilds
+              .Where(x => x.Id == IdGuild).FirstAsync();
 
-            if (guild == null)
-            {
-                guild = context.Add(new ModelGuild { guildId = IdGuild }).Entity;
-                context.SaveChanges();
-            }
 
             return guild.Prefix;
         }
@@ -47,12 +62,12 @@ namespace ZenithBeepData
         {
             using var context = _contextFactory.CreateDbContext();
             var guild = context.Guilds
-                .Where(x => x.guildId == IdGuild).FirstOrDefault();
+                .Where(x => x.Id == IdGuild).FirstOrDefault();
                
 
             if (guild == null)
             {
-                guild = context.Add(new ModelGuild { guildId = IdGuild }).Entity;
+                guild = context.Add(new ModelGuild { Id = IdGuild }).Entity;
                 context.SaveChanges();
             }
             return guild.Lang;
@@ -64,14 +79,14 @@ namespace ZenithBeepData
         /// </summary>
         /// <param name="IdGuild"></param>
         /// <returns></returns>
-        public int GetGuildPrimeryId(ulong IdGuild)
+        public ulong GetGuildPrimeryId(ulong IdGuild)
         {
             using var context = _contextFactory.CreateDbContext();
-            var guild = context.Guilds.Where(x => x.guildId == IdGuild).FirstOrDefault();
+            var guild = context.Guilds.Where(x => x.Id == IdGuild).FirstOrDefault();
 
             if (guild == null)
             {
-                guild = context.Add(new ModelGuild { guildId = IdGuild }).Entity;
+                guild = context.Add(new ModelGuild { Id = IdGuild }).Entity;
                 context.SaveChanges();
             }
             return guild.Id;
@@ -81,22 +96,18 @@ namespace ZenithBeepData
         {
             using var context = _contextFactory.CreateDbContext();
             var guild = await context.Guilds
-                .Where(x => x.guildId == guildId).FirstOrDefaultAsync();
+                .Where(x => x.Id == guildId).FirstOrDefaultAsync();
                 
-
             if (guild != null)
             {
                 guild.Prefix = prefix;
-            }
-            else
-            {
-                context.Add(new ModelGuild { guildId = guildId, Prefix = prefix });
-
+                await context.SaveChangesAsync();
             }
 
-            await context.SaveChangesAsync();
-
+            return;
         }
+
+
         /// <summary>
         /// changes the language in a certain guild
         /// </summary>
@@ -107,7 +118,7 @@ namespace ZenithBeepData
         {
             using var context = _contextFactory.CreateDbContext();
             var guild = await context.Guilds
-                .Where(x => x.guildId == IdGuild).FirstOrDefaultAsync();
+                .Where(x => x.Id == IdGuild).FirstOrDefaultAsync();
 
             if (guild != null)
             {
@@ -115,7 +126,7 @@ namespace ZenithBeepData
             } 
             else
             {
-                context.Add(new ModelGuild { guildId = IdGuild, Lang = lang });
+                context.Add(new ModelGuild { Id = IdGuild, Lang = lang });
             }
             await context.SaveChangesAsync();
         }
@@ -134,20 +145,20 @@ namespace ZenithBeepData
         {
             using var context = _contextFactory.CreateDbContext();
             var guild = await context.Guilds
-                    .Where(x => x.guildId == IdGuild).FirstOrDefaultAsync();
+                    .Where(x => x.Id == IdGuild).FirstOrDefaultAsync();
             
             
             if (guild == null)
             {
-                context.Add(new ModelGuild { guildId = IdGuild });
+                context.Add(new ModelGuild { Id = IdGuild });
                 await context.SaveChangesAsync();
                 guild = await context.Guilds
-                    .Where(x => x.guildId == IdGuild).FirstOrDefaultAsync();
+                    .Where(x => x.Id == IdGuild).FirstOrDefaultAsync();
             }
 
             var roles = await context.Roles
                 .Where(x => x.roleId == roleId)
-                .Where(x => x.Id == guild.Id)
+                .Where(x => x.GuildId == guild.Id)
                 .Where(x => x.messageId == messageId)
                 .FirstOrDefaultAsync();
 
@@ -172,7 +183,7 @@ namespace ZenithBeepData
             using var context = _contextFactory.CreateDbContext();
 
             var guild = await context.Guilds
-                    .Where(x => x.guildId == guildId).FirstOrDefaultAsync();
+                    .Where(x => x.Id == guildId).FirstOrDefaultAsync();
 
 
             if (guild == null)
@@ -206,7 +217,7 @@ namespace ZenithBeepData
             using var context = _contextFactory.CreateDbContext();
 
             var guild = await context.Guilds
-                    .Where(x => x.guildId == guildId).FirstOrDefaultAsync();
+                    .Where(x => x.Id == guildId).FirstOrDefaultAsync();
 
 
             if (guild == null)
@@ -229,7 +240,7 @@ namespace ZenithBeepData
             using var context = _contextFactory.CreateDbContext();
 
             var guild = await context.Guilds
-                    .Where(x => x.guildId == guildId).FirstOrDefaultAsync();
+                    .Where(x => x.Id == guildId).FirstOrDefaultAsync();
 
 
             if (guild == null)
@@ -253,7 +264,7 @@ namespace ZenithBeepData
             using var context = _contextFactory.CreateDbContext();
 
             var guild = await context.Guilds
-                    .Where(x => x.guildId == guildId).FirstOrDefaultAsync();
+                    .Where(x => x.Id == guildId).FirstOrDefaultAsync();
 
 
             if (guild == null)
@@ -278,7 +289,7 @@ namespace ZenithBeepData
         {
             using var context = _contextFactory.CreateDbContext();
             var guild = await context.Guilds
-                .Where(x => x.guildId == IdGuild).FirstOrDefaultAsync();
+                .Where(x => x.Id == IdGuild).FirstOrDefaultAsync();
 
             if (guild == null)
                 return;

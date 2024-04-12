@@ -19,6 +19,7 @@ namespace ZenithBeep.Settings
         public string POSTGRES_PASSWORD { get; set; } = string.Empty;
 
         public bool AUDIOSERICES { get; set; } = false;
+        public bool NODB_MODE { get; set; } = false;
 
     }
 }

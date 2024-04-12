@@ -19,61 +19,49 @@ namespace ZenithBeepData
         {
             using var context = _contextFactory.CreateDbContext();
             var guild = context.Guilds
-              .Where(x => x.guildId == IdGuild).FirstOrDefault();
+              .Where(x => x.Id == IdGuild).FirstOrDefault();
 
-            if (guild == null)
-            {
-                guild = context.Add(new ModelGuild { guildId = IdGuild }).Entity;
-                await context.SaveChangesAsync();
-            }
 
             context.Add(new ModelRoomsLobby { GuildId = guild.Id, lobby_id = Idchannel });
             await context.SaveChangesAsync();
         }
 
-        public async Task<ModelRoomsLobby?> GetLobby(ulong IdGuild)
+        public async Task<ModelRoomsLobby?> GetLobby(ulong Id)
         {
             using var context = _contextFactory.CreateDbContext();
-            var guild = context.Guilds
-              .Where(x => x.guildId == IdGuild).FirstOrDefault();
 
-            if (guild == null)
-            {
-                guild = context.Add(new ModelGuild { guildId = IdGuild }).Entity;
-                await context.SaveChangesAsync();
-            }
+            var lobby = context.RoomsLobbys.Where(x => x.GuildId == Id);
 
-            var lobby = context.RoomsLobbys.Where(x => x.GuildId == guild.Id).FirstOrDefault();
-
-            if (lobby == null)
+            if (await lobby.AnyAsync() == false)
             {
                 return null;
             }
 
-            return lobby;
+            return await lobby.FirstAsync();
         }
 
-        public async Task DeleteLobby(int key)
+        public async Task DeleteLobby(ulong channelId)
         {
             using var context = _contextFactory.CreateDbContext();
-            var lobby = context.RoomsLobbys.Where(x => x.Id == key).FirstOrDefault();
+            var lobby = context.RoomsLobbys.Where(x => x.lobby_id == channelId);
 
-            if (lobby == null)
+            if (await lobby.AnyAsync() == false)
             {
                 throw new NotFoundObjectData("Lobby does not exist");
             }
-            context.Remove(lobby);
+
+            context.Remove(await lobby.FirstAsync());
             await context.SaveChangesAsync();
         }
 
-        public async Task<ModelRooms> GetRoomSettings(ulong ownerId, string? name = null, int limit = 0)
+        public async Task<ModelRooms> CreateOrGetRoomSettings(ulong ownerId, string? name = null, int limit = 0)
         {
             using var context = _contextFactory.CreateDbContext();
-            var room = await context.Rooms.Where(x => x.owner_channel == ownerId).FirstOrDefaultAsync();
+            var room = await context.Rooms.Where(x => x.OwnerChannelId == ownerId).FirstOrDefaultAsync();
 
             if (room == null)
             {
-                room = context.Add(new ModelRooms { channel_name = name, limit = limit, owner_channel = ownerId }).Entity;
+                room = context.Add(new ModelRooms { Name = name, limit = limit, OwnerChannelId = ownerId }).Entity;
                 await context.SaveChangesAsync();
             }
 
@@ -83,10 +71,24 @@ namespace ZenithBeepData
         public async Task SetVoicelimit(int linit, ulong owner)
         {
             using var context = _contextFactory.CreateDbContext();
-            var room = await context.Rooms.Where(x => x.owner_channel == owner).FirstOrDefaultAsync();
+            var room = await context.Rooms.Where(x => x.OwnerChannelId == owner).FirstOrDefaultAsync();
             if (room != null)
             {
                 room.limit = linit;
+                await context.SaveChangesAsync();
+            }
+
+            return;
+        }
+
+        public async Task SetVoiceName(string voiceName, ulong owner)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            ModelRooms rooms;
+            rooms = await context.Rooms.Where(x => x.OwnerChannelId == owner).FirstAsync();
+            if (rooms != null)
+            {
+                rooms.Name = voiceName;
                 await context.SaveChangesAsync();
             }
 

@@ -1,14 +1,16 @@
 ﻿
 
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ZenithBeepData.Models
 {
-    public class ModelGuild
+    public class ModelGuild : BaseDbEntity
     {
         [Key]
-        public int Id { get; set; }
-        public ulong guildId {  get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        public ulong Id { get; set; }
+        public string Name { get; set; }
         public string Lang { get; set; } = "EN-us";
         public string Prefix { get; set; } = "!";
 

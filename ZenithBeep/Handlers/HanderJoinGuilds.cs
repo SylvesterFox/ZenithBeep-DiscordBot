@@ -1,4 +1,5 @@
 ﻿using Discord.WebSocket;
+using Serilog;
 using ZenithBeepData;
 
 
@@ -23,7 +24,9 @@ namespace ZenithBeep.Handlers
 
         private async Task OnBotJoinGuild(SocketGuild guild)
         {
-            await _db.CreateGuild(guild.Id);
+            Log.Information("==== Joining new guild! ====");
+            Log.Debug($"Guild: {guild.Name} | {guild.Id}");
+            await _db.GetOrCreateGuild(guild);
         }
     }
 }

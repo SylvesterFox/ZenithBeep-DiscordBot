@@ -36,7 +36,8 @@ namespace ZenithBeep.Handlers
             if (state2.VoiceChannel != null)
             {
                 SocketGuild _guild = state2.VoiceChannel.Guild;
-                var lobby = await _dataAccessLayer.dataRooms.GetLobby(_guild.Id);
+                var guild_db = await _dataAccessLayer.GetOrCreateGuild(_guild);
+                var lobby = await _dataAccessLayer.dataRooms.GetLobby(guild_db.Id);
 
                 if (lobby == null)
                     return;
@@ -69,9 +70,9 @@ namespace ZenithBeep.Handlers
         {
            
             string name = $"{userOwner.Username}'s Lair";
-            var room_settings = await _dataAccessLayer.dataRooms.GetRoomSettings(userOwner.Id, name);
+            var room_settings = await _dataAccessLayer.dataRooms.CreateOrGetRoomSettings(userOwner.Id, name);
 
-            var room = await guild.CreateVoiceChannelAsync($"{room_settings.channel_name}");
+            var room = await guild.CreateVoiceChannelAsync($"{room_settings.Name}");
             await room.AddPermissionOverwriteAsync(guild.EveryoneRole, new OverwritePermissions(connect: PermValue.Inherit));
             await room.AddPermissionOverwriteAsync(userOwner, new OverwritePermissions(connect: PermValue.Allow, manageChannel: PermValue.Allow));
 

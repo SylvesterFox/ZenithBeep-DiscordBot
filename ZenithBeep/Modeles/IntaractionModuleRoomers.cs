@@ -14,19 +14,20 @@ namespace ZenithBeep.Modeles
 
         }
 
-        [SlashCommand("createroomers", "Create lobby for creating private vc rooms")]
+        [SlashCommand("createlobby", "Create lobby for creating private vc rooms")]
         [DefaultMemberPermissions(GuildPermission.ManageChannels)]
         public async Task<RuntimeResult> CreateRommers()
         {
             await DeferAsync();
-            var lobby = await DataAccessLayer.dataRooms.GetLobby(Context.Guild.Id);
+            var guild_db = await DataAccessLayer.GetOrCreateGuild(Context.Guild);
+            var lobby = await DataAccessLayer.dataRooms.GetLobby(guild_db.Id);
             if (lobby != null)
             {
                 return ZenithResult.FromUserError("ErrorExists", "Lobby exists!");
             }
 
             var newlobbyChannel = await Context.Guild.CreateVoiceChannelAsync("[+] Create voice channel [+]");
-            await DataAccessLayer.dataRooms.CreateLobby(Context.Guild.Id, newlobbyChannel.Id);
+            await DataAccessLayer.dataRooms.CreateLobby(guild_db.Id, newlobbyChannel.Id);
             await SendEmbedAsync("Success!", "The lobby has been successfully created 🐲", color: Color.Green);
             return ZenithResult.FromSuccess();
         }
@@ -43,7 +44,7 @@ namespace ZenithBeep.Modeles
                 return ZenithResult.FromUserError("LobbyIsNull", "Lobby does not exist");
             }
 
-            await DataAccessLayer.dataRooms.DeleteLobby(lobby.Id);
+            await DataAccessLayer.dataRooms.DeleteLobby(lobby.lobby_id);
 
             var channel = Context.Guild.Channels.SingleOrDefault(x => x.Id == lobby.lobby_id);
 
@@ -148,6 +149,36 @@ namespace ZenithBeep.Modeles
 
             return ZenithResult.FromSuccess();
 
+        }
+
+        [SlashCommand("change-room-name", "This command changes the name of the private channel.")]
+        public async Task<RuntimeResult> ChangeName(string name)
+        {
+            await DeferAsync(ephemeral: true);
+            SocketGuildUser? user = Context.User as SocketGuildUser;
+            IVoiceChannel channel = user.VoiceChannel;
+
+            if (channel == null)
+            {
+                return ZenithResult.FromError("Not found voice", "Please join a voice channel");
+            }
+
+            var rooms = await DataAccessLayer.dataRooms.GetTempRoom(channel.Id);
+
+            if (rooms == null)
+            {
+                return ZenithResult.FromUserError("Not your private channel", "Sorry! No control this private voice channel");
+            }
+
+            if (rooms.userId != user.Id)
+            {
+                return ZenithResult.FromUserError("Not your private channel", "Sorry! No control this private voice channel");
+            }
+
+            await channel.ModifyAsync(x => x.Name = name);
+            await DataAccessLayer.dataRooms.SetVoiceName(name, user.Id);
+            await FollowupAsync($"The name of the private channel has been changed to: {name}");
+            return ZenithResult.FromSuccess();
         }
 
     }

@@ -10,7 +10,7 @@ namespace ZenithBeepData.Context
         
         public BeepDbContext(DbContextOptions options) : base(options)
         {
-            
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         }
 
         public DbSet<ModelGuild> Guilds { get; set; }
@@ -44,10 +44,57 @@ namespace ZenithBeepData.Context
             }
         }
 
+        public override int SaveChanges()
+        {
+            updateChangeTrackerDates();
+            return base.SaveChanges();
+        }
+
+        public override int SaveChanges(bool acceptAllChangesOnSuccess)
+        {
+            updateChangeTrackerDates();
+            return base.SaveChanges(acceptAllChangesOnSuccess);
+        }
+
+        public override Task<int> SaveChangesAsync(CancellationToken cancellation = default)
+        {
+            updateChangeTrackerDates();
+            return base.SaveChangesAsync(cancellation);
+        }
+
+        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+        {
+            updateChangeTrackerDates();
+            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+
+
+        private void updateChangeTrackerDates()
+        {
+            var entries = ChangeTracker.Entries()
+                .Where(e => (e.Entity is BaseDbEntity) && (e.State == EntityState.Added || e.State == EntityState.Modified));
+
+            foreach (var entry in entries)
+            {
+                if (entry.State == EntityState.Added)
+                    ((BaseDbEntity)entry.Entity).CreatedAt = DateTime.Now;
+                else if (entry.State == EntityState.Modified)
+                    ((BaseDbEntity)entry.Entity).UpdatedAt = DateTime.Now;
+            }
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ModelTempRoom>()
                 .HasKey(e => e.userId);
+
+            modelBuilder.Entity<ModelRoomsLobby>()
+                .HasKey(e => e.lobby_id);
+
+            modelBuilder.Entity<ModelRooms>()
+                .HasKey(e => e.OwnerChannelId);
+
+            
                 
         }
     }

@@ -19,7 +19,6 @@ using ZenithBeep.Settings;
 
 
 
-
 namespace ZenithBeep
 {
     public class Program
@@ -73,13 +72,22 @@ namespace ZenithBeep
                 }
 
 
-
                 services.GetRequiredService<LoggingService>();
                 var context = services.GetRequiredService<BeepDbContext>();
+
+
                 
 
                 _client.Ready += async () =>
                 {
+                    if (_botConfig.NODB_MODE)
+                    {
+                        Log.Information("=== SKIP SETUP DATABASE ===\n NODB_MODE is enabled, therefore the database setting is canceled");
+                    } else
+                    {
+                        await setupDatabase(context);
+                    }
+
                     Console.WriteLine("RAWR! Bot is ready!");
                     await _sCommand.RegisterCommandsGloballyAsync(true);
                    
@@ -166,7 +174,7 @@ namespace ZenithBeep
         private void AddDatabaseServices(IServiceCollection services)
         {
             services.AddDbContextFactory<BeepDbContext>(options =>
-            options.UseNpgsql($"Host={_botConfig.POSTGRES_HOST};Database=${_botConfig.POSTGRES_DB};Username={_botConfig.POSTGRES_USER};Password={_botConfig.POSTGRES_PASSWORD}"));
+            options.UseNpgsql($"Host={_botConfig.POSTGRES_HOST};Database={_botConfig.POSTGRES_DB};Username={_botConfig.POSTGRES_USER};Password={_botConfig.POSTGRES_PASSWORD}"));
         }
 
         private void AddLavalink(IServiceCollection services)
@@ -201,6 +209,20 @@ namespace ZenithBeep
                 ConfigureLogger(logLevel);
             }
 
+        }
+
+        private static async Task setupDatabase(BeepDbContext context)
+        {
+            Log.Information("===== Database setup starting =====");
+            var migrations = await context.Database.GetPendingMigrationsAsync();
+            if (migrations.Any())
+            {
+                Log.Information("===== Migrations required: " + string.Join(", ", migrations) + " =====");
+                await context.Database.MigrateAsync();
+                await context.SaveChangesAsync();
+            }
+
+            await context.Database.EnsureCreatedAsync();
         }
         
     }

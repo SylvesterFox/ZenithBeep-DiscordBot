@@ -8,9 +8,8 @@ namespace ZenithBeepData.Models
     public class ModelRoles : BaseDbEntity
     {
         [Key]
-        public ulong Id { get; set; }
+        public int Id { get; set; }
 
-        [ForeignKey("Id")]
         public ulong GuildId { get; set; }
         public ModelGuild Guild { get; set; }
 

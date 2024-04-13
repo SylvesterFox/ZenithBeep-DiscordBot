@@ -181,6 +181,7 @@ namespace ZenithBeep
         {
             services.AddSingleton<MusicZenithHelper>()
                 .AddLavalink()
+                .AddSingleton<MusicEvents>()
                 .ConfigureLavalink(config =>
                 {
                     config.BaseAddress = new Uri(_botConfig.LAVALINK_ADDRES);

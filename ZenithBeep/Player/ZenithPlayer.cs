@@ -1,9 +1,9 @@
 ﻿
-using Discord;
 using Discord.WebSocket;
 using Lavalink4NET.Players;
 using Lavalink4NET.Players.Vote;
 using Lavalink4NET.Rest.Entities.Tracks;
+using Lavalink4NET.Tracks;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
@@ -11,8 +11,11 @@ namespace ZenithBeep.Player
 {
     public sealed class ZenithPlayer : VoteLavalinkPlayer
     {
+        public LavalinkTrack?[] SearchResults { set => searchList = value; }
+
         private readonly SocketVoiceChannel _ChannelVoice;
         private readonly DiscordSocketClient discordClient;
+        private LavalinkTrack?[] searchList = new LavalinkTrack?[5];
         public ZenithPlayer(IPlayerProperties<ZenithPlayer, ZenithPlayerOptions> properties) : base(properties)
         {
             _ChannelVoice = properties.Options.Value.VoiceChannel;
@@ -25,6 +28,8 @@ namespace ZenithBeep.Player
 
             return ValueTask.FromResult(new ZenithPlayer(playerProperties));
         }
+
+        public LavalinkTrack?[] GetSearchResults() => (LavalinkTrack?[]) searchList.Clone();
 
         protected override async ValueTask NotifyTrackStartedAsync(ITrackQueueItem tqi, CancellationToken cancellationToken = default)
         {

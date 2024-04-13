@@ -7,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
 using ZenithBeep.Modeles;
+using ZenithBeep.Player;
+using Serilog;
 
 namespace ZenithBeep.Handlers
 {
@@ -15,17 +17,19 @@ namespace ZenithBeep.Handlers
         private readonly DiscordSocketClient _client;
         private readonly InteractionService _command;
         private readonly IServiceProvider _service;
+        private readonly MusicEvents _musicEvents;
 
 
         private readonly Microsoft.Extensions.Logging.ILogger _log;
   
 
-        public HanderInteraction(DiscordSocketClient client, InteractionService command, IServiceProvider service)
+        public HanderInteraction(DiscordSocketClient client, InteractionService command, IServiceProvider service, MusicEvents musicEvents)
         {
             _client = client;
             _command = command;
             _service = service;
             _log = service.GetRequiredService<ILogger<LoggingService>>();
+            _musicEvents = musicEvents;
         }
 
         public async Task InitializeAsync()
@@ -33,6 +37,7 @@ namespace ZenithBeep.Handlers
             await ModuleInitializeAsync();
 
             _client.InteractionCreated += HandlerInteraction;
+            _client.ButtonExecuted += _musicEvents.ButtonSearchClicked;
 
             _command.ContextCommandExecuted += ContextCommandExecuted;
             _command.SlashCommandExecuted += SlashCommandExecuted;
@@ -63,21 +68,33 @@ namespace ZenithBeep.Handlers
 
         private async Task HandlerInteraction(SocketInteraction arg)
         {
-            try
+           switch (arg.Type)
             {
-                var ctx = new SocketInteractionContext(_client, arg);
-                await _command.ExecuteCommandAsync(ctx, _service);
-            }
-            catch (Exception ex)
-            {
-                Embed embed = new EmbedBuilder()
-                {
-                    Title = "Error: " + ex.GetType(),
-                    Color = Color.Red,
-                    Description = ex.Message
-                }.Build();
+                case InteractionType.ApplicationCommand:
+                    try
+                    {
+                        var ctx = new SocketInteractionContext(_client, arg);
+                        await _command.ExecuteCommandAsync(ctx, _service);
+                    }
+                    catch (Exception ex)
+                    {
+                        Embed embed = new EmbedBuilder()
+                        {
+                            Title = "Error: " + ex.GetType(),
+                            Color = Color.Red,
+                            Description = ex.Message
+                        }.Build();
 
-                await arg.RespondOrFollowup(embed: embed, ephemeral: true);
+                        await arg.RespondOrFollowup(embed: embed, ephemeral: true);
+                    }
+                    break;
+                case InteractionType.ApplicationCommandAutocomplete:
+                    break;
+                case InteractionType.MessageComponent:
+                    /*await MusicEvents.ButtonSearchClicked(arg); */break;
+                default:
+                    Log.Warning("Unsupported interaction type: " + arg.Type);
+                    break;
             }
         }
 

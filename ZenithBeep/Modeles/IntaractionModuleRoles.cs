@@ -33,7 +33,7 @@ namespace ZenithBeep.Modeles
             }
 
 
-            var guildId = Context.Guild.Id;
+            var guild_db = await DataAccessLayer.GetOrCreateGuild(Context.Guild);
 
             if (_msg == null)
             {
@@ -50,7 +50,7 @@ namespace ZenithBeep.Modeles
             {
 
                 string name = _parseEmoji.GetNameEmoji(emoji);
-                await DataAccessLayer.SetRolesAutoMod(guildId, _msg.Id, role.Id, _msg.Channel.Id, name);
+                await DataAccessLayer.SetRolesAutoMod(guild_db.Id, _msg.Id, role.Id, _msg.Channel.Id, name);
                 await _msg.AddReactionAsync(_emoji);
 
                 await SendEmbedAsync("Success!", $"Add role on reaction {role.Mention}", ephemeral: true, color: Color.Green);
@@ -92,7 +92,7 @@ namespace ZenithBeep.Modeles
 
         [SlashCommand("roledelete", "Delete role")]
         [DefaultMemberPermissions(GuildPermission.ManageRoles)]
-        public async Task<RuntimeResult> DeleteReactionsRole(ulong key)
+        public async Task<RuntimeResult> DeleteReactionsRole(int key)
         {
             await DeferAsync(ephemeral: true);
 

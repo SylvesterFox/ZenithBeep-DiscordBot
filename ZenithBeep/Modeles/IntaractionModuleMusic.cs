@@ -25,4 +25,15 @@ public class IntaractionModuleMusic : MusicCmd
     public async Task Play(string query) {
         await PlayAsync(Context, query, false);
     }
+
+    [SlashCommand("skip", "Skip track")]
+    public async Task Skip(long count = 1) { await SkipAsync(Context, count); }
+
+    [SlashCommand("search", "Serach track")]
+    public async Task Search(string query)
+    {
+        await SearchAsync(Context, query);
+    }
+
+
 }

@@ -26,67 +26,21 @@ public abstract class MusicCmd : InteractionModuleBase<SocketInteractionContext>
     public readonly IAudioService _audioService;
     protected readonly MusicZenithHelper _musicZenithHelper;
 
+
+
     public MusicCmd(IAudioService audio, MusicZenithHelper zenithHelper)
     {
         _audioService = audio;
         _musicZenithHelper = zenithHelper;
     }
 
-    public async ValueTask<ZenithPlayer> GetPlayerAsync(SocketInteractionContext ctx, bool connectToVoiceChannel = true)
-        {
-            var channelBehavior = connectToVoiceChannel ? PlayerChannelBehavior.Move : PlayerChannelBehavior.None;
-            var member = Context.Client.GetMember(Context.User.Id, Context.Guild.Id);
-            var retrieveOptions = new PlayerRetrieveOptions(ChannelBehavior: channelBehavior, VoiceStateBehavior: MemberVoiceStateBehavior.Ignore);
 
-            var result = await _audioService.Players
-                .RetrieveAsync<ZenithPlayer, ZenithPlayerOptions>(
-                    guildId: ctx.Guild.Id,
-                    memberVoiceChannel: member.VoiceChannel.Id,
-                    playerFactory: ZenithPlayer.CreatePlayerAsync,
-                    options: Options.Create(new ZenithPlayerOptions()
-                    {
-                        VoiceChannel = member.VoiceChannel,
-                    }),
-                    retrieveOptions: retrieveOptions
-                );
-
-            if (!result.IsSuccess)
-            {
-                
-            var errorMessage = result.Status switch
-                {
-                    PlayerRetrieveStatus.Success => "Success",
-                    PlayerRetrieveStatus.UserNotInVoiceChannel => "You are not connected to a voice channel",
-                    PlayerRetrieveStatus.VoiceChannelMismatch => "You are not in the same channel as the Music Bot!",
-                    PlayerRetrieveStatus.UserInSameVoiceChannel => "Same voice channel?",
-                    PlayerRetrieveStatus.BotNotConnected => "The bot is currenly not connected.",
-                    PlayerRetrieveStatus.PreconditionFailed => "A unknown error happened: Precondition Failed.",
-                    _ => "A unknown error happened"
-                };
-                await ctx.Interaction.FollowupAsync(errorMessage);
-                return null;
-            }
-
-
-            return result.Player;
-        }
 
     public async Task JoinAsync(SocketInteractionContext ctx) {
         await ctx.Interaction.DeferAsync(ephemeral: true);
-        // var voiceState = guildUser.VoiceState;
-        // if (voiceState is null || voiceState.Value.VoiceChannel is null || guildUser is null)
-        // {
-        //     await FollowupAsync("Not a vaild voice channel", ephemeral: true);
-        //     return;
-        // }
 
-        // if (voiceState.Value.VoiceChannel.Guild.Id != Context.Guild.Id)
-        // {
-        //     await FollowupAsync("Not in voice channel of this guild", ephemeral: true);
-        //     return;
-        // }
 
-        var player = await GetPlayerAsync(Context, connectToVoiceChannel: true).ConfigureAwait(false);
+        var player = await _musicZenithHelper.GetPlayerAsync(Context, connectToVoiceChannel: true).ConfigureAwait(false);
         if (player == null)
         {
             return;
@@ -97,7 +51,7 @@ public abstract class MusicCmd : InteractionModuleBase<SocketInteractionContext>
 
     public async Task LeaveAsync(SocketInteractionContext ctx) {
         await ctx.Interaction.DeferAsync(ephemeral: true);
-        var player = await GetPlayerAsync(ctx, connectToVoiceChannel: false).ConfigureAwait(false);
+        var player = await _musicZenithHelper.GetPlayerAsync(ctx, connectToVoiceChannel: false).ConfigureAwait(false);
         if (player == null)
         {
             return;
@@ -110,7 +64,7 @@ public abstract class MusicCmd : InteractionModuleBase<SocketInteractionContext>
 
     public async Task PlayAsync(SocketInteractionContext ctx, string query, bool playTop) {
         await ctx.Interaction.DeferAsync();
-        var player = await GetPlayerAsync(ctx);
+        var player = await _musicZenithHelper.GetPlayerAsync(ctx);
         if (player is null) return;
 
         var searchResult = await _audioService.Tracks
@@ -149,7 +103,42 @@ public abstract class MusicCmd : InteractionModuleBase<SocketInteractionContext>
 
     public async Task SkipAsync(SocketInteractionContext ctx, long count)
     {
+        await ctx.Interaction.DeferAsync(ephemeral: true);
+        var player = await _musicZenithHelper.GetPlayerAsync(ctx).ConfigureAwait(false);
+        if (player is null) return;
 
+        if (player.CurrentTrack != null)
+        {
+            await ctx.Interaction.FollowupAsync($"`{player.CurrentTrack.Title}` skip!");
+            await player.SkipAsync((int)count);
+            return;
+        }
+
+        await ctx.Interaction.FollowupAsync($"Queue empty");
+    }
+
+    public async Task SearchAsync(SocketInteractionContext ctx, string query)
+    {
+        await ctx.Interaction.DeferAsync(ephemeral: false);
+
+        var playlist = await _musicZenithHelper.GetPlayerAsync(ctx); 
+        if (playlist is null) return;
+
+        var searchResult = await _audioService.Tracks
+            .LoadTracksAsync(query, TrackSearchMode.YouTube);
+
+        if (!searchResult.IsSuccess)
+        {
+            await ctx.Interaction.FollowupAsync($"Nothing was found for {query}");
+            return;
+        }
+
+        var tracks = searchResult.Tracks.ToArray();
+        playlist.SearchResults = tracks[..5];
+
+        var serchEmbed = PlayerEmbed.SearchEmbed(tracks);
+
+        await ctx.Interaction.FollowupAsync(embed: serchEmbed.Item1, components: serchEmbed.Item2);
     }
 
 }

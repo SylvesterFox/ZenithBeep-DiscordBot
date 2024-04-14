@@ -43,9 +43,9 @@ namespace ZenithBeep.Player
             }
 
            
-            var embed_music = await LavaExtension.GetEmbedAsync(tqi.Track, "Playing");
+            var embed_music = await PlayerExtensions.GetEmbedAsync(tqi.Track);
 
-            await _ChannelVoice.SendMessageAsync("", embed: embed_music.Build());
+            await _ChannelVoice.SendMessageAsync("", embed: embed_music);
 
             // send a message to the text channel
             Log.Debug($"Starting playing song this channel: [{_ChannelVoice.Id}]{_ChannelVoice.Name}:{tqi.Track.Title}");

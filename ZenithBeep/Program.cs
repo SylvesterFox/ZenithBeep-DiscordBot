@@ -16,6 +16,8 @@ using Lavalink4NET.Extensions;
 using Lavalink4NET;
 using ZenithBeep.Player;
 using ZenithBeep.Settings;
+using System;
+using ZenithBeep.ResourcesBot;
 
 
 
@@ -27,6 +29,7 @@ namespace ZenithBeep
         private IConfigurationRoot _config => new ConfigurationBuilder().Build();
         private DiscordSocketClient _client;
         private BotConfig _botConfig;
+        
 
         private readonly CancellationTokenSource cancellation = new CancellationTokenSource();
        
@@ -86,6 +89,22 @@ namespace ZenithBeep
                     } else
                     {
                         await setupDatabase(context);
+                    }
+
+                    try
+                    {
+                        using (var fs = new StreamReader(".version"))
+                        {
+                            Console.WriteLine("\tCommit: " + fs.ReadLine()?[..6]);
+                            Console.WriteLine("\tCommit time: " + fs.ReadLine());
+                            Others.VERSION = "\tBranch: " + fs.ReadLine();
+                            Console.WriteLine(Others.VERSION);
+                            Console.WriteLine("\tCopyright: SylvesterFox");
+                            
+                        }
+                    } catch (Exception ex)
+                    {
+                        Console.WriteLine("WARN: version file is broken. " + ex.Message);
                     }
 
                     Console.WriteLine("RAWR! Bot is ready!");

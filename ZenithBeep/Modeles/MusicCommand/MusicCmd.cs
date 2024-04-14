@@ -1,11 +1,9 @@
 ﻿
 using Discord.Interactions;
 using Lavalink4NET;
-using Lavalink4NET.Clients;
-using Lavalink4NET.Players;
 using Lavalink4NET.Players.Queued;
 using Lavalink4NET.Rest.Entities.Tracks;
-using Microsoft.Extensions.Options;
+using ZenithBeep.Custom;
 using ZenithBeep.Player;
 
 namespace ZenithBeep;
@@ -59,11 +57,11 @@ public abstract class MusicCmd : InteractionModuleBase<SocketInteractionContext>
 
         await player.DisconnectAsync();
         await player.DisposeAsync();
-        await ctx.Interaction.FollowupAsync("bye.");
+        await ctx.Interaction.FollowupAsync(embed: CustomEmbeds.UniEmbed("Bye, Thank you for using me!"));
     }
 
     public async Task PlayAsync(SocketInteractionContext ctx, string query, bool playTop) {
-        await ctx.Interaction.DeferAsync();
+        await ctx.Interaction.DeferAsync(ephemeral: true);
         var player = await _musicZenithHelper.GetPlayerAsync(ctx);
         if (player is null) return;
 
@@ -92,9 +90,9 @@ public abstract class MusicCmd : InteractionModuleBase<SocketInteractionContext>
         else {
             var playing = await player.PlayAsync(searchResult.Track);
             if (playing > 0) {
-                await ctx.Interaction.FollowupAsync($"Add queue `{searchResult.Track.Title}` - {player.Queue.Count}");
+                await ctx.Interaction.FollowupAsync(embed: CustomEmbeds.UniEmbed($"Add queue `{searchResult.Track.Title}` - {player.Queue.Count}"));
             } else {
-                await ctx.Interaction.FollowupAsync($"Connected to  <#{player.VoiceChannelId}>");
+                await ctx.Interaction.FollowupAsync(embed: CustomEmbeds.UniEmbed($"Connected to  <#{player.VoiceChannelId}>"));
             }
         }
         
@@ -109,17 +107,16 @@ public abstract class MusicCmd : InteractionModuleBase<SocketInteractionContext>
 
         if (player.CurrentTrack != null)
         {
-            await ctx.Interaction.FollowupAsync($"`{player.CurrentTrack.Title}` skip!");
+            await ctx.Interaction.FollowupAsync(embed: CustomEmbeds.UniEmbed($"`{player.CurrentTrack.Title}` skip!"));
             await player.SkipAsync((int)count);
             return;
         }
 
-        await ctx.Interaction.FollowupAsync($"Queue empty");
+        await ctx.Interaction.FollowupAsync(embed: CustomEmbeds.WarningEmbed("Queue empty", "Empty"));
     }
 
     public async Task SearchAsync(SocketInteractionContext ctx, string query)
     {
-        await ctx.Interaction.DeferAsync(ephemeral: false);
 
         var playlist = await _musicZenithHelper.GetPlayerAsync(ctx); 
         if (playlist is null) return;
@@ -127,18 +124,20 @@ public abstract class MusicCmd : InteractionModuleBase<SocketInteractionContext>
         var searchResult = await _audioService.Tracks
             .LoadTracksAsync(query, TrackSearchMode.YouTube);
 
-        if (!searchResult.IsSuccess)
+        if (!searchResult.IsSuccess || searchResult.Tracks == null || searchResult.Tracks.Length == 0)
         {
             await ctx.Interaction.FollowupAsync($"Nothing was found for {query}");
             return;
         }
 
-        var tracks = searchResult.Tracks.ToArray();
-        playlist.SearchResults = tracks[..5];
+        var tracks = searchResult.Tracks.Take(5).ToArray();
+        playlist.SearchResults = tracks;
 
-        var serchEmbed = PlayerEmbed.SearchEmbed(tracks);
+        var serchEmbed = PlayerExtensions.SearchEmbed(tracks);
 
         await ctx.Interaction.FollowupAsync(embed: serchEmbed.Item1, components: serchEmbed.Item2);
     }
 
+
+    
 }

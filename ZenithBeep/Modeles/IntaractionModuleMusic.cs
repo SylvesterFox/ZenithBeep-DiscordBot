@@ -32,6 +32,7 @@ public class IntaractionModuleMusic : MusicCmd
     [SlashCommand("search", "Serach track")]
     public async Task Search(string query)
     {
+        await DeferAsync(ephemeral: false);
         await SearchAsync(Context, query);
     }
 

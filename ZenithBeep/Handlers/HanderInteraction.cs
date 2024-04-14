@@ -5,7 +5,6 @@ using ZenithBeep.Custom;
 using ZenithBeep.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Reflection;
 using ZenithBeep.Modeles;
 using ZenithBeep.Player;
 using Serilog;
@@ -21,15 +20,17 @@ namespace ZenithBeep.Handlers
 
 
         private readonly Microsoft.Extensions.Logging.ILogger _log;
-  
 
-        public HanderInteraction(DiscordSocketClient client, InteractionService command, IServiceProvider service, MusicEvents musicEvents)
+
+        public HanderInteraction(DiscordSocketClient client, InteractionService command, IServiceProvider service)
         {
             _client = client;
             _command = command;
             _service = service;
             _log = service.GetRequiredService<ILogger<LoggingService>>();
-            _musicEvents = musicEvents;
+
+            if (Settings.SettingsManager.Instance.LoadedConfig.AUDIOSERICES)
+                _musicEvents = service.GetRequiredService<MusicEvents>();
         }
 
         public async Task InitializeAsync()
@@ -37,7 +38,10 @@ namespace ZenithBeep.Handlers
             await ModuleInitializeAsync();
 
             _client.InteractionCreated += HandlerInteraction;
-            _client.ButtonExecuted += _musicEvents.ButtonSearchClicked;
+
+            // Buttons
+            if (Settings.SettingsManager.Instance.LoadedConfig.AUDIOSERICES)
+                _client.ButtonExecuted += _musicEvents.ButtonSearchClicked;
 
             _command.ContextCommandExecuted += ContextCommandExecuted;
             _command.SlashCommandExecuted += SlashCommandExecuted;
@@ -78,20 +82,17 @@ namespace ZenithBeep.Handlers
                     }
                     catch (Exception ex)
                     {
-                        Embed embed = new EmbedBuilder()
-                        {
-                            Title = "Error: " + ex.GetType(),
-                            Color = Color.Red,
-                            Description = ex.Message
-                        }.Build();
 
-                        await arg.RespondOrFollowup(embed: embed, ephemeral: true);
+                        var embedError = CustomEmbeds.ErrorEmbed($"Error: {ex.GetType()} | {ex.Message}");
+
+                        await arg.RespondOrFollowup(embed: embedError, ephemeral: true);
+                        Log.Error($"Error: {ex.GetType()} | {ex.Message}");
                     }
                     break;
                 case InteractionType.ApplicationCommandAutocomplete:
                     break;
                 case InteractionType.MessageComponent:
-                    /*await MusicEvents.ButtonSearchClicked(arg); */break;
+                    break;
                 default:
                     Log.Warning("Unsupported interaction type: " + arg.Type);
                     break;
@@ -100,21 +101,18 @@ namespace ZenithBeep.Handlers
 
         private async Task HandleModal(ModalCommandInfo info, IInteractionContext context, IResult result)
         {
+            Embed embed;
             if (!result.IsSuccess && result is ZenithResult mResult)
             {
-                EmbedBuilder embed = new EmbedBuilder()
-                {
-                    Title = "Error: " + mResult.ErrorReason,
-                    Color = Color.Red,
-                    Description = mResult.Message
-                };
+
+                embed = CustomEmbeds.ErrorEmbed($"Error {mResult.ErrorReason} | {mResult.Message}");
 
                 if (mResult.Error == InteractionCommandError.ParseFailed)
                 {
-                    embed.Color = Color.Orange;
+                    embed = CustomEmbeds.WarningEmbed($"{mResult.Message}", $"{mResult.ErrorReason}");
                 }
 
-                await context.Interaction.RespondOrFollowup(embed: embed.Build(), ephemeral: true);
+                await context.Interaction.RespondOrFollowup(embed: embed, ephemeral: true);
             }
         }
 
@@ -135,34 +133,25 @@ namespace ZenithBeep.Handlers
                 return;
             }
   
-            EmbedBuilder embed;
+            Embed embed;
 
             if (result is ZenithResult mResult)
             {
-                embed = new EmbedBuilder()
-                {
-                    Title = "Error: " + mResult.ErrorReason,
-                    Color = Color.Red,
-                    Description = mResult.Message
-                };
+                embed = CustomEmbeds.ErrorEmbed($"Error {mResult.ErrorReason} | {mResult.Message}");
 
                 if (mResult.Error == InteractionCommandError.ParseFailed)
                 {
-                    embed.Color = Color.Orange;
+                    embed = CustomEmbeds.WarningEmbed($"{mResult.Message}", $"{mResult.ErrorReason}");
                 }
 
-                await context.Interaction.RespondOrFollowup(embed: embed.Build(), ephemeral: true);
+                await context.Interaction.RespondOrFollowup(embed: embed, ephemeral: true);
                 return;
             }
 
-            embed = new EmbedBuilder()
-            {
-                Title = "Error: " + (result.Error?.ToString() ?? "Oof :/"),
-                Color = Color.Red,
-                Description = result.ErrorReason ?? "Something broke."
-            };
+            embed = CustomEmbeds.ErrorEmbed("Error: " + (result.Error?.ToString() ?? "Oof") + "\n" + result.ErrorReason ?? "Something broke");
+                
 
-            await context.Interaction.RespondOrFollowup(embed: embed.Build(), ephemeral: true);
+            await context.Interaction.RespondOrFollowup(embed: embed, ephemeral: true);
         }
 
         private Task OnLogAsync(LogMessage msg)
@@ -205,11 +194,6 @@ namespace ZenithBeep.Handlers
             return Task.CompletedTask;
         }
 
-        // private static void OnLogAsync(object? obj, LogMessageEventArgs args)
-        // {
-        //     string txt = $"{DateTime.Now,-8:hh:mm:ss} {$"[{args.Level}]",-9} {args.Source,-8} | {args.Exception?.ToString() ?? args.Message}";
-        //     Console.WriteLine(txt);
-        // }
 
     }
 }

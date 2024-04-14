@@ -21,5 +21,6 @@ namespace ZenithBeep.Settings
         public bool AUDIOSERICES { get; set; } = false;
         public bool NODB_MODE { get; set; } = false;
 
+
     }
 }

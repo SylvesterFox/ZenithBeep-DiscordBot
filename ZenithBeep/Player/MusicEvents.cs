@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿
+using Discord.WebSocket;
 using Lavalink4NET;
 using Lavalink4NET.Tracks;
 using ZenithBeep.Custom;
@@ -32,13 +33,17 @@ namespace ZenithBeep.Player
                         await playlist.PlayAsync(track).ConfigureAwait(false);
                         playlist.SearchResults = new LavalinkTrack?[5];
 
-                        await arg.Message.DeleteAsync().ConfigureAwait(false);
+                        await arg.Message.DeleteAsync();
                         var msg = await arg.Channel.SendMessageAsync(embed: CustomEmbeds.UniEmbed($"Select track: {track.Title}"));
-                        await Task.Delay(15000);
-                        await msg.DeleteAsync().ConfigureAwait(false);
+                        Task _ = Task.Delay(5000).ContinueWith(async t =>
+                        {
+                            await msg.DeleteAsync();
+                        });
                     }
                 }
             }
         }
+
+      
     }
 }

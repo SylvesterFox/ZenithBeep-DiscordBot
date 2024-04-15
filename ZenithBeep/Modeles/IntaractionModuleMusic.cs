@@ -17,19 +17,24 @@ public class IntaractionModuleMusic : MusicCmd
     }
 
     [SlashCommand("leave", "Leave voice channel")]
-    public async Task Leave() {
+    public async Task Leave() 
+    {
         await LeaveAsync(Context);
     }
 
     [SlashCommand("play", "Playing song from YouTube")]
-    public async Task Play(string query) {
+    public async Task Play(string query) 
+    {
         await PlayAsync(Context, query, false);
     }
 
     [SlashCommand("skip", "Skip track")]
-    public async Task Skip(long count = 1) { await SkipAsync(Context, count); }
+    public async Task Skip(long count = 1) 
+    { 
+        await SkipAsync(Context, count); 
+    }
 
-    [SlashCommand("search", "Serach track")]
+    [SlashCommand("search", "Serach track", runMode: RunMode.Async)]
     public async Task Search(string query)
     {
         await DeferAsync(ephemeral: false);
@@ -37,6 +42,16 @@ public class IntaractionModuleMusic : MusicCmd
     }
 
     [SlashCommand("pause", "Pause and resume track")]
-    public async Task Pause() { await PauseAsync(Context); }
+    public async Task Pause()
+    {
+        await PauseAsync(Context);
+    }
+
+
+    [SlashCommand("queue", "Get list queue")]
+    public async Task Queue() 
+    { 
+        await QueueAsync(Context);
+    }
 
 }

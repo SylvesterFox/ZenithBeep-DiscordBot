@@ -7,6 +7,6 @@ namespace ZenithBeep.Player
 {
     public sealed record class ZenithPlayerOptions : VoteLavalinkPlayerOptions
     {
-        public SocketVoiceChannel? VoiceChannel { get; set; }
+        public ulong? VoiceChannelId { get; set; }
     }
 }

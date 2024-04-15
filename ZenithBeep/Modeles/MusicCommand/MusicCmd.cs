@@ -1,10 +1,12 @@
 ﻿
+using Discord;
 using Discord.Interactions;
 using Lavalink4NET;
 using Lavalink4NET.Players.Queued;
 using Lavalink4NET.Rest.Entities.Tracks;
 using ZenithBeep.Custom;
 using ZenithBeep.Player;
+using ZenithBeep.Services;
 
 namespace ZenithBeep;
 
@@ -21,9 +23,10 @@ public struct MusicMessage {
 
 public abstract class MusicCmd : InteractionModuleBase<SocketInteractionContext>
 {
+    public PaginationService Pagination { private get; set; } 
+    
     public readonly IAudioService _audioService;
     protected readonly MusicZenithHelper _musicZenithHelper;
-
 
 
     public MusicCmd(IAudioService audio, MusicZenithHelper zenithHelper)
@@ -151,6 +154,30 @@ public abstract class MusicCmd : InteractionModuleBase<SocketInteractionContext>
             await ctx.Interaction.FollowupAsync(embed: CustomEmbeds.UniEmbed(answer));
         }
         else await ctx.Interaction.FollowupAsync(embed: PlayerExtensions.EmptyQueueEmbed());
+    }
+
+    public async Task QueueAsync(SocketInteractionContext ctx)
+    {
+        await ctx.Interaction.DeferAsync();
+        var player = await _musicZenithHelper.GetPlayerAsync(ctx);
+        if (player is null) return;
+
+        if (player.Queue.IsEmpty)
+        {
+            await ctx.Interaction.FollowupAsync(embed: PlayerExtensions.EmptyQueueEmbed("The queue is empty"));
+            return;
+        }
+
+        await Pagination.SendMeesgeAsync(ctx, new PaginationMessage(PlayerExtensions.QueueEmbed(player), 
+            "List Queue", 
+            Color.Magenta, 
+            ctx.User, 
+            new AppearanceOptions()
+            {
+                Timeout = TimeSpan.FromMinutes(5),
+                Style = DisplayStyle.Full,
+            }), folloup: true);
+
     }
     
 }

@@ -1,5 +1,7 @@
 ﻿using System.Web;
 using Discord;
+using Discord.Interactions;
+using Lavalink4NET.Players.Queued;
 using Lavalink4NET.Players.Vote;
 using Lavalink4NET.Tracks;
 using ZenithBeep.Custom;
@@ -93,9 +95,9 @@ namespace ZenithBeep.Player
             List<string> lines = new List<string>();
             int count = 0;
 
-            foreach (LavalinkTrack track in player.Queue)
+            foreach (TrackQueueItem tqi in player.Queue)
             {
-                string line = $"{++count}. {track.Title}";
+                string line = $"{++count}. {tqi.Reference.Track.Title}";
 
                 if (count % (items + 1) == 0)
                 {
@@ -113,7 +115,21 @@ namespace ZenithBeep.Player
         }
 
 
-        public static Embed EmptyQueueEmbed() => CustomEmbeds.UniEmbed("Nothing is playing!", iconUri: "https://i.imgur.com/MIq4EMs.png");
+        public static List<EmbedBuilder> QueueEmbed(ZenithPlayer player)
+        {
+            var EmbedFooter = new EmbedFooterBuilder()
+            {
+                Text = $"ZenithBeep{Others.VERSION.Replace("Branch: ", "• ")} • SylvesterNotCute © Все права задраконины",
+                IconUrl = "https://avatars.githubusercontent.com/u/51517881?v=4"
+            };
+
+            List<EmbedBuilder> embedBuilders = player.GetQueuePaged(10).Select(str => new EmbedBuilder().WithDescription(Format.Code(str, "cs")).WithFooter(EmbedFooter)).ToList();
+
+            return embedBuilders;
+        }
+
+
+        public static Embed EmptyQueueEmbed(string message = null) => CustomEmbeds.UniEmbed(message ?? "Nothing is playing!", iconUri: "https://i.imgur.com/MIq4EMs.png");
 
     }
 }

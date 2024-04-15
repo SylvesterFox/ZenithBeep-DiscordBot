@@ -1,4 +1,5 @@
 ﻿
+using Discord;
 using Discord.WebSocket;
 using Lavalink4NET.Players;
 using Lavalink4NET.Players.Vote;
@@ -13,12 +14,12 @@ namespace ZenithBeep.Player
     {
         public LavalinkTrack?[] SearchResults { set => searchList = value; }
 
-        private readonly SocketVoiceChannel _ChannelVoice;
+        private readonly ulong _idChannel;
         private readonly DiscordSocketClient discordClient;
         private LavalinkTrack?[] searchList = new LavalinkTrack?[5];
         public ZenithPlayer(IPlayerProperties<ZenithPlayer, ZenithPlayerOptions> properties) : base(properties)
         {
-            _ChannelVoice = properties.Options.Value.VoiceChannel;
+            _idChannel = properties.VoiceChannelId;
             discordClient = properties.ServiceProvider!.GetRequiredService<DiscordSocketClient>();
         }
 
@@ -37,18 +38,19 @@ namespace ZenithBeep.Player
                 .NotifyTrackStartedAsync(tqi, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (State == PlayerState.Playing)
-            {
-                Console.WriteLine("Playling");
-            }
-
            
             var embed_music = await PlayerExtensions.GetEmbedAsync(tqi.Track);
+            var channelVoice = await discordClient.GetChannelAsync(_idChannel) as IMessageChannel;
 
-            await _ChannelVoice.SendMessageAsync("", embed: embed_music);
+            if (channelVoice == null)
+            {
+                return;
+            }
+
+            await channelVoice.SendMessageAsync("", embed: embed_music);
 
             // send a message to the text channel
-            Log.Debug($"Starting playing song this channel: [{_ChannelVoice.Id}]{_ChannelVoice.Name}:{tqi.Track.Title}");
+            Log.Debug($"Starting playing song this channel: [{channelVoice.Id}]{channelVoice.Name}:{tqi.Track.Title}");
         }
 
         public async Task ControlPauseAsync()
@@ -68,7 +70,14 @@ namespace ZenithBeep.Player
                 .NotifyTrackExceptionAsync(track, exception, cancellationToken)
                 .ConfigureAwait(false);
 
-            await _ChannelVoice.SendMessageAsync($"{exception}: {exception.Message}");
+            var channelVoice = await discordClient.GetChannelAsync(_idChannel) as IMessageChannel;
+
+            if (channelVoice == null)
+            {
+                return;
+            }
+
+            await channelVoice.SendMessageAsync($"{exception}: {exception.Message}");
             
         }
     }

@@ -3,6 +3,7 @@ using Lavalink4NET;
 using Lavalink4NET.Clients;
 using Lavalink4NET.Players;
 using Microsoft.Extensions.Options;
+using ZenithBeep.Custom;
 
 namespace ZenithBeep.Player
 {
@@ -19,15 +20,16 @@ namespace ZenithBeep.Player
             var channelBehavior = connectToVoiceChannel ? PlayerChannelBehavior.Move : PlayerChannelBehavior.None;
             var member = ctx.Client.GetMember(ctx.User.Id, ctx.Guild.Id);
             var retrieveOptions = new PlayerRetrieveOptions(ChannelBehavior: channelBehavior, VoiceStateBehavior: MemberVoiceStateBehavior.Ignore);
+            var voice = member.VoiceState;
 
             var result = await _audioService.Players
                 .RetrieveAsync<ZenithPlayer, ZenithPlayerOptions>(
                     guildId: ctx.Guild.Id,
-                    memberVoiceChannel: member.VoiceChannel.Id,
+                    memberVoiceChannel: member.VoiceState?.VoiceChannel?.Id,
                     playerFactory: ZenithPlayer.CreatePlayerAsync,
                     options: Options.Create(new ZenithPlayerOptions()
                     {
-                        VoiceChannel = member.VoiceChannel,
+                        VoiceChannelId = member.VoiceState?.VoiceChannel?.Id,
                     }),
                     retrieveOptions: retrieveOptions
                 );
@@ -45,7 +47,7 @@ namespace ZenithBeep.Player
                     PlayerRetrieveStatus.PreconditionFailed => "A unknown error happened: Precondition Failed.",
                     _ => "A unknown error happened"
                 };
-                await ctx.Interaction.FollowupAsync(errorMessage);
+                await ctx.Interaction.FollowupAsync(embed: CustomEmbeds.ErrorEmbed($"**{errorMessage}**"));
                 return null;
             }
 
@@ -65,21 +67,5 @@ namespace ZenithBeep.Player
         }
 
         
-
-        public string GetPlayerErrorMessage(PlayerRetrieveStatus status)
-        {
-            var errorMessage = status switch
-            {
-                PlayerRetrieveStatus.Success => "Success",
-                PlayerRetrieveStatus.UserNotInVoiceChannel => "You are not connected to a voice channel",
-                PlayerRetrieveStatus.VoiceChannelMismatch => "You are not in the same channel as the Music Bot!",
-                PlayerRetrieveStatus.UserInSameVoiceChannel => "Same voice channel?",
-                PlayerRetrieveStatus.BotNotConnected => "The bot is currenly not connected.",
-                PlayerRetrieveStatus.PreconditionFailed => "A unknown error happened: Precondition Failed.",
-                _ => "A unknown error happened"
-            };
-
-            return errorMessage;
-        }
     }
 }

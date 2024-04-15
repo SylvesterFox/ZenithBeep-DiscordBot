@@ -51,6 +51,18 @@ namespace ZenithBeep.Player
             Log.Debug($"Starting playing song this channel: [{_ChannelVoice.Id}]{_ChannelVoice.Name}:{tqi.Track.Title}");
         }
 
+        public async Task ControlPauseAsync()
+        {
+            if (IsPaused)
+            {
+                await ResumeAsync();
+                return;
+            }
+
+            await PauseAsync();
+            await SeekAsync(new TimeSpan(0, 0, -3), SeekOrigin.Current).ConfigureAwait(false);
+        }
+
         protected override async ValueTask NotifyTrackExceptionAsync(ITrackQueueItem track, TrackException exception, CancellationToken cancellationToken = default) {
             await base
                 .NotifyTrackExceptionAsync(track, exception, cancellationToken)

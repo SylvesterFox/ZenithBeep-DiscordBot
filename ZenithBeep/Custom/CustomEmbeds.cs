@@ -10,7 +10,7 @@ namespace ZenithBeep.Custom
 
         public static Color warning_color { get; } = Color.Orange;
 
-        public static Embed UniEmbed(string title, string description = null)
+        public static Embed UniEmbed(string title, string description = null, string iconUri = null)
         {
             var builder = new EmbedBuilder()
             {
@@ -20,7 +20,7 @@ namespace ZenithBeep.Custom
 
             var author = new EmbedAuthorBuilder()
             {
-                IconUrl = "https://i.imgur.com/WxskMc9.png",
+                IconUrl = iconUri ?? "https://i.imgur.com/WxskMc9.png",
                 Name = title,
                 
             };
@@ -85,5 +85,6 @@ namespace ZenithBeep.Custom
             return builder.Build();
 
         }
+
     }
 }

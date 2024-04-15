@@ -36,5 +36,7 @@ public class IntaractionModuleMusic : MusicCmd
         await SearchAsync(Context, query);
     }
 
+    [SlashCommand("pause", "Pause and resume track")]
+    public async Task Pause() { await PauseAsync(Context); }
 
 }

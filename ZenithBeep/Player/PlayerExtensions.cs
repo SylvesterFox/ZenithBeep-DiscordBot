@@ -2,6 +2,7 @@
 using Discord;
 using Lavalink4NET.Players.Vote;
 using Lavalink4NET.Tracks;
+using ZenithBeep.Custom;
 using ZenithBeep.ResourcesBot;
 
 namespace ZenithBeep.Player
@@ -111,6 +112,8 @@ namespace ZenithBeep.Player
             return pages;
         }
 
-        
+
+        public static Embed EmptyQueueEmbed() => CustomEmbeds.UniEmbed("Nothing is playing!", iconUri: "https://i.imgur.com/MIq4EMs.png");
+
     }
 }

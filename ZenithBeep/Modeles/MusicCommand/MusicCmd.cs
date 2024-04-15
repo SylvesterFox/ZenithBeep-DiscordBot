@@ -138,6 +138,19 @@ public abstract class MusicCmd : InteractionModuleBase<SocketInteractionContext>
         await ctx.Interaction.FollowupAsync(embed: serchEmbed.Item1, components: serchEmbed.Item2);
     }
 
+    public async Task PauseAsync(SocketInteractionContext ctx)
+    {
+        await ctx.Interaction.DeferAsync(ephemeral: true);
+        var player = await _musicZenithHelper.GetPlayerAsync(ctx, false);
+        if (player is null) return;
 
+        if (player.CurrentTrack != null)
+        {
+            string answer = player.IsPaused ? "Let's continue" : "Suspended!";
+            await player.ControlPauseAsync();
+            await ctx.Interaction.FollowupAsync(embed: CustomEmbeds.UniEmbed(answer));
+        }
+        else await ctx.Interaction.FollowupAsync(embed: PlayerExtensions.EmptyQueueEmbed());
+    }
     
 }

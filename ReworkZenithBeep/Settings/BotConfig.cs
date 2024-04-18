@@ -1,10 +1,13 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace ZenithBeep.Settings
+namespace ReworkZenithBeep.Settings
 {
     public class BotConfig
     {
-       
         public string TOKEN { get; set; } = string.Empty;
         public string LAVALINK_ADDRES { get; set; } = "http://localhost:2333";
         public string LAVALINK_WEBSOCKET { get; set; } = "ws://localhost:2333/v4/websocket";
@@ -20,7 +23,5 @@ namespace ZenithBeep.Settings
 
         public bool AUDIOSERICES { get; set; } = false;
         public bool NODB_MODE { get; set; } = false;
-
-
     }
 }

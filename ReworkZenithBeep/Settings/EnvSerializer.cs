@@ -1,8 +1,11 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace ZenithBeep.Settings
+namespace ReworkZenithBeep.Settings
 {
-
     public static class EnvSerializer
     {
         public static BotConfig Deserialize(string filePath)
@@ -24,7 +27,7 @@ namespace ZenithBeep.Settings
                     {
                         string key = parts[0].Trim();
                         string value = parts[1].Trim();
-                       
+
                         foreach (var property in typeof(BotConfig).GetProperties())
                         {
                             if (property.Name.Equals(key, StringComparison.OrdinalIgnoreCase))
@@ -45,5 +48,4 @@ namespace ZenithBeep.Settings
             return envVariables;
         }
     }
-
-    }
+}

@@ -1,9 +1,13 @@
-﻿
-namespace ZenithBeep.Settings
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ReworkZenithBeep.Settings
 {
     public class SettingsManager
     {
-
         public BotConfig LoadedConfig = new BotConfig();
 
         public const string BOT_NAME = "ZenithBeep";
@@ -11,8 +15,9 @@ namespace ZenithBeep.Settings
 
         public readonly string BotDataDirectory;
 
-        private SettingsManager() { 
-            
+        private SettingsManager()
+        {
+
             BotDataDirectory = Directory.GetCurrentDirectory();
         }
 
@@ -24,7 +29,8 @@ namespace ZenithBeep.Settings
             {
                 Directory.CreateDirectory(BotDataDirectory);
                 if (!File.Exists(configFilePath)) return false;
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return false;
             }
@@ -41,6 +47,7 @@ namespace ZenithBeep.Settings
                 return _PrivateInstance ??= new SettingsManager();
             }
         }
-    
+
     }
 }
+

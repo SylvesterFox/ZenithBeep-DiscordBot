@@ -6,7 +6,8 @@ using DSharpPlus.SlashCommands;
 using Lavalink4NET;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ReworkZenithBeep.InteractionCommand.Utils;
+using ReworkZenithBeep.Module.Music;
+using ReworkZenithBeep.Module.Utils;
 
 namespace ReworkZenithBeep
 {
@@ -35,7 +36,8 @@ namespace ReworkZenithBeep
                     Services = _serviceProvider
                 });
             // Slash commands register
-            slash.RegisterCommands<IntaractionUtilityCommand>();
+            slash.RegisterCommands<UtilitySlashCommand>();
+            slash.RegisterCommands<MusicSlashCommand>();
 
             var next = _discordClient
                 .UseCommandsNext(new CommandsNextConfiguration
@@ -45,7 +47,8 @@ namespace ReworkZenithBeep
                 });
 
             // Next command Register
-
+            next.RegisterCommands<UtilityNextCommand>();
+            next.RegisterCommands<MusicNextCommand>();
 
             await _discordClient.ConnectAsync().ConfigureAwait(false);
 

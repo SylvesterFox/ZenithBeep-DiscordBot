@@ -24,10 +24,8 @@
 
   <ItemGroup>
     <Folder Include="Database\Models\" />
-    <Folder Include="ClasicCommand\" />
-    <Folder Include="InteractionCommand\Music\" />
-    <Folder Include="InteractionCommand\RolesGet\" />
-    <Folder Include="InteractionCommand\Others\" />
+    <Folder Include="Module\RolesGet\" />
+    <Folder Include="Module\Others\" />
   </ItemGroup>
 
 </Project>

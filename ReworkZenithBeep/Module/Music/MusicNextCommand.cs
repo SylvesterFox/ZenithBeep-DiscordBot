@@ -24,10 +24,24 @@ namespace ReworkZenithBeep.Module.Music
             await musicCommand.JoinAsync(new NextCommand(ctx));
         }
 
-        [Command("Leave")]
+        [Command("leave")]
         public async Task LeaveCommandAsync(CommandContext ctx)
         {
             await musicCommand.LeaveAsync(new NextCommand(ctx));
         }
+
+        [Command("play")]
+        public async Task PlayCommandAsync(CommandContext ctx, string query)
+        {
+            await musicCommand.PlayAsync(new NextCommand(ctx), query);
+        }
+
+        [Command("skip")]
+        public async Task SkipCommandAsync(CommandContext ctx, long count = 1)
+        {
+            await musicCommand.SkipAsync(new NextCommand(ctx), count);
+        }
+
+
     }
 }

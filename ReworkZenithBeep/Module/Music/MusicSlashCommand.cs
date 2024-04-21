@@ -21,10 +21,23 @@ namespace ReworkZenithBeep.Module.Music
             await musicCommand.JoinAsync(new SlashContext(ctx));
         }
 
-        [SlashCommand("Leave", "Leave from voice channel")]
+        [SlashCommand("leave", "Leave from voice channel")]
         public async Task InterctionLeaveAsync(InteractionContext ctx)
         {
             await musicCommand.LeaveAsync(new SlashContext(ctx));
         }
+
+        [SlashCommand("play", "Statring playing")]
+        public async Task InterctionPlayAsync(InteractionContext ctx, [Option("url", "Name track")] string query)
+        {
+            await musicCommand.PlayAsync(new SlashContext(ctx), query);
+        }
+
+        [SlashCommand("skip", "Skiping track")]
+        public async Task InteractionSkipAsync(InteractionContext ctx, [Option("count", "Counts tracks skip")] long count = 1)
+        {
+            await musicCommand.SkipAsync(new SlashContext(ctx), count);
+        }
     }
+
 }

@@ -33,6 +33,18 @@ namespace ReworkZenithBeep.Player
 
             return ValueTask.FromResult(new ZenithPlayer(properties));
         }
+
+        public async Task ControlPauseAsync()
+        {
+            if (IsPaused)
+            {
+                await ResumeAsync();
+                return;
+            }
+
+            await PauseAsync();
+            await SeekAsync(new TimeSpan(0, 0, -3), SeekOrigin.Current).ConfigureAwait(false);
+        }
          
     }
 }

@@ -2,7 +2,10 @@
 
 using Lavalink4NET;
 using Lavalink4NET.Clients;
+using Lavalink4NET.Extensions;
 using Lavalink4NET.Players;
+using Lavalink4NET.Players.Queued;
+using Lavalink4NET.Rest.Entities.Tracks;
 using Microsoft.Extensions.Options;
 using ReworkZenithBeep.Player;
 using ReworkZenithBeep.Settings;
@@ -83,5 +86,68 @@ namespace ReworkZenithBeep.Module.Music
 
             await context.RespondTextAsync($"Leave from `{voiceChannel.Name}`. Bye!");
         }
+
+        public async Task PlayAsync(CommonContext ctx, string query)
+        {
+            await ctx.DeferAsync(false);
+
+            var player = await GetPlayerAsync(ctx);
+            if (player == null) return;
+            var searchResult = await audioService.Tracks
+                .LoadTracksAsync(query, TrackSearchMode.YouTube);
+
+            if (searchResult.IsFailed)
+            {
+                await ctx.RespondTextAsync($"Nothing was found for {query}.");
+                return;
+            }
+
+            if (searchResult.IsPlaylist)
+            {
+                await player.PlayAsync(searchResult.Track);
+                foreach (var track in searchResult.Tracks[1..]) { 
+                    await player.Queue.AddAsync(new TrackQueueItem(track));
+                }
+                return;
+            }
+
+            var playing = await player.PlayAsync(searchResult.Track);
+            if (playing > 0)
+            {
+                await ctx.RespondTextAsync($"Add queue `{searchResult.Track.Title}` - {player.Queue.Count}");
+            } else
+            {
+                await ctx.RespondTextAsync($"Connected to  <#{player.VoiceChannelId}>");
+            }
+        }
+
+        public async Task SkipAsync(CommonContext ctx, long count)
+        {
+            var player = await GetPlayerAsync(ctx, false);
+            if (player == null) return;
+
+            if (player.CurrentItem != null)
+            {
+                await ctx.RespondTextAsync($"Skip `{player.CurrentTrack.Title}");
+                await player.SkipAsync((int)count);
+                return;
+            }
+            await ctx.RespondTextAsync("Queue empty!");
+        }
+
+        public async Task PauseAsync(CommonContext ctx)
+        {
+            var player = await GetPlayerAsync(ctx);
+            if (player == null) return;
+
+            if (player.CurrentItem != null)
+            {
+                string answer = player.IsPaused ? "Let's continue" : "Suspended";
+                await player.ControlPauseAsync();
+                await ctx.RespondTextAsync(answer);
+            }
+        }
+
+
     }
 }

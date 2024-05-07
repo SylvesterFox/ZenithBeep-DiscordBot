@@ -1,35 +1,38 @@
-﻿
-
+﻿using DSharpPlus.SlashCommands;
 using Lavalink4NET;
 using Lavalink4NET.Clients;
-using Lavalink4NET.Extensions;
 using Lavalink4NET.Players;
 using Lavalink4NET.Players.Queued;
 using Lavalink4NET.Rest.Entities.Tracks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using ReworkZenithBeep.Player;
+using ReworkZenithBeep.Services;
 using ReworkZenithBeep.Settings;
 
 namespace ReworkZenithBeep.Module.Music
 {
     public partial class MusicCommand
     {
+        public PaginationService Pagination;
+
         private readonly IAudioService audioService;
         private static MusicCommand instance;
 
-        private MusicCommand(IAudioService audioService)
+        private MusicCommand(IAudioService audioService, IServiceProvider service)
         {
             ArgumentNullException.ThrowIfNull(audioService);
             this.audioService = audioService;
+            this.Pagination = service.GetRequiredService<PaginationService>();
         }
 
         
 
-        public static MusicCommand GetInstance(IAudioService audioService)
+        public static MusicCommand GetInstance(IAudioService audioService, IServiceProvider service)
         {
             if (instance == null)
             {
-                instance = new MusicCommand(audioService);
+                instance = new MusicCommand(audioService, service);
             }
             return instance;
         }
@@ -148,6 +151,27 @@ namespace ReworkZenithBeep.Module.Music
             }
         }
 
+        public async Task QueueAsync(CommonContext ctx)
+        {
+            await ctx.DeferAsync();
+            var player = await GetPlayerAsync(ctx);
+            if (player == null) return;
 
+            if (player.Queue.IsEmpty)
+            {
+                await ctx.RespondTextAsync("The queue is empty");
+                return;
+            }
+
+            await Pagination.SendMessageAsync(ctx, new PaginationMessage(EmbedsPlayer.QueueEmbed(player),
+                    title: "List Queue",
+                    embedColor: "#2C2F33",
+                    user: ctx.Member,
+                    new AppearanceOptions()
+                    {
+                        Timeout = TimeSpan.FromSeconds(5),
+                        Style = DisplayStyle.Full,
+                    }));
+        }
     }
 }

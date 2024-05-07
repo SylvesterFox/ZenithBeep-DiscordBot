@@ -8,12 +8,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ReworkZenithBeep.Module.Music;
 using ReworkZenithBeep.Module.Utils;
+using ReworkZenithBeep.Services;
 
 namespace ReworkZenithBeep
 {
     internal class HostBotBase : BackgroundService
     {
         public static IAudioService AudioService { get; private set; }
+        public static PaginationService Pagination { get; private set; }
 
         private readonly IServiceProvider _serviceProvider;
         private readonly DiscordClient _discordClient;
@@ -26,6 +28,7 @@ namespace ReworkZenithBeep
             this._serviceProvider = serviceProvider;
             this._discordClient = discord;
             AudioService = serviceProvider.GetRequiredService<IAudioService>();
+            Pagination = serviceProvider.GetRequiredService<PaginationService>();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)

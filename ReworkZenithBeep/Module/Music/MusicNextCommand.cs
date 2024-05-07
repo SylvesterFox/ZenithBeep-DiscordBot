@@ -15,7 +15,7 @@ namespace ReworkZenithBeep.Module.Music
 
         public MusicNextCommand(IServiceProvider serviceProvider) {
             ArgumentNullException.ThrowIfNull(serviceProvider);
-            musicCommand = MusicCommand.GetInstance(serviceProvider.GetRequiredService<IAudioService>());
+            musicCommand = MusicCommand.GetInstance(serviceProvider.GetRequiredService<IAudioService>(), serviceProvider);
         }
 
         [Command("join")]
@@ -42,6 +42,11 @@ namespace ReworkZenithBeep.Module.Music
             await musicCommand.SkipAsync(new NextCommand(ctx), count);
         }
 
+        [Command("queue")]
+        public async Task QueueCommandAsync(CommandContext ctx)
+        {
+            await musicCommand.QueueAsync(new NextCommand(ctx));
+        }
 
     }
 }

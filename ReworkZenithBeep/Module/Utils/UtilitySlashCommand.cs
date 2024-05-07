@@ -9,7 +9,7 @@ namespace ReworkZenithBeep.Module.Utils
         [SlashCommand("beep", "ping command!")]
         public async Task PingAsync(InteractionContext ctx)
         {
-            await UtilityCommand.PingCommand(new SlashContext(ctx));
+            await UtilityCommand.PingCommand(ctx);
         }
 
         [SlashCommand("test", "Test command")]

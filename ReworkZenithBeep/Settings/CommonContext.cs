@@ -16,6 +16,7 @@ namespace ReworkZenithBeep.Settings
 
         public virtual async Task DeferAsync(bool ephemeral = false) { IsDefered = true; }
         public abstract Task RespondAsync(DiscordMessageBuilder messageBuilder);
+        public abstract Task<DiscordMessage> GetOriginalResponseAsync();
         public virtual async Task RespondEmbedAsync(DiscordEmbed embed, bool ephemeral = false, DiscordComponent[]? components = null)
         {
             var msg = new DiscordMessageBuilder().AddEmbed(embed);
@@ -56,6 +57,11 @@ namespace ReworkZenithBeep.Settings
             IsResponsed = true;
         }
 
+        public override async Task<DiscordMessage> GetOriginalResponseAsync()
+        {
+            return commamdContext.Message;
+        }
+
         public override async Task EditResponseAsync(DiscordMessageBuilder messageBuilder, IEnumerable<DiscordAttachment> attachments = null)
         {
             await base.EditResponseAsync(messageBuilder);
@@ -75,6 +81,11 @@ namespace ReworkZenithBeep.Settings
         {
             await base.DeferAsync(ephemeral);
             await interactionContext.DeferAsync(ephemeral);
+        }
+
+        public override async Task<DiscordMessage> GetOriginalResponseAsync()
+        {
+            return await interactionContext.Interaction.GetOriginalResponseAsync();
         }
 
         public override async Task RespondAsync(DiscordMessageBuilder messageBuilder)

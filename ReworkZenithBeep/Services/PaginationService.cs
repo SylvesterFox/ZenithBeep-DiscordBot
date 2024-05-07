@@ -1,9 +1,12 @@
 ﻿
 using DSharpPlus;
 using DSharpPlus.Entities;
+using DSharpPlus.EventArgs;
+using DSharpPlus.SlashCommands;
+using Lavalink4NET;
+using ReworkZenithBeep.Module.Music;
 using ReworkZenithBeep.Settings;
-using System.Drawing;
-using static System.Net.Mime.MediaTypeNames;
+
 
 namespace ReworkZenithBeep.Services
 {
@@ -30,7 +33,7 @@ namespace ReworkZenithBeep.Services
 
         internal int Count => Pages.Count;
 
-        public PaginationMessage(IEnumerable<DiscordEmbedBuilder> builders, string title = "", string embedColor = "#2C2F33", DiscordUser user = null, AppearanceOptions options = null)
+        public PaginationMessage(IEnumerable<DiscordEmbedBuilder> builders, string title = "", string embedColor = "#2C2F33", DiscordMember user = null, AppearanceOptions options = null)
         {
             List<DiscordEmbed> embeds = new List<DiscordEmbed>();
 
@@ -74,22 +77,187 @@ namespace ReworkZenithBeep.Services
     public class PaginationService
     {
         private readonly Dictionary<ulong, PaginationMessage> messages;
+        private static PaginationService instance;
 
         public PaginationService(DiscordClient client)
         {
             messages = new Dictionary<ulong, PaginationMessage>();
- /*           client.ComponentInteractionCreated += ButtonHandler;*/
+            client.ComponentInteractionCreated += ButtonHandler;
         }
 
-  /*      public async Task<DiscordMessage> SendMessageAsync(CommonContext ctx, PaginationMessage pagination, bool folloup = false)
+        public static PaginationService GetInstance(DiscordClient discordClient)
+        {
+            if (instance == null)
+            {
+                instance = new PaginationService(discordClient);
+            }
+            return instance;
+        }
+
+        public async Task ButtonHandler(DiscordClient sender, ComponentInteractionCreateEventArgs args)
+        {
+            if (messages.TryGetValue(args.Message.Id, out PaginationMessage page))
+            {
+                if (args.User.Id != page.User.Id)
+                {
+                    return;
+                }
+
+                switch (args.Interaction.Data.CustomId)
+                {
+                    case "first":
+                        if (page.CurrentPage != 1)
+                        {
+                            page.CurrentPage = 1;
+                            await args.Message.ModifyAsync(page.GetEmbed());
+                        }
+                        break;
+
+                    case "back":
+                        if (page.CurrentPage != 1)
+                        {
+                            page.CurrentPage--;
+                            await args.Message.ModifyAsync(page.GetEmbed());
+                        }
+                        break;
+
+                    case "next":
+                        if (page.CurrentPage != page.Count)
+                        {
+                            page.CurrentPage++;
+                            await args.Message.ModifyAsync(page.GetEmbed());
+                        }
+                        break;
+
+                    case "last":
+                        if (page.CurrentPage != page.Count)
+                        {
+                            page.CurrentPage = page.Count;
+                            await args.Message.ModifyAsync(page.GetEmbed());
+                        }
+                        break;
+
+                    case "stop":
+                        switch (page.Options.OnStop)
+                        {
+                            case StopAction.DeleteMessage:
+                                await args.Message.DeleteAsync();
+                                break;
+
+                            case StopAction.Clear:
+                                await args.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder()
+                                    .WithContent("No more buttons for you"));
+                                await Task.Delay(1000);
+                                await args.Message.DeleteAsync();
+                                break;
+                        }
+
+                        messages.Remove(args.Message.Id);
+                        break;
+
+                    case "select":
+                        await args.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+                        messages.Remove(args.Message.Id);
+                        break;
+                }
+            }
+        }
+
+        public async Task<DiscordMessage> SendMessageAsync(CommonContext ctx, PaginationMessage pagination, bool folloup = false)
         {
             DiscordMessage message;
+            var builder = new DiscordMessageBuilder();
 
             if (pagination.Count > 1)
             {
-                var builder = new DiscordComponent[]
                 
+                switch (pagination.Options.Style) 
+                {
+                    case DisplayStyle.Full:
+                        builder.AddComponents(new DiscordComponent[]
+                        {
+                            new DiscordButtonComponent(ButtonStyle.Secondary, "first", "First"),
+                            new DiscordButtonComponent(ButtonStyle.Primary, "back", "Back"),
+                            new DiscordButtonComponent(ButtonStyle.Primary, "next", "Next"),
+                            new DiscordButtonComponent(ButtonStyle.Secondary, "last", "Last")
+                        });
+                        break;
+
+                    case DisplayStyle.Minimal:
+                       builder.AddComponents(new DiscordComponent[]
+                       {
+                            new DiscordButtonComponent(ButtonStyle.Primary, "back", "Back"),
+                            new DiscordButtonComponent(ButtonStyle.Danger, "stop", "X"),
+                            new DiscordButtonComponent(ButtonStyle.Primary, "next", "Next"),                      
+                       });
+                       break;
+
+                    case DisplayStyle.Selector:
+                        builder.AddComponents(new DiscordComponent[]
+                        {
+                            new DiscordButtonComponent(ButtonStyle.Primary, "back", "Back"),
+                            new DiscordButtonComponent(ButtonStyle.Success, "select", "Select"),
+                            new DiscordButtonComponent(ButtonStyle.Primary, "next", "Next"),
+                        });
+                        break;
+
+                }
+
+                if (folloup)
+                {
+                    await ctx.DeferAsync();
+                    await ctx.RespondAsync(builder.AddEmbed(pagination.GetEmbed()));
+                    message = await ctx.GetOriginalResponseAsync();
+                }
+                else
+                {
+                    await ctx.RespondAsync(builder.AddEmbed(pagination.GetEmbed()));
+                    message = await ctx.GetOriginalResponseAsync();
+                }
+
+            } else
+            {
+                if (folloup) 
+                {
+                    await ctx.DeferAsync();
+                    await ctx.RespondAsync(new DiscordMessageBuilder().AddEmbed(pagination.GetEmbed()));
+                    message = await ctx.GetOriginalResponseAsync();
+                } else
+                {
+                    await ctx.RespondAsync(new DiscordMessageBuilder().AddEmbed(pagination.GetEmbed()));
+                    message = await ctx.GetOriginalResponseAsync();
+                }
+
+                return message;
             }
-        }*/
+
+            messages.Add(message.Id, pagination);
+
+            if (pagination.Options.Timeout != TimeSpan.Zero)
+            {
+                Task _ = Task.Delay(pagination.Options.Timeout).ContinueWith(async t =>
+                {
+                    if (!messages.ContainsKey(message.Id))
+                    {
+                        return;
+                    }
+
+                    switch (pagination.Options.TimeoutAction)
+                    {
+                        case StopAction.DeleteMessage:
+                            await message.DeleteAsync();
+                            break;
+                        case StopAction.Clear:
+                            await message.DeleteAllReactionsAsync(); 
+                            break;
+                    }
+
+                    messages.Remove(message.Id);
+                });
+            }
+
+            return message;
+
+        }
     }
 }

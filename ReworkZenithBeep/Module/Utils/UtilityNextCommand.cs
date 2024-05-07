@@ -14,10 +14,10 @@ namespace ReworkZenithBeep.Module.Utils
             await UtilityCommand.TestCommand(new NextCommand(context));
         }
 
-        [Command("beep"), Aliases("ping")]
+/*        [Command("beep"), Aliases("ping")]
         public async Task BeepAsyncCommand(CommandContext context)
         {
             await UtilityCommand.PingCommand(new NextCommand(context));
-        }
+        }*/
     }
 }

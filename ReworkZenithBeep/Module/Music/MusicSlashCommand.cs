@@ -12,7 +12,7 @@ namespace ReworkZenithBeep.Module.Music
         public MusicSlashCommand(IServiceProvider serviceProvider)
         {
             ArgumentNullException.ThrowIfNull(serviceProvider);
-            musicCommand = MusicCommand.GetInstance(serviceProvider.GetRequiredService<IAudioService>());
+            musicCommand = MusicCommand.GetInstance(serviceProvider.GetRequiredService<IAudioService>(), serviceProvider);
         }
 
         [SlashCommand("join", "Connect music bot to voice-channel")]
@@ -37,6 +37,12 @@ namespace ReworkZenithBeep.Module.Music
         public async Task InteractionSkipAsync(InteractionContext ctx, [Option("count", "Counts tracks skip")] long count = 1)
         {
             await musicCommand.SkipAsync(new SlashContext(ctx), count);
+        }
+
+        [SlashCommand("queue", "Queue list")]
+        public async Task InteractionQueueAsync(InteractionContext ctx)
+        {
+            await musicCommand.QueueAsync(new SlashContext(ctx));
         }
     }
 

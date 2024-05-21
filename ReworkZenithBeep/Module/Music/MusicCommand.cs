@@ -169,7 +169,7 @@ namespace ReworkZenithBeep.Module.Music
                     user: ctx.Member,
                     new AppearanceOptions()
                     {
-                        Timeout = TimeSpan.FromSeconds(5),
+                        Timeout = TimeSpan.FromSeconds(500),
                         Style = DisplayStyle.Full,
                     }));
         }

@@ -109,7 +109,7 @@ namespace ReworkZenithBeep.Services
                         if (page.CurrentPage != 1)
                         {
                             page.CurrentPage = 1;
-                            await args.Message.ModifyAsync(page.GetEmbed());
+                            await args.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(page.GetEmbed()).AddComponents(args.Message.Components));
                         }
                         break;
 
@@ -117,7 +117,7 @@ namespace ReworkZenithBeep.Services
                         if (page.CurrentPage != 1)
                         {
                             page.CurrentPage--;
-                            await args.Message.ModifyAsync(page.GetEmbed());
+                            await args.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(page.GetEmbed()).AddComponents(args.Message.Components));
                         }
                         break;
 
@@ -125,7 +125,7 @@ namespace ReworkZenithBeep.Services
                         if (page.CurrentPage != page.Count)
                         {
                             page.CurrentPage++;
-                            await args.Message.ModifyAsync(page.GetEmbed());
+                            await args.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(page.GetEmbed()).AddComponents(args.Message.Components));
                         }
                         break;
 
@@ -133,7 +133,7 @@ namespace ReworkZenithBeep.Services
                         if (page.CurrentPage != page.Count)
                         {
                             page.CurrentPage = page.Count;
-                            await args.Message.ModifyAsync(page.GetEmbed());
+                            await args.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(page.GetEmbed()).AddComponents(args.Message.Components));
                         }
                         break;
 

@@ -1,5 +1,4 @@
-﻿using DSharpPlus.SlashCommands;
-using Lavalink4NET;
+﻿using Lavalink4NET;
 using Lavalink4NET.Clients;
 using Lavalink4NET.Players;
 using Lavalink4NET.Players.Queued;
@@ -149,6 +148,7 @@ namespace ReworkZenithBeep.Module.Music
                 await player.ControlPauseAsync();
                 await ctx.RespondTextAsync(answer);
             }
+            else await ctx.RespondEmbedAsync(EmbedsPlayer.EmptyQueueEmbed());
         }
 
         public async Task QueueAsync(CommonContext ctx)
@@ -173,5 +173,49 @@ namespace ReworkZenithBeep.Module.Music
                         Style = DisplayStyle.Full,
                     }));
         }
+
+        public async Task RemoveAsync(CommonContext ctx, long position)
+        {
+            await ctx.DeferAsync(ephemeral: true);
+            var player = await GetPlayerAsync(ctx);
+            if (player == null) return;
+
+            if(player.Queue.Count > position - 1)
+            {
+                await ctx.RespondTextAsync($"`{position}.` {player.Queue[(int)position - 1].Track.Title} remove from queue");
+                await player.Queue.RemoveAtAsync((int)position - 1).ConfigureAwait(false);
+            } else
+            {
+                await ctx.RespondTextAsync($"Unable to delete track `{position}`. Wrong number.");
+            }
+        }
+
+        public async Task LoopAsync(CommonContext ctx)
+        {
+            await ctx.DeferAsync(ephemeral: true);
+            var player = await GetPlayerAsync(ctx);
+            if (player == null) return;
+
+            if (player.CurrentTrack != null)
+            {
+                player.RepeatMode = player.RepeatMode == TrackRepeatMode.Track ? TrackRepeatMode.None : TrackRepeatMode.Track;
+                await ctx.RespondTextAsync($"Track {(player.RepeatMode == TrackRepeatMode.Track ? "looped!" : "not looped!")}");
+            }
+            else
+                await ctx.RespondEmbedAsync(EmbedsPlayer.EmptyQueueEmbed());
+        }
+
+        public async Task ClearAsync(CommonContext ctx)
+        {
+            var player = await GetPlayerAsync(ctx, false);
+            if (player == null) return;
+
+            await player.StopAsync().ConfigureAwait(false);
+            await player.Queue.ClearAsync().ConfigureAwait(false);
+            await ctx.RespondTextAsync("Clear queue!");
+        }
+
+   
+
     }
 }

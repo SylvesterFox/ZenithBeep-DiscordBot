@@ -48,5 +48,28 @@ namespace ReworkZenithBeep.Module.Music
             await musicCommand.QueueAsync(new NextCommand(ctx));
         }
 
+        [Command("remove")]
+        public async Task RemoveCommandAsync(CommandContext ctx, long position)
+        {
+            await musicCommand.RemoveAsync(new NextCommand(ctx), position);
+        }
+
+        [Command("looptrack")]
+        public async Task LoopCommandAsync(CommandContext ctx)
+        {
+            await musicCommand.LoopAsync(new NextCommand(ctx));
+        }
+
+        [Command("pause")]
+        public async Task PauseCommandAsync(CommandContext ctx)
+        {
+            await musicCommand.PauseAsync(new NextCommand(ctx));
+        }
+
+        [Command("clear")]
+        public async Task ClearCommandAsync(CommandContext ctx)
+        {
+            await musicCommand.ClearAsync(new NextCommand(ctx));
+        }
     }
 }

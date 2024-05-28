@@ -44,6 +44,30 @@ namespace ReworkZenithBeep.Module.Music
         {
             await musicCommand.QueueAsync(new SlashContext(ctx));
         }
+
+        [SlashCommand("remove", "Remove track from queue")]
+        public async Task InteractionRemoveAsync(InteractionContext ctx, [Option("Nunber", "Removing number track from queue.")] long position)
+        {
+            await musicCommand.RemoveAsync(new SlashContext(ctx), position);
+        }
+
+        [SlashCommand("looptrack", "Looping track")]
+        public async Task InteractionLoopAsync(InteractionContext ctx)
+        {
+            await musicCommand.LoopAsync(new SlashContext(ctx));
+        }
+
+        [SlashCommand("pause", "Pause and resume track.")]
+        public async Task InteractionPauseAsync(InteractionContext ctx)
+        {
+            await musicCommand.PauseAsync(new SlashContext(ctx));
+        }
+
+        [SlashCommand("clear", "Clear all queue music bot.")]
+        public async Task InteractionClearAsync(InteractionContext ctx)
+        {
+            await musicCommand.ClearAsync(new SlashContext(ctx));
+        }
     }
 
 }

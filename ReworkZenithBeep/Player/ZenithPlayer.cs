@@ -34,6 +34,16 @@ namespace ReworkZenithBeep.Player
             return ValueTask.FromResult(new ZenithPlayer(properties));
         }
 
+        protected override async ValueTask NotifyTrackStartedAsync(ITrackQueueItem track, CancellationToken cancellationToken = default)
+        {
+            await base
+                .NotifyTrackStartedAsync(track, cancellationToken)
+                .ConfigureAwait(false);
+
+            var embedPlaying = await EmbedsPlayer.NowPlayingEmbed(track?.Track, "Playing ");
+            var message = await channel.SendMessageAsync(embedPlaying);
+        }
+
         public async Task ControlPauseAsync()
         {
             if (IsPaused)

@@ -2,9 +2,6 @@
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
-using DSharpPlus.SlashCommands;
-using Lavalink4NET;
-using ReworkZenithBeep.Module.Music;
 using ReworkZenithBeep.Settings;
 
 

@@ -1,6 +1,5 @@
 ﻿
 using DSharpPlus.Entities;
-using System.Drawing;
 
 namespace ReworkZenithBeep.MessageEmbeds
 {
@@ -9,23 +8,33 @@ namespace ReworkZenithBeep.MessageEmbeds
         public static DiscordColor beepColor { get; } = new DiscordColor("#bb6ef6");
 
 
-        public static DiscordEmbed UniEmbed(string title, string descripton, DiscordColor? color)
+        public static DiscordEmbed UniEmbed(string title, string? color = null)
         {
+            DiscordColor colorEmbed;
+            if (string.IsNullOrEmpty(color))
+            {
+                colorEmbed = beepColor;
+            } else
+            {
+                colorEmbed= new DiscordColor(color);
+            }
+
             var builder = new DiscordEmbedBuilder()
             {
-                Color = color ?? beepColor,
+                Color = colorEmbed,
                 Title = title,
             };
             return builder.Build();
         }
 
-        private const string ErrorMessage = "Oops, something's broken";
-        public static DiscordEmbed ErrorEmbed()
+        private const string ErrorTitle = "Oops, something's broken";
+        public static DiscordEmbed ErrorEmbed(string? message = null, string? title = null)
         {
             var builder = new DiscordEmbedBuilder()
             {
                 Color = DiscordColor.Red,
-                Title = ErrorMessage,
+                Title = title ?? ErrorTitle,
+                Description = message ?? string.Empty,
             };
             return builder.Build();
         }

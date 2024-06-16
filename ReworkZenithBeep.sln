@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34723.18
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReworkZenithBeep", "ReworkZenithBeep\ReworkZenithBeep.csproj", "{24E3A4F7-8DAD-4A70-B5F3-E2154A3B9874}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReworkZenithBeep", "ReworkZenithBeep\ReworkZenithBeep.csproj", "{24E3A4F7-8DAD-4A70-B5F3-E2154A3B9874}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReworkZenithBeep.Data", "ReworkZenithBeep.Data\ReworkZenithBeep.Data.csproj", "{716C3741-9EFC-45C4-9C6B-6BA84F1102D9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReworkZenithBeep.Data.Migrations", "ReworkZenithBeep.Data.Migrations\ReworkZenithBeep.Data.Migrations.csproj", "{046ECA8E-0279-473E-83BE-E7D5F9BA35F5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{24E3A4F7-8DAD-4A70-B5F3-E2154A3B9874}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24E3A4F7-8DAD-4A70-B5F3-E2154A3B9874}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24E3A4F7-8DAD-4A70-B5F3-E2154A3B9874}.Release|Any CPU.Build.0 = Release|Any CPU
+		{716C3741-9EFC-45C4-9C6B-6BA84F1102D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{716C3741-9EFC-45C4-9C6B-6BA84F1102D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{716C3741-9EFC-45C4-9C6B-6BA84F1102D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{716C3741-9EFC-45C4-9C6B-6BA84F1102D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{046ECA8E-0279-473E-83BE-E7D5F9BA35F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{046ECA8E-0279-473E-83BE-E7D5F9BA35F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{046ECA8E-0279-473E-83BE-E7D5F9BA35F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{046ECA8E-0279-473E-83BE-E7D5F9BA35F5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

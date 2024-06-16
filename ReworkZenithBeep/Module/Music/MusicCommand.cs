@@ -5,6 +5,7 @@ using Lavalink4NET.Players.Queued;
 using Lavalink4NET.Rest.Entities.Tracks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using ReworkZenithBeep.MessageEmbeds;
 using ReworkZenithBeep.Player;
 using ReworkZenithBeep.Services;
 using ReworkZenithBeep.Settings;
@@ -73,8 +74,8 @@ namespace ReworkZenithBeep.Module.Music
         public async Task JoinAsync(CommonContext context)
         {  
             var player = await GetPlayerAsync(context); if (player == null) return;
-            var voiceChannel = context.Guild.GetChannel(player.VoiceChannelId);
-            await context.RespondTextAsync($"Connect to `{voiceChannel.Name}`").ConfigureAwait(false);
+            var embed = EmbedTempalte.UniEmbed($"Connected to  <#{player.VoiceChannelId}>");
+            await context.RespondEmbedAsync(embed);
         }
 
         public async Task LeaveAsync(CommonContext context)
@@ -85,13 +86,13 @@ namespace ReworkZenithBeep.Module.Music
 
             await player.DisconnectAsync();
             await player.DisposeAsync();
-
-            await context.RespondTextAsync($"Leave from `{voiceChannel.Name}`. Bye!");
+            var embed = EmbedTempalte.UniEmbed($"Leave from `{voiceChannel.Name}`. Bye!", "#7cf66e");
+            await context.RespondEmbedAsync(embed).ConfigureAwait(false);
         }
 
         public async Task PlayAsync(CommonContext ctx, string query)
         {
-            await ctx.DeferAsync(false);
+            await ctx.DeferAsync(true);
 
             var player = await GetPlayerAsync(ctx);
             if (player == null) return;
@@ -99,8 +100,9 @@ namespace ReworkZenithBeep.Module.Music
                 .LoadTracksAsync(query, TrackSearchMode.YouTube);
 
             if (searchResult.IsFailed)
-            {
-                await ctx.RespondTextAsync($"Nothing was found for {query}.");
+            {;
+                var embed = EmbedTempalte.UniEmbed($"Nothing was found for {query}.");
+                await ctx.RespondEmbedAsync(embed);
                 return;
             }
 
@@ -116,10 +118,13 @@ namespace ReworkZenithBeep.Module.Music
             var playing = await player.PlayAsync(searchResult.Track);
             if (playing > 0)
             {
-                await ctx.RespondTextAsync($"Add queue `{searchResult.Track.Title}` - {player.Queue.Count}");
+                var embed = EmbedTempalte.UniEmbed($"Add queue `{searchResult.Track.Title}` - {player.Queue.Count}");
+                await ctx.RespondEmbedAsync(embed);
             } else
             {
-                await ctx.RespondTextAsync($"Connected to  <#{player.VoiceChannelId}>");
+                var embed = EmbedTempalte.UniEmbed($"Connected to  <#{player.VoiceChannelId}>");
+                await ctx.RespondEmbedAsync(embed);
+
             }
         }
 
@@ -130,11 +135,13 @@ namespace ReworkZenithBeep.Module.Music
 
             if (player.CurrentItem != null)
             {
-                await ctx.RespondTextAsync($"Skip `{player.CurrentTrack.Title}");
+                var embed_skip = EmbedTempalte.UniEmbed($"Skip `{player.CurrentTrack.Title}");
+                await ctx.RespondEmbedAsync(embed_skip);
                 await player.SkipAsync((int)count);
                 return;
             }
-            await ctx.RespondTextAsync("Queue empty!");
+            var embed = EmbedTempalte.UniEmbed("Queue empty!");
+            await ctx.RespondEmbedAsync(embed);
         }
 
         public async Task PauseAsync(CommonContext ctx)
@@ -159,7 +166,8 @@ namespace ReworkZenithBeep.Module.Music
 
             if (player.Queue.IsEmpty)
             {
-                await ctx.RespondTextAsync("The queue is empty");
+                var embed = EmbedTempalte.UniEmbed("The queue is empty");
+                await ctx.RespondEmbedAsync(embed);
                 return;
             }
 
@@ -182,11 +190,13 @@ namespace ReworkZenithBeep.Module.Music
 
             if(player.Queue.Count > position - 1)
             {
-                await ctx.RespondTextAsync($"`{position}.` {player.Queue[(int)position - 1].Track.Title} remove from queue");
+                var embed = EmbedTempalte.UniEmbed($"`{position}.` {player.Queue[(int)position - 1].Track.Title} remove from queue");
+                await ctx.RespondEmbedAsync(embed);
                 await player.Queue.RemoveAtAsync((int)position - 1).ConfigureAwait(false);
             } else
             {
-                await ctx.RespondTextAsync($"Unable to delete track `{position}`. Wrong number.");
+                var embed = EmbedTempalte.UniEmbed($"Unable to delete track `{position}`. Wrong number.");
+                await ctx.RespondEmbedAsync(embed);
             }
         }
 
@@ -212,7 +222,8 @@ namespace ReworkZenithBeep.Module.Music
 
             await player.StopAsync().ConfigureAwait(false);
             await player.Queue.ClearAsync().ConfigureAwait(false);
-            await ctx.RespondTextAsync("Clear queue!");
+            var embed = EmbedTempalte.UniEmbed("Clear queue!");
+            await ctx.RespondEmbedAsync(embed);
         }
 
    

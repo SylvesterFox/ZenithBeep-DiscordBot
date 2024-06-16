@@ -8,12 +8,25 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Database\**" />
+    <EmbeddedResource Remove="Database\**" />
+    <None Remove="Database\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="DSharpPlus" Version="4.4.6" />
     <PackageReference Include="DSharpPlus.CommandsNext" Version="4.4.6" />
     <PackageReference Include="DSharpPlus.Interactivity" Version="4.4.6" />
     <PackageReference Include="DSharpPlus.SlashCommands" Version="4.4.6" />
     <PackageReference Include="Lavalink4NET.DSharpPlus" Version="4.0.18" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.6">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.6" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,9 +36,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Database\Models\" />
-    <Folder Include="Module\RolesGet\" />
     <Folder Include="Module\Others\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ReworkZenithBeep.Data.Migrations\ReworkZenithBeep.Data.Migrations.csproj" />
+    <ProjectReference Include="..\ReworkZenithBeep.Data\ReworkZenithBeep.Data.csproj" />
   </ItemGroup>
 
 </Project>

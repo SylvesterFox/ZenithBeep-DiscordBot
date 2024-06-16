@@ -1,7 +1,6 @@
 ﻿using DSharpPlus.Entities;
 using Lavalink4NET.Players;
 using Lavalink4NET.Players.Vote;
-using Lavalink4NET.Tracks;
 using ReworkZenithBeep.Settings;
 
 

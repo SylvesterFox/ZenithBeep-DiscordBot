@@ -7,6 +7,7 @@ using Lavalink4NET;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ReworkZenithBeep.Module.Music;
+using ReworkZenithBeep.Module.RolesGet;
 using ReworkZenithBeep.Module.Utils;
 using ReworkZenithBeep.Services;
 
@@ -33,6 +34,7 @@ namespace ReworkZenithBeep
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            
             var slash = _discordClient
                 .UseSlashCommands(new SlashCommandsConfiguration
                 {
@@ -41,6 +43,7 @@ namespace ReworkZenithBeep
             // Slash commands register
             slash.RegisterCommands<UtilitySlashCommand>();
             slash.RegisterCommands<MusicSlashCommand>();
+            slash.RegisterCommands<RoleSelectorsSlash>();
 
             var next = _discordClient
                 .UseCommandsNext(new CommandsNextConfiguration

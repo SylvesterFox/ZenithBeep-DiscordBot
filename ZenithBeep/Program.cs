@@ -24,20 +24,27 @@ namespace ZenithBeep
         private readonly IConfiguration _config;
         private DiscordSocketClient _client;
 
+        private BotOptions _botOption;
+
         private readonly CancellationTokenSource cancellation = new CancellationTokenSource();
        
-        static void Main(string[] args = null) {
+        static void Main(string[] args) {
 
            
             new Program().MainAsync().GetAwaiter().GetResult();
         }
 
         public Program() {
+            
             var config = new ConfigurationBuilder()
                 .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
                 .AddYamlFile("appsettings.yml");
 
             _config = config.Build();
+            _botOption = new BotOptions();
+            _config.GetSection(_botOption.Bot).Bind(_botOption);
+            
+         
         }
 
         private readonly CancellationTokenSource tokenSource = new CancellationTokenSource();
@@ -45,7 +52,8 @@ namespace ZenithBeep
 
         public async Task MainAsync()
         {
-           
+          
+
            using (var services = ConfigureServices()) 
            {
                 var client = services.GetRequiredService<DiscordSocketClient>();
@@ -59,36 +67,43 @@ namespace ZenithBeep
                 await services.GetRequiredService<HanderJoinGuilds>().InitializeAsync();
                 await services.GetRequiredService<HandlerJoinLobby>().InitializeAsync();
                 services.GetRequiredService<LoggingService>();
+                var context = services.GetRequiredService<BeepDbContext>();
                 
                 
-
                 _client.Ready += async () =>
                 {
+
+                    switch (_botOption.DBSetup) {
+                        case true:
+                            await setupDatabaseTask(context);
+                            break;
+                        case false:
+                            Log.Information("Skip setup database!");
+                            break;
+                    }
+
+
                     Console.WriteLine("RAWR! Bot is ready!");
 
                    
                     await _sCommand.RegisterCommandsGloballyAsync(true);
 
-
-                    string audio = _config["audioservice"];
-                    switch (audio)
+                    switch (_botOption.AudioService)
                     {
-                        case "true":
+                        case true:
                             await audioService.InitializeAsync();
                             break;
-                        case "false":
-                            break;
-                        default:
-                            await audioService.InitializeAsync();
+                        case false:
                             break;
                     }
+
                     
-                   
+                
                 };
 
                 Console.CancelKeyPress += OnCancel;
 
-                await client.LoginAsync(TokenType.Bot, _config["token"]);
+                await client.LoginAsync(TokenType.Bot, _botOption.Token);
                 await client.StartAsync();
 
                 try {
@@ -101,6 +116,18 @@ namespace ZenithBeep
               
            }
 
+        }
+
+        private static async Task setupDatabaseTask(BeepDbContext context) {
+            Log.Information("====== Database setup starting ======");
+            var migrations = await context.Database.GetPendingMigrationsAsync();
+            if (migrations.Any()) {
+                Log.Information("===== Migrations required: " + string.Join(", ", migrations) + " =====");
+                await context.Database.MigrateAsync();
+                await context.SaveChangesAsync();
+            }
+            
+            await context.Database.EnsureCreatedAsync();
         }
 
         private void OnCancel(object? sender, ConsoleCancelEventArgs args)
@@ -116,6 +143,9 @@ namespace ZenithBeep
 
         private ServiceProvider ConfigureServices() 
         {
+
+            var pathDb = DbSettings.LocalPathDB();
+
             var services = new ServiceCollection()
                 .AddSingleton(_config)
                 .AddSingleton(x => new DiscordSocketClient(new DiscordSocketConfig
@@ -141,9 +171,9 @@ namespace ZenithBeep
                 .AddLogging(configure => configure.AddSerilog())
                 .AddSingleton(new LavalinkNodeOptions
                 {
-                    RestUri = $"http://{_config["lavalink_host"]}:2333/",
-                    WebSocketUri = $"ws://{_config["lavalink_host"]}:2333/",
-                    Password = _config["lavalink_password"],
+                    RestUri = $"http://{_botOption.LavaHost}:2333/",
+                    WebSocketUri = $"ws://{_botOption.LavaHost}:2333/",
+                    Password = _botOption.LavaPassword,
 
 
                 })
@@ -151,68 +181,55 @@ namespace ZenithBeep
                 .AddSingleton<HandlerJoinLobby>()
                 .AddSingleton<HanderJoinGuilds>()
                 .AddDbContextFactory<BeepDbContext>(
-                    options => options.UseNpgsql(_config.GetConnectionString("Default")))
+                    options => options.UseSqlite($"Data Source={pathDb}"))
                 .AddSingleton<DataAccessLayer>()
                 .AddSingleton<DataRooms>()
                 .AddSingleton<ParseEmoji>();
 
 
-
-
-            if (!string.IsNullOrEmpty(_config["logs"]))
+            switch (_botOption.Logs.ToLower())
             {
-
-
-                switch (_config["logs"].ToLower())
+                case "info": 
                 {
-                    case "info": 
-                    {
-                        Log.Logger = new LoggerConfiguration()
-                            .WriteTo.Console()
-                            .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
-                            .MinimumLevel.Information()
-                            .CreateLogger();
-                        break;
-                    }
-                    case "error": 
-                    {
-
-
-                        Log.Logger = new LoggerConfiguration()
-                            .WriteTo.Console()
-                            .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
-                            .MinimumLevel.Error()
-                            .CreateLogger();
-                        break;
-                    }
-                    case "debug":
-                    {
-                        Log.Logger = new LoggerConfiguration()
-                            .WriteTo.Console()
-                            .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
-                            .MinimumLevel.Debug()
-                            .CreateLogger();
-                        break;
-                    }
-                    default: 
-                    {
-                        Log.Logger = new LoggerConfiguration()
-                            .WriteTo.Console()
-                            .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
-                            .MinimumLevel.Information()
-                            .CreateLogger();
-                        break;
-                    }
-                }
-            }
-            else {
                     Log.Logger = new LoggerConfiguration()
                         .WriteTo.Console()
                         .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
                         .MinimumLevel.Information()
                         .CreateLogger();
-            }
+                    break;
+                }
+                case "error": 
+                {
 
+
+                    Log.Logger = new LoggerConfiguration()
+                        .WriteTo.Console()
+                        .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
+                        .MinimumLevel.Error()
+                        .CreateLogger();
+                    break;
+                }
+                case "debug":
+                {
+                    Log.Logger = new LoggerConfiguration()
+                        .WriteTo.Console()
+                        .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
+                        .MinimumLevel.Debug()
+                        .CreateLogger();
+                    break;
+                }
+                default: 
+                {
+                    Log.Logger = new LoggerConfiguration()
+                        .WriteTo.Console()
+                        .WriteTo.File("logs/csgrechka-logs.log", rollingInterval: RollingInterval.Day)
+                        .MinimumLevel.Information()
+                        .CreateLogger();
+                    break;
+                }
+            }
+            
+           
             var serviceProvider = services.BuildServiceProvider();
             
             return serviceProvider;

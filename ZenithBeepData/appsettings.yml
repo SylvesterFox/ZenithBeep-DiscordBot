@@ -1,6 +1,0 @@
-
-
-ConnectionStrings:
-  Default: Host=localhost;Database=grechkadb;Username=postgres;Password=0270;
-
-version: 5.0

@@ -9,7 +9,7 @@ namespace ZenithBeepData.Context
     {
         public BeepDbContext(DbContextOptions options) : base(options)
         {
-
+            
         }
 
         
@@ -25,5 +25,7 @@ namespace ZenithBeepData.Context
                 .HasKey(e => e.userId);
                 
         }
+
+        
     }
 }

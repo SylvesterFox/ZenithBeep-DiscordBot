@@ -1,0 +1,8 @@
+Bot:
+  Token: token
+  Logs: debug
+  LavaHost: localhost
+  LavaPassword: youshallnotpass
+  AudioService: true
+
+Version: 5.0

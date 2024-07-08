@@ -1,8 +1,7 @@
 Bot:
-  Token: token
+  Token: <Your bot token>
   Logs: debug
-  LavaHost: localhost
+  LavaHost: lavalink-v3
   LavaPassword: youshallnotpass
   AudioService: true
 
-Version: 5.0

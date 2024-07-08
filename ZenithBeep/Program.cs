@@ -83,8 +83,13 @@ namespace ZenithBeep
                     }
 
 
-                    Console.WriteLine("RAWR! Bot is ready!");
+                    Console.WriteLine(" _____         _ _   _   _____            ");
+                    Console.WriteLine("|__   |___ ___|_| |_| |_| __  |___ ___ ___");
+                    Console.WriteLine("|   __| -_|   | |  _|   | __ -| -_| -_| . |");
+                    Console.WriteLine("|_____|___|_|_|_|_| |_|_|_____|___|___|  _|");
+                    Console.WriteLine("                                      |_|  ");
 
+                    Console.WriteLine($"Ver: {System.Reflection.Assembly.GetEntryAssembly().GetName().Version} ");
                    
                     await _sCommand.RegisterCommandsGloballyAsync(true);
 

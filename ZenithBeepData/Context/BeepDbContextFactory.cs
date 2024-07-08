@@ -9,8 +9,6 @@ namespace ZenithBeepData.Context
       
         public BeepDbContext CreateDbContext(string[] args)
         {
-            
-
             string pathDb = DbSettings.LocalPathDB();
 
             var optionsBuilder = new DbContextOptionsBuilder()

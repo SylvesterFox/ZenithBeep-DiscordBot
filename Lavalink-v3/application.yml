@@ -2,10 +2,14 @@ server: # REST and WS server
   port: 2333
   address: 0.0.0.0
 lavalink:
+  plugins:
+    # Replace VERSION with the current version as shown by the Releases tab or a long commit hash for snapshots.
+    - dependency: "dev.lavalink.youtube:youtube-plugin:1.4.0"
+      repository: "https://maven.lavalink.dev/releases"
   server:
     password: "youshallnotpass"
     sources:
-      youtube: true
+      youtube: false
       bandcamp: true
       soundcloud: true
       twitch: true
@@ -42,6 +46,38 @@ metrics:
   prometheus:
     enabled: false
     endpoint: /metrics
+
+plugins:
+  youtube:
+    enabled: true # Whether this source can be used.
+    allowSearch: true # Whether "ytsearch:" and "ytmsearch:" can be used.
+    allowDirectVideoIds: true # Whether just video IDs can match. If false, only complete URLs will be loaded.
+    allowDirectPlaylistIds: true # Whether just playlist IDs can match. If false, only complete URLs will be loaded.
+    # The clients to use for track loading. See below for a list of valid clients.
+    # Clients are queried in the order they are given (so the first client is queried first and so on...)
+    clients:
+      - MUSIC
+      - ANDROID_TESTSUITE
+      - WEB
+
+    # You can configure individual clients with the following.
+    # Any options or clients left unspecified will use their default values
+    # for those individual clients.
+    # Client configurations will ONLY take effect if the client is registered above,
+    # otherwise they are ignored.
+    # ---------------- WARNING ----------------
+    # This part of the config is for DEMONSTRATION PURPOSES ONLY!
+    # Do NOT use this config before understanding what the options do.
+    # You do NOT need to copy this config just because it is published here.
+    # ---------------- WARNING ----------------
+    WEB: # names are specified as they are written below under "Available Clients".
+      # This will disable using the WEB client for video playback.
+      playback: false
+    TVHTML5EMBEDDED:
+      # The below config disables everything except playback for this client.
+      playlistLoading: false # Disables loading of playlists and mixes for this client.
+      videoLoading: false # Disables loading of videos for this client (playback is still allowed).
+      searching: false # Disables the ability to search for videos for this client.
 
 sentry:
   dsn: ""

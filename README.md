@@ -22,11 +22,11 @@ Moderation will be available soon
 
 ```js
 Bot:
-	Token: <Your token bot>
-	Logs: debug
-	LavaHost: lavalink-v3
-	LavaPassword: youshallnotpass
-	AudioService: true
+    Token: <Your token bot>
+    Logs: debug
+    LavaHost: lavalink-v3
+    LavaPassword: youshallnotpass
+    AudioService: true
 ```
 
 3. Next we write to the terminal at the root of the repository itself

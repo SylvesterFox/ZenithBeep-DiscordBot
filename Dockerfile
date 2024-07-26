@@ -1,9 +1,14 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
 WORKDIR /app
 COPY ./ ./
-RUN dotnet publish ./GrechkaBOT/GrechkaBOT.csproj -o ../app/publish/build
-RUN chmod 755 ../app/publish/build
-ARG ENV
-RUN echo ${ENV}
-RUN sed -i 's/^\(token: \).*$/\1'${ENV}'/' ./publish/build/appsettings.yml | cat ./publish/build/appsettings.yml
+RUN dotnet restore 
+RUN dotnet publish ./ZenithBeep/ZenithBeep.csproj -o out
+
+FROM mcr.microsoft.com/dotnet/runtime:8.0
+
+WORKDIR /app
+COPY --from=build-env /app/out .
+COPY ./init.sh .
+RUN chmod +x ./init.sh 
+ENTRYPOINT [ "./init.sh" ]
 

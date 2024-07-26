@@ -30,7 +30,7 @@ namespace ZenithBeep.Handlers
 
         private Task OnStatusBot()
         {
-            string fileName = AppDomain.CurrentDomain.BaseDirectory + "ResourcesBot/StatusContext.json";
+            string fileName = AppDomain.CurrentDomain.BaseDirectory + "StatusContext.json";
             string jsonString = File.ReadAllText(fileName);
             
 

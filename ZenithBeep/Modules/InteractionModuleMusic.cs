@@ -9,7 +9,7 @@ using Lavalink4NET.Rest;
 using static ZenithBeep.Custom.DragonPlayer;
 using ZenithBeepData;
 
-namespace ZenithBeep.Modeles
+namespace ZenithBeep.Modules
 {
     public class InteractionModuleMusic : ZenithBase
     {

@@ -6,7 +6,7 @@ using ZenithBeep.Custom;
 using ZenithBeep.Services;
 using ZenithBeepData;
 
-namespace ZenithBeep.Modeles
+namespace ZenithBeep.Modules
 {
     public class IntaractionModuleRoles : ZenithBase
     {

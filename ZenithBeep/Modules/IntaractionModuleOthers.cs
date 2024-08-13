@@ -3,7 +3,7 @@ using Discord.Interactions;
 using System.Resources;
 using ZenithBeepData;
 
-namespace ZenithBeep.Modeles
+namespace ZenithBeep.Modules
 {
 
     public class IntaractionModuleOthers : ZenithBase

@@ -10,7 +10,7 @@ using System.Reflection;
 
 namespace ZenithBeep.Handlers
 {
-    public class HanderInteraction
+    public class HandlerInteraction
     {
         private readonly DiscordSocketClient _client;
         private readonly InteractionService _command;
@@ -20,7 +20,7 @@ namespace ZenithBeep.Handlers
         private readonly Microsoft.Extensions.Logging.ILogger _log;
   
 
-        public HanderInteraction(DiscordSocketClient client, InteractionService command, IServiceProvider service, Lavalink4NET.Logging.ILogger log)
+        public HandlerInteraction(DiscordSocketClient client, InteractionService command, IServiceProvider service, Lavalink4NET.Logging.ILogger log)
         {
             _client = client;
             _command = command;
@@ -33,7 +33,7 @@ namespace ZenithBeep.Handlers
         {
             await _command.AddModulesAsync(Assembly.GetEntryAssembly(), _service);
 
-            _client.InteractionCreated += HandlerInteraction;
+            _client.InteractionCreated += InteractionContext;
 
             _command.ContextCommandExecuted += ContextCommandExecuted;
             _command.SlashCommandExecuted += SlashCommandExecuted;
@@ -50,7 +50,7 @@ namespace ZenithBeep.Handlers
 
     
 
-        private async Task HandlerInteraction(SocketInteraction arg)
+        private async Task InteractionContext(SocketInteraction arg)
         {
             try
             {

@@ -4,7 +4,7 @@ using Discord.WebSocket;
 using ZenithBeepData;
 
 
-namespace ZenithBeep.Modeles
+namespace ZenithBeep.Modules
 {
     public class IntaractionModuleRoomers : ZenithBase
     {

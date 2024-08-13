@@ -60,11 +60,11 @@ namespace ZenithBeep
                 _client = client;
 
                 var _sCommand = services.GetRequiredService<InteractionService>();
-                await services.GetRequiredService<HanderInteraction>().InitializeAsync();
+                await services.GetRequiredService<HandlerInteraction>().InitializeAsync();
                 var audioService = services.GetRequiredService<IAudioService>();
                 await services.GetRequiredService<HandlerStatus>().InitializeAsync();
-                await services.GetRequiredService<HanderRoles>().InitializeAsync();
-                await services.GetRequiredService<HanderJoinGuilds>().InitializeAsync();
+                await services.GetRequiredService<HandlerRoles>().InitializeAsync();
+                await services.GetRequiredService<HandlerJoinGuilds>().InitializeAsync();
                 await services.GetRequiredService<HandlerJoinLobby>().InitializeAsync();
                 services.GetRequiredService<LoggingService>();
                 var context = services.GetRequiredService<BeepDbContext>();
@@ -164,14 +164,14 @@ namespace ZenithBeep
                     UseInteractionSnowflakeDate = false
                 }))
                 .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
-                .AddSingleton<HanderInteraction>()
+                .AddSingleton<HandlerInteraction>()
                 .AddSingleton(x => new CommandService())
                 .AddSingleton<LoggingService>()
                 .AddSingleton<HandlerStatus>()
                 .AddSingleton<IAudioService, LavalinkNode>()
                 .AddSingleton<IDiscordClientWrapper, DiscordClientWrapper>()
                 .AddSingleton<PaginationService>()
-                .AddSingleton<HanderRoles>()
+                .AddSingleton<HandlerRoles>()
                 .AddMicrosoftExtensionsLavalinkLogging()
                 .AddLogging(configure => configure.AddSerilog())
                 .AddSingleton(new LavalinkNodeOptions
@@ -184,7 +184,7 @@ namespace ZenithBeep
                 })
                 .AddSingleton<ILavalinkCache, LavalinkCache>()
                 .AddSingleton<HandlerJoinLobby>()
-                .AddSingleton<HanderJoinGuilds>()
+                .AddSingleton<HandlerJoinGuilds>()
                 .AddDbContextFactory<BeepDbContext>(
                     options => options.UseSqlite($"Data Source={pathDb}"))
                 .AddSingleton<DataAccessLayer>()

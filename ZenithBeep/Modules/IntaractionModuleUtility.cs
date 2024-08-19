@@ -6,7 +6,7 @@ using ZenithBeepData;
 using RuntimeResult = Discord.Interactions.RuntimeResult;
 
 
-namespace ZenithBeep.Modeles
+namespace ZenithBeep.Modules
 {
     public class IntaractionModuleUtility : ZenithBase
     {

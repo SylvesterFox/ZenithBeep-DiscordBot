@@ -6,12 +6,12 @@ using ZenithBeepData;
 namespace ZenithBeep.Handlers
 {
 
-    public class HanderRoles
+    public class HandlerRoles
     {
         private readonly DiscordSocketClient _clinet;
         public readonly DataAccessLayer DataAccessLayer;
 
-        public HanderRoles (DiscordSocketClient clinet, IServiceProvider service, DataAccessLayer dataAccessLayer)
+        public HandlerRoles (DiscordSocketClient clinet, IServiceProvider service, DataAccessLayer dataAccessLayer)
         {
             _clinet = clinet;
             DataAccessLayer = dataAccessLayer;
@@ -58,7 +58,7 @@ namespace ZenithBeep.Handlers
             var guild = ((SocketGuildChannel)reaction.Channel).Guild;
             var _emoji = reaction.Emote.ToString();
 
-            Console.WriteLine(_emoji);
+
             var roledb = await DataAccessLayer.GetRoleAutoMod(guild.Id, reaction.MessageId, _emoji);
 
             if (roledb is null)

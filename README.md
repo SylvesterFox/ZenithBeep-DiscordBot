@@ -31,7 +31,7 @@ Bot:
 
 3. Next we write to the terminal at the root of the repository itself
 ```bash
-docker-compose up -d 
+docker compose up -d 
 ```
 	And we wait for the docker to finish deploying the bot.
 

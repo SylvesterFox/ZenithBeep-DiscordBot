@@ -36,3 +36,5 @@ docker compose up -d
 	And we wait for the docker to finish deploying the bot.
 
 4. The bot is now working.
+### Not via docker deployment
+Soon

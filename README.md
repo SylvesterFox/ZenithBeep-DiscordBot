@@ -16,7 +16,7 @@ Moderation will be available soon
 
 # How deploying ZenitBeep
 
-## Through the docker container
+### Through the docker container
 1. Clone this repository
 2. Change your bot token in the configuration file, along the path `Config/appsetings.yml`
 
